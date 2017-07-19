@@ -6,8 +6,9 @@
  * Copyright (c) 2017, Anna Vlasova
  *
  * Copyright (c) 2017, Emilio Palumbo
- * 
- * Functional Annotation Pipeline of Genome Annotation Team in Catalyña (GATC) in Nextflow
+ *
+ * Functional Annotation Pipeline for protein annotation from non-model organisms 
+ * from Genome Annotation Team in Catalyña (GATC) implemented in Nextflow
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
