@@ -13,7 +13,7 @@ The pipeline is build on Nextflow as a woking engine, so it need to be installed
 ```
  wget -qO- get.nextflow.io | bash 
 ```
-The detailed procedure is described here [https://www.nextflow.io/docs/latest/getstarted.html](https://www.nextflow.io/docs/latest/getstarted.html)
+The detailed procedure is described in the [Nextflow documentation](https://www.nextflow.io/docs/latest/getstarted.html)
 
 ### KEGG orthology groups
 Predictions of the KEGG orthology groups (KO) should be obtained outside of the pipeline, i.e. via [KAAS server](http://www.genome.jp/tools/kaas/). 
