@@ -137,6 +137,22 @@ process b2g4pipe {
 }
 }
 
+if(params.blast_annotator != ""){
+
+process blast_annotator {
+ input:
+ file blastXml  from blastXmlResults2
+
+ output:
+ file blastAnnot into blast_annotator_results
+
+ """
+ $params.blast_annotator -in $blastXml -out blastAnnot --url  http://gogo.test.crg.eu/api --format blastxml
+ """
+}
+
+}
+
 process blastDef { 
  input:
  file blastXml from blastXmlResults2
@@ -250,7 +266,7 @@ process 'targetP' {
 }
 
 /* 
-Upload results into DB -- currently DB is implemented with SQLite, but mySQL is also supported
+Upload results into DB -- in current version of the pipeline DB is implemented with SQLite, but mySQL is also supported
 */
 
 if(exists){
@@ -350,6 +366,18 @@ process 'definition_upload'{
   upload_go_definitions.pl -i $defFile -conf $config -mode def -param 'blast_def'
  """
  
+}
+
+process 'blast_annotator_upload'{
+ input: 
+  file blastAnnot from blast_annotator_results
+  file config from config4perl
+ 
+ """
+  awk '$2!=\"#\"{print \$1\"\t\"\$2}' $blastAnnot > two_column_file
+  upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'blast_annotator'
+ """
+
 }
 } 
 //the end of the exists loop for uploading
