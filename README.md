@@ -13,7 +13,7 @@ The pipeline is build on Nextflow as a woking engine, so it need to be installed
 ```
  wget -qO- get.nextflow.io | bash 
 ```
-The detailed procedure is described here [https://www.nextflow.io/docs/latest/getstarted.html] (https://www.nextflow.io/docs/latest/getstarted.html)
+The detailed procedure is described here [https://www.nextflow.io/docs/latest/getstarted.html](https://www.nextflow.io/docs/latest/getstarted.html)
 
 ### KEGG orthology groups
 Predictions of the KEGG orthology groups (KO) should be obtained outside of the pipeline, i.e. via [KAAS server](http://www.genome.jp/tools/kaas/). 
@@ -22,8 +22,8 @@ Note: for the downstream processing of the KO file it is very important to store
 
 ### Configuration file
 The pipeline require as an input the configuration file with specified parameters, such as path to the input files, specie name, KEGG specie abbreviations used to obtain KO groups, and some more.
-The example of configuration file is included into this repository with name main_configuration.config
 
+The example of configuration file is included into this repository with name main_configuration.config
 
 ## Running the pipeline
 
