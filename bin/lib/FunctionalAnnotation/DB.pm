@@ -66,8 +66,6 @@ use FunctionalAnnotation::Utils::Argument qw(rearrange);
 use Bio::Root::Root;
 @ISA = qw(Bio::Root::Root);
 
-#require "$ENV{'Melon'}/mympn_conf.pl";
-
 my %conf =  %::conf;
 my $debug = $conf{'global'}{'debug'};
 my $debugSQL = $conf{'global'}{'debugSQL'};
