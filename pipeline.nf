@@ -24,9 +24,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+// there can be three log levels: off (no messages), info (some main messages), debug (all messages + sql queries)
+
+
 // default parameters
 params.help = false
 params.results = ""
+params.debug="false"
 
 //print usage
 if (params.help) {
@@ -68,6 +73,7 @@ dbFileName = params.resultPath+params.dbname+'.db'
 dbFile = file(dbFileName)
 boolean exists = dbFile.exists();
 
+//println(exists)
 
 // print log info
 
@@ -86,11 +92,20 @@ log.info "FA database 		       : $dbFileName"
 
 // split protein fasta file into chunks and then execute annotation for each chunk
 // chanels for: interpro, blast, signalP, targetP, cdsearch_hit, cdsearch_features
-Channel
+seqData= Channel
  .from(protein)
  .splitFasta(by: params.chunkSize)
- .first()
- .into {seq_file1; seq_file2; seq_file3; seq_file4; seq_file5; seq_file6}
+
+if(params.debug=="TRUE"||params.debug=="true")
+{
+ println("Debugging.. only the first 2 chunks will be processed")
+ (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6) = seqData.take(2).into(6)
+}
+else
+{
+ println("Process entire dataset")
+(seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6) = seqData.into(6)
+}
 
 
 if (params.blastFile == "" ||  params.blastFile == null ){
@@ -172,6 +187,7 @@ process blastDef {
  """
 }
   
+
 
 
 if(!exists){
@@ -351,6 +367,7 @@ process 'kegg_upload'{
 }
 
 
+
 process 'b2go4pipe_upload'{
  input:
  file blastAnnot from b2g4pipeAnnot
@@ -389,6 +406,7 @@ process 'blast_annotator_upload'{
  """
 
 }
+
 
 } 
 //the end of the exists loop for uploading
