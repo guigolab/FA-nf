@@ -432,13 +432,13 @@ process 'generateReport'{
 */
 
 signalP_result2
- .collectFile(name: file('results/' + "signalP.res.tsv"))
+ .collectFile(name: file(params.resultPath + "signalP.res.tsv"))
   .println { "Result saved to file: $it" }
 
 targetP_result2
- .collectFile(name: file('results/' + "targetP.res.tsv"))
+ .collectFile(name: file(params.resultPath + "targetP.res.tsv"))
   .println { "Result saved to file: $it" }
 
 ipscn_result2
-  .collectFile(name: file('results/' + "interProScan.res.tsv"))
+  .collectFile(name: file(params.resultPath + "interProScan.res.tsv"))
   .println { "Result saved to file: $it" }
