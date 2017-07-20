@@ -89,7 +89,7 @@ log.info "FA database 		       : $dbFileName"
 Channel
  .from(protein)
  .splitFasta(by: params.chunkSize)
- .take( 10 )
+ .first()
  .into {seq_file1; seq_file2; seq_file3; seq_file4; seq_file5; seq_file6}
 
 
