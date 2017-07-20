@@ -45,20 +45,6 @@ if (params.help) {
   exit 1
 }
 
-// print log info
-
-log.info ""
-log.info "Functional annotation pipeline"
-log.info ""
-log.info "General parameters"
-log.info "------------------"
-log.info "Protein sequence file        : ${params.proteinFile}"
-log.info "Annotation file              : ${params.gffFile}"
-log.info "BLAST results file           : ${params.blastFile}"
-log.info "Specie name                  : ${params.specie_name}"
-log.info "KEGG species                 : ${params.kegg_species}"
-log.info ""
-
 
 /* 
 * Parse the input parameters
@@ -77,9 +63,25 @@ interpro = params.interproscan
 signalP = params.signalP
 targetP = params.targetP
 dbFileName = params.resultPath+params.dbname+'.db'
+
+//println(dbFileName)
 dbFile = file(dbFileName)
 boolean exists = dbFile.exists();
-//println(exists)
+
+
+// print log info
+
+log.info ""
+log.info "Functional annotation pipeline"
+log.info ""
+log.info "General parameters"
+log.info "------------------"
+log.info "Protein sequence file        : ${params.proteinFile}"
+log.info "Annotation file              : ${params.gffFile}"
+log.info "BLAST results file           : ${params.blastFile}"
+log.info "Specie name                  : ${params.specie_name}"
+log.info "KEGG species                 : ${params.kegg_species}"
+log.info "FA database 		       : $dbFileName"
 
 
 // split protein fasta file into chunks and then execute annotation for each chunk
@@ -98,7 +100,7 @@ process blast{
  file db_path
  
  output: 
- file(blastXml) into (blastXmlResults1, blastXmlResults2)
+ file(blastXml) into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
 
  """
   blastp -db $db_path/$db_name -query $seq -num_threads 8 -evalue  0.00001 -out blastXml -outfmt 5
@@ -114,7 +116,7 @@ process convertBlast{
  file blastFile from blastInput
 
  output:
- file('*.xml') into (blastXmlResults1, blastXmlResults2)
+ file('*.xml') into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
 
  """
   hugeBlast2XML.pl -blast  $blastFile  -n 1000 -out blast.res
@@ -126,7 +128,7 @@ process convertBlast{
 if(params.b2g4pipe != ""){
 process b2g4pipe {
  input:
- file blastXml  from blastXmlResults1
+ file blastXml  from blastXmlResults1.flatMap()
 
  output:
  file blastAnnot into b2g4pipeAnnot
@@ -138,25 +140,28 @@ process b2g4pipe {
 }
 }
 
+
 if(params.blast_annotator != ""){
 
 process blast_annotator {
  input:
- file blastXml  from blastXmlResults2
+ file blastXml  from blastXmlResults2.flatMap()
 
  output:
  file blastAnnot into blast_annotator_results
 
- """
- $params.blast_annotator -in $blastXml -out blastAnnot --url  http://gogo.test.crg.eu/api --format blastxml
- """
+"""
+ perl $params.blast_annotator -in $blastXml -out blastAnnot --url  http://gogo.test.crg.eu/api --format blastxml
+"""
 }
 
 }
+
+
 
 process blastDef { 
  input:
- file blastXml from blastXmlResults2
+ file blastXml from blastXmlResults3.flatMap()
 
  output:
  file protDef into blastDef_results
@@ -185,7 +190,7 @@ process initDB {
  """
 } 
 } else {
- process prepareCofig{
+ process prepareConfig{
  input:
   file config_file
 
@@ -369,17 +374,21 @@ process 'definition_upload'{
  
 }
 
+//
+ 
+ 
 process 'blast_annotator_upload'{
  input: 
   file blastAnnot from blast_annotator_results
   file config from config4perl
  
  """
-  awk '$2!=\"#\"{print \$1\"\t\"\$2}' $blastAnnot > two_column_file
+  awk '\$2!=\"#\"{print \$1\"\t\"\$2}' $blastAnnot > two_column_file
   upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'blast_annotator'
  """
 
 }
+
 } 
 //the end of the exists loop for uploading
 
