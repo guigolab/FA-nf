@@ -46,6 +46,6 @@ The result file generation step can be launched by using the following command:
 
 #### `--results`
 This parameter is specifying the execution of the final steps of the pipeline, where result files are generated
-#### `--resume`
+#### `-resume`
 This Nextflow build-in parameter allow to re-execute processes that has changed or crashed during the pipeline run. Only processes that not finished will be executed.
 More information can be found in the [Nextflow documentation](https://www.nextflow.io/docs/latest/getstarted.html#modify-and-resume)
