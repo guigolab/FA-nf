@@ -185,7 +185,7 @@ process initDB {
   file 'config'  into config4perl
  
  """
- mkdir results
+ mkdir $params.resultPath
  grep -vP '[{}]' $config_file | sed 's/\\s\\=\\s/:/gi' > config
  fa_main.v1.pl init -conf config
  """
