@@ -60,14 +60,17 @@ my $dbFileName = $dbPath.$dbName.'.db';
 my $sqlCommandFile = $RealBin.'/lib/SQLlite.scheme.sql';
 if(!-e $dbFileName)
 {  
-  print "DB $dbName does not exists, will create it!\n";
+if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
+{  print "DB $dbName does not exists, will create it!\n";}
+
   my $systemCommand="sqlite3 $dbFileName < $sqlCommandFile";
   system($systemCommand)==0 or die("Error running system command: <$systemCommand>\n");
-  print "done.\n";
+  
  }
 else
 {
-  print "This DB is already exists! Continue..\n";
+ if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
+ {  print "This DB is already exists! Continue..\n";}
 }
 
 }
@@ -112,8 +115,11 @@ sub prepareInputFiles
  my @returnData;
  my($protName, $protId, $protSeq);
  
- print "outFile: $outFile\n";
- print "chunk: $chunkSize\n";
+if(($config{'loglevel'} eq 'debug'))
+ {
+  print "outFile: $outFile\n";
+  print "chunk: $chunkSize\n";
+ }
  open(OUT, ">$outFile")|| die "Can't open $outFile for writing! $!\n";
  push(@returnData, $outFile);
 
@@ -132,7 +138,8 @@ sub prepareInputFiles
     $protName = $result->{'stable_id'};
     $protId = $result->{'protein_id'};
     $protSeq = $result->{'sequence'};
-    print "Name: $protName\n";
+  if(($config{'loglevel'} eq 'debug'))
+   {  print "Name: $protName\n";}
     $count++;
     print OUT "\>$protName\n$protSeq\n";
     if($count >= $chunkSize)
@@ -140,7 +147,8 @@ sub prepareInputFiles
      close(OUT);
      $countFile++;
      $count=0;
-     print "outFile: $outFile\n";
+  if(($config{'loglevel'} eq 'debug'))
+  {  print "outFile: $outFile\n";}
      $outFile = $tmpFolder.$specieName.'_'.$countFile.'.fa';
      open(OUT, ">$outFile")|| die "Can't open $outFile for writing! $!\n";
      push(@returnData, $outFile);
@@ -153,4 +161,13 @@ sub prepareInputFiles
 }
 
 
-sub quoteE
+sub quoteEveryRecord
+{
+ my @list=@_;
+
+ for(my $i=0;$i<= scalar(@list); $i++)
+ {
+   $list[$i]= '"'.$list[$i].'"';
+ }
+ return @list;
+}

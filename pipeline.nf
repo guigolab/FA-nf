@@ -173,8 +173,6 @@ process blast_annotator {
 
 }
 
-
-
 process blastDef { 
  input:
  file blastXml from blastXmlResults3.flatMap()

@@ -70,6 +70,7 @@ my $cfg = new Config::Simple($confFile);
 my %config = $cfg->vars();
 #my %conf =  %::conf;
 my $debug = $config{'debug'};
+my $loglevel=$config{'loglevel'}
 my $debugSQL = $config{'debugSQL'};
 
 #check whether protein fa and annotation gff3 files exists
@@ -82,7 +83,8 @@ if(!-e $fasta_file)
 if(!-e $annt_file)
  {print "The annotation gff3 file does not exists! Information in DB will be incomplete!\n";}
 
-print "DBname $config{'dbname'}\n"; 
+if(($loglevel eq 'debug')||($loglevel eq 'info'))
+ {print "DBname $config{'dbname'}\n"; }
 
 # Connect to the DB,depending on the engine 
 if(! exists $config{'dbEngine'})
@@ -105,28 +107,29 @@ my %IdsList=();
 if(defined $list_file )
  { %IdsList = &readListFile($list_file);}
 
-
-
 #upload annotation data from gff file
 if(! defined $annt_file || $annt_file eq ''){print STDOUT "The annotation file was not specified, skipped.\n";}
 else
  { 
-   print STDOUT "Upload annotation data from $annt_file\n";
+if(($loglevel eq 'debug')||($loglevel eq 'info'))
+   {print STDOUT "Upload annotation data from $annt_file\n";}
+
    #my $checkResult = &checkGFFData($annt_file);
    my $checkResult = 1;
    if ($checkResult==1)
-   {&uploadGFFData($annt_file, $dbh,\%IdsList, $do_update,'SQLite');}
+   {&uploadGFFData($annt_file, $dbh,\%IdsList, $do_update,'SQLite',$loglevel);}
   else
-  { print STDOUT "Due to errors in GFF file, data will not be uploaded. Correct file first!\n"; 
+  { print STDOUT "Due to the errors in GFF file, data can not be uploaded. Correct the file first!\n"; 
     die;}
  }
 
-print STDOUT "Upload sequences from $fasta_file\n";
+if(($loglevel eq 'debug')||($loglevel eq 'info'))
+{print STDOUT "Upload sequences from $fasta_file\n";}
 #upload sequences from fasta file
 
 if(! defined $fasta_file){print STDOUT "The fasta file was not specified, skipped.\n";}
 else
- {&uploadFastaData($fasta_file, $dbh,\%IdsList,1,$comment,'SQLite');}
+ {&uploadFastaData($fasta_file, $dbh,\%IdsList,1,$comment,'SQLite', $loglevel);}
 
-
-print "done.";
+if(($loglevel eq 'debug')||($loglevel eq 'info'))
+ {print "done.";}

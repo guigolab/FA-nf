@@ -49,6 +49,7 @@ use FunctionalAnnotation::sqlLiteDB;
 use FunctionalAnnotation::uploadData;
 use FunctionalAnnotation::getResults;
 use IO::Handle;
+use Cwd;
 
 &usage if (@ARGV < 1);
 
@@ -162,13 +163,21 @@ die(qq/
  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
  $year += 1900;
  my $date = "$year/$mon/$mday $hour:$min:$sec";
- print '#' x30 ."\n";
+if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
+{
+ print '#' x35 ."\n";
  print '#' x5 . 'Init, '.$date.' '.'#' x5 ."\n";
- print '#' x30 ."\n";
+ print '#' x35 ."\n";
  print "Check DB presence...\n"; 
+}
+ 
  &createSQLliteDB($confFile);
 
- print "Data uploading..\n";
+if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
+{
+  print "Data uploading..\n"; 
+}
+
  my $commandString='';
  $commandString =" -u $updateFlag ";
 
@@ -190,7 +199,13 @@ die(qq/
   $commandString = "perl  $RealBin/import_data.pl ".$commandString;
  }
  
- print "$commandString\n"; 
+if($config{'loglevel'} eq 'debug')
+{ 
+  my $cwd=getcwd();
+  print "Folder: $cwd\n";
+  print "$commandString\n"; 
+}
+
  system($commandString)==0 or die("Error running system command: < $commandString >\n $!");
 
 } 
@@ -254,9 +269,12 @@ Note: Don't forget to specify mandatory options in the main configuration file :
  $year += 1900;
  my $date = "$year/$mon/$mday $hour:$min:$sec";
  
+if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
+{
  print '#' x40 ."\n";
  print '#' x5 . 'Upload KEGG, '.$date.' '.'#' x5 ."\n";
  print '#' x40 ."\n";
+}
 
  my $commandString = "perl $RealBin/load_kegg_KAAS.pl -input $input -rel $kegg_release -conf $configurationFile";
 
@@ -266,8 +284,13 @@ Note: Don't forget to specify mandatory options in the main configuration file :
 if(! defined $kegg_release)
   {die("Please specify release of the KEGG DB!\n Launch 'fa_main upload_kegg -h' to see parameters description\n ");}
 
+if(($config{'loglevel'} eq 'debug'))
+{
+  my $cwd=getcwd();
+  print "Folder: $cwd\n";
+  print "$commandString\n"; 
+}
 
- print "$commandString\n"; 
  system($commandString)==0 or die("Error running system command: <$commandString>\n");
 
 } 
@@ -358,10 +381,12 @@ if(!defined $confFile)
  $year += 1900;
  my $date = "$year/$mon/$mday $hour:$min:$sec";
  
+if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
+{
  print '#' x40 ."\n";
  print '#' x5 . "Program:$soft, ".$date.' '.'#' x5 ."\n";
  print '#' x40 ."\n";
-
+}
 
  my $commandString=""; 
 
@@ -392,7 +417,12 @@ if(defined $list)
 if(defined $do_update)
  {$commandString = "-u $do_update ";}
 
- print "$commandString\n"; 
+if(($config{'loglevel'} eq 'debug'))
+{
+  my $cwd=getcwd();
+  print "Folder: $cwd\n";
+  print "$commandString\n"; 
+}
  system($commandString)==0 or die("Error running system command: <$commandString>\n$!\n");
 
 } 
@@ -463,9 +493,12 @@ if(!defined $confFile)
  $year += 1900;
  my $date = "$year/$mon/$mday $hour:$min:$sec";
  
- print '#' x30 ."\n";
+if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
+{
+ print '#' x40 ."\n";
  print '#' x5 . 'Get results, '.$date.' '.'#' x5 ."\n";
- print '#' x30 ."\n";
+ print '#' x40 ."\n";
+}
 
  my $commandString=""; 
 
@@ -485,7 +518,13 @@ if(defined $list)
 if(defined $list)
  {$commandString = "-l $list ";}
 
- print "$commandString\n"; 
+if(($config{'loglevel'} eq 'debug'))
+{
+  my $cwd=getcwd();
+  print "Folder: $cwd\n";
+  print "$commandString\n"; 
+}
+
  system($commandString)==0 or die("Error running system command: <$commandString>\n$!\n");
 
 }

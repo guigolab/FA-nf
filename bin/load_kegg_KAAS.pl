@@ -77,7 +77,10 @@ my $cfg = new Config::Simple($confFile);
 my %config = $cfg->vars();
 
 #my %conf =  %::conf;
-my $debug = $config{'debug'};
+#my $debug = $config{'debug'};
+
+my $loglevel = $config{'loglevel'};
+
 #kegg codes for orthologs to include in the DB
 my @kegg_codes = split(",",$config{'kegg_species'});
 
@@ -120,7 +123,7 @@ while (my $line = <FH>) {
 }
 close FH;
 
-print STDOUT "Number of unique KEGG groups:",scalar(keys %keggs),"\n";
+if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {print STDOUT "Number of unique KEGG groups:",scalar(keys %keggs),"\n";}
 #upload KEGG group information into DB - this will speed-up uploading process.. There are usually fewer groups then proteins assigned to them
 
 &uploadKeggInformation($dbh, \%keggs,\%organisms,$config{'dbEngine'});
@@ -154,7 +157,7 @@ sub uploadKeggInformation
    { $kegg_group_sql_insert = qq{ INSERT INTO kegg_group(kegg_group_id, name,definition,pathway,module,class,db_links,db_id,kegg_release) VALUES (NULL,\"$hash->{'NAME'}\",\"$hash->{'DEFINITION'}\",\"$hash->{'PATHWAY'}\",\"$hash->{'MODULE'}\",\"$hash->{'CLASS'}\", \"$hash->{'DBLINKS'}\",\"$kegg_id\",\"$kegg_release\")}; }
   else
    { $kegg_group_sql_insert = qq{ INSERT INTO kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", kegg_release=\"$kegg_release\";};}
-  print "SQL: $kegg_group_sql_insert\n";
+  if(($loglevel eq 'debug' )||($loglevel eq 'info' )){ print "SQL: $kegg_group_sql_insert\n";}
   my $kegg_group_id = $dbh->select_update_insert("kegg_group_id", $kegg_group_sql_select, $kegg_group_sql_update, $kegg_group_sql_insert, $do_update);
   #small patch for SQLite - the current insert function could not return id of the last inserted record...
   if(!defined $kegg_group_id)

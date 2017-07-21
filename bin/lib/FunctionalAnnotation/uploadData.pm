@@ -54,7 +54,7 @@ return %returnData;
 #
 sub uploadFastaData
 {
- my($inFile, $dbh, $idList, $do_update,$comment, $engine) =@_;
+ my($inFile, $dbh, $idList, $do_update,$comment, $engine, $loglevel) =@_;
 
   if(!defined $engine){$engine ='mydsql'};
  my $numberElements = scalar keys %{$idList}||'';
@@ -92,7 +92,8 @@ sub uploadFastaData
         my $seqString4SHA=$seq;
         $seqString4SHA=~s/\*$//;
 	my $sha1 =   sha1_hex($seqString4SHA);
-	$debug && print STDOUT "Stable_id $stable_id\nSequence $seq\n\n";
+       if(($loglevel eq 'debug'))
+	{print STDOUT "Stable_id $stable_id\nSequence $seq\n\n";}
 	
 	if(($processFlag eq 'all')||(exists $idList->{$stable_id})) {
 		# check if protein already exists (yes && do_update => update record; no => insert new protein)
@@ -112,8 +113,9 @@ sub uploadFastaData
 
 	#	my $protein_sql_update = qq{ UPDATE protein SET stable_id=\"$stable_id\",protein_name=\"$stable_id\",sequence=\"$seq\",gene_id=\"$gene_id\";};
        #		my $protein_sql_insert = qq{ INSERT INTO protein SET stable_id=\"$stable_id\",protein_name=\"$stable_id\",sequence=\"$seq\",gene_id=\"$gene_id\";};
-                
-               print "$protein_sql_insert\n$protein_sql_select\n$protein_sql_update\n";		
+             if(($loglevel eq 'debug'))   
+               {print "$protein_sql_insert\n$protein_sql_select\n$protein_sql_update\n";		}
+
 		my $protein_id = $dbh->select_update_insert("protein_id", $protein_sql_select, $protein_sql_update, $protein_sql_insert, $do_update);
 	}
 
@@ -127,7 +129,7 @@ sub uploadFastaData
 
 sub uploadGFFData
 {
- my($inFile, $dbh, $idList,$do_update, $engine)=@_;
+ my($inFile, $dbh, $idList,$do_update, $engine, $loglevel)=@_;
 
  my $numberElements = scalar keys %{$idList}||'';
  my $processFlag = 'part';
@@ -160,7 +162,7 @@ open FH,"$inFile";
     if($c_prot_id ne '')
      {
       #if there was some protein before, insert it into DB
-      &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh, $engine);
+      &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh, $engine,$loglevel);
       $c_prot_id='';
      }
 
@@ -173,14 +175,19 @@ open FH,"$inFile";
      $duplicated=0;
      # check if there is already a gene with this gene_name in the DB
      my $selectString ="SELECT gene_id FROM gene WHERE gene_name=\"$gene_name\"";
-     print "$selectString\n";
+    if(($loglevel eq 'debug'))
+     {print "$selectString\n";}
      my @res= @{$dbh->select_from_table($selectString,$dbh)};
      # if YES, then do not insert
      if (scalar(@res)) {
-   	print STDOUT "NOTICE: $gene_name already exists in the DB. Skipping\n";
+     if(($loglevel eq 'debug')||($loglevel eq 'info'))
+      {	print STDOUT "WARN: $gene_name already exists in the DB. Skipping\n"; }
+
   	$duplicated=1;
         $g_id = $res[0]->{'gene_id'};
-        print "GENE_ID: $g_id\n";
+     if(($loglevel eq 'debug'))
+      {  print "GENE_ID: $g_id\n";}
+
         next;
       }
       # insert new gene
@@ -192,8 +199,12 @@ open FH,"$inFile";
      {$gene_sql_insert = qq{ INSERT INTO gene(gene_id, gene_name,start,end,strand)  VALUES (NULL,\"$gene_name\", \"$gene_start\", \"$gene_end\", \"$gene_strand\");};}
     else
      { $gene_sql_insert = qq{ INSERT INTO gene SET gene_name=\"$gene_name\", start=\"$gene_start\", end=\"$gene_end\", strand=\"$gene_strand\";};}
-     print STDOUT "$gene_sql_insert";
-     print STDOUT "SQL CODE: $gene_sql_insert\n" if $duplicated==0;
+   if(($loglevel eq 'debug'))
+     {
+      print STDOUT "$gene_sql_insert";
+      print STDOUT "SQL CODE: $gene_sql_insert\n" if $duplicated==0;
+    }
+
      $g_id =  $dbh->insert_set($gene_sql_insert,$dbh) if $duplicated==0;
     if(!defined $g_id)
      {
@@ -202,8 +213,8 @@ open FH,"$inFile";
        #print Dumper($results);
        $g_id=$results->[0]->{'id'};
      }
-   
-     print "GENE_ID: $g_id\n";
+    if(($loglevel eq 'debug'))   
+     { print "GENE_ID: $g_id\n";}
    }
    #elsif ($elms[$type_ix] eq 'CDS') {
 #29/01/2016 - Francisco's annotation does not contain transcript field, but CDs
@@ -239,7 +250,7 @@ if($prot_id eq '')
              {$start = $elms[$start_ix];}
 	    next;
 	} elsif ($c_prot_id ne $prot_id) {
-	    &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh,$engine);
+	    &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh,$engine,$loglevel);
 	    $c_prot_id=$prot_id;
 	    $c_strand=$elms[$strand_ix];
 	    $c_contig=$elms[$contig_ix];
@@ -251,7 +262,7 @@ if($prot_id eq '')
 close FH;
 
 #update tailing record
- &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh, $engine);
+ &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh, $engine, $loglevel);
 
 } #end sub
 
@@ -260,7 +271,7 @@ close FH;
 #
 sub insertProtein
 {
- my($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh, $engine) =@_;
+ my($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh, $engine,$loglevel) =@_;
 
  if(!defined $engine){$engine = 'mysql';}
 
@@ -278,7 +289,8 @@ sub insertProtein
      # check if there is already a protein with this stable_id in the DB
       # if YES, then do not insert
       if (scalar(@res)) {
-  	print STDOUT "NOTICE: $c_prot_id already exists in the DB. SKipping\n";
+       if(($loglevel eq 'debug')||($loglevel eq 'info'))
+  	{print STDOUT "NOTICE: $c_prot_id already exists in the DB. SKipping\n";}
  	$duplicated=1; 
       }
       # insert new protein
@@ -292,7 +304,8 @@ sub insertProtein
         $protein_sql_insert= qq{ INSERT INTO protein SET stable_id=\"$c_prot_id\", seq_id=\"$c_contig\", cds_start=\"$start\", cds_end=\"$end\", cds_strand=\"$c_strand\", gene_id=\"$g_id\";};
       }
       #print  "SQL CODE: $protein_sql_insert\n";
-      print STDOUT "SQL CODE: $protein_sql_insert\n" if $duplicated==0;
+     if(($loglevel eq 'debug'))
+      {  print STDOUT "SQL CODE: $protein_sql_insert\n" if $duplicated==0;}
       $dbh->insert_set($protein_sql_insert) if $duplicated==0;
      }
 
@@ -301,7 +314,7 @@ sub insertProtein
 
 sub updateProteinDefinition
 {
- my ($annotData,$dbh,$update,$source, $engine,$keyType)=@_;
+ my ($annotData,$dbh,$update,$source, $engine,$keyType, $loglevel)=@_;
  my $debugSQL = 1;
  my ($selectString,$res,$proteinId,$oldDefinition,$shaData);
  my @protList=();
@@ -323,7 +336,8 @@ sub updateProteinDefinition
 
     if(!defined $proteinId)
      {
-       print STDERR "There is no protein_id for $protItem, skipped!\n";
+     if(($loglevel eq 'debug')||($loglevel eq 'info'))
+      {  print STDERR "There is no protein_id for $protItem, skipped!\n";}
        next;
      }
      #update blast2go definition in protein table
@@ -334,7 +348,8 @@ sub updateProteinDefinition
      my $definition = $oldDefinition.$source.':'.join(' ',@tmpDefinition);
       
      $updateString = "UPDATE protein SET definition =\"$definition\" where protein_id='$proteinId';";
-     print "$updateString\n";
+    if(($loglevel eq 'debug'))
+    { print "$updateString\n";}
      $dbh->update_set($updateString);
    }
 
@@ -345,7 +360,7 @@ return 1;
 #
 sub uploadGoAnnotation
 {
- my ($annotData,$dbh,$update,$source, $engine)=@_;
+ my ($annotData,$dbh,$update,$source, $engine, $loglevel)=@_;
 
 # print "INSIDE upload Go\n'$debugSQL'\n"; die;
  my $debugSQL = 1;
@@ -355,14 +370,15 @@ sub uploadGoAnnotation
   {
     #select protein_id from DB
     $selectString = "SELECT protein_id, sha1 from protein where stable_id like '$protItem'";
-    print "SQL:$selectString\n";
+   if(($loglevel eq 'debug')){   print "SQL:$selectString\n";}
     $res = $dbh->select_from_table($selectString);
     $proteinId=$res->[0]->{'protein_id'};
     $shaData=$res->[0]->{'sha1'};
 
     if(!defined $proteinId)
      {
-       print STDERR "There is no protein_id for $protItem, skipped!\n";
+      if(($loglevel eq 'debug')||($loglevel eq 'info'))
+       {print STDERR "There is no protein_id for $protItem, skipped!\n";}
        next;
      }
   
@@ -416,7 +432,7 @@ sub uploadGoAnnotation
       {$insertString =  "INSERT INTO protein_go(protein_go_id,go_term_id,protein_id,source) VALUES(NULL,\"$goId\",\"$proteinId\", \"$source\")";}
         else
         {$insertString = "INSERT INTO protein_go SET go_term_id=$goId, protein_id=$proteinId, source=\"$source\"";}
-        print "$insertString\n";
+       if(($loglevel eq 'debug')){        print "$insertString\n";}
         $proteinGoId = $dbh->insert_set($insertString);
        }
    #die;
@@ -428,7 +444,7 @@ sub uploadGoAnnotation
 
 sub uploadInterProResults
 {
- my ($dbh, $ipscanHash, $engine)= @_;
+ my ($dbh, $ipscanHash, $engine,$loglevel)= @_;
 
  my $update =0;
  my ($protValue,$inputseq_id, $checksum, $length, $method, $dbentry, $dbdesc, $start, $end, $evalue, $status, $date, $ip_id, $ip_desc, $go) ;
@@ -528,7 +544,7 @@ return \%retGOData;
 
 sub uploadBlastResults
 {
- my ($dbh, $blastData, $engine)= @_;
+ my ($dbh, $blastData, $engine, $loglevel)= @_;
  my $update =0;
 
  my %tmpHash=();
@@ -543,7 +559,7 @@ sub uploadBlastResults
     $shaData=$res->[0]->{'sha1'};
     if(!defined $proteinId)
      {
-       print "There is no protein_id for $protItem, skipped!\n";
+       if(($loglevel eq 'debug')||($loglevel eq 'info')){ print "There is no protein_id for $protItem, skipped!\n";}
        next;
      }
 
@@ -574,7 +590,11 @@ sub uploadBlastResults
       {$insertString = "INSERT INTO blast_hit SET protein_id=$proteinId, hit_id=\"$tmpHash{'hit_id'}\",$setString ";}
      $selectString = "SELECT blast_hit_id from blast_hit where protein_id=$proteinId and hit_id=\"$tmpHash{'hit_id'}\"";
      $updateString = "UPDATE blast_hit SET $setString where protein_id=$proteinId and hit_id=\"$tmpHash{'hit_id'}\"";
+   if(($loglevel eq 'debug')){
+     print $selectStrinng."\n"; 
      print $insertString."\n";
+     print $updateString."\n";
+   }
      $blastHitId = $dbh->select_update_insert("blast_hit_id", $selectString, $updateString, $insertString, $update);
     }#foreach blast result
   
@@ -624,13 +644,13 @@ sub updateAnnotationStatus
 
  #lets reset to zero status any of the protein in DB
   my $updateString = "UPDATE protein set status = 0";
-  print "SQL_CODE:$updateString\n";
+if(($loglevel eq 'debug')){   print "SQL_CODE:$updateString\n";}
   $dbh->update_set($updateString);
  
  #then lets go through all tables and update status to 1 in case if protein had a record in selected table_name
  #definition blast2go and kegg
   $updateString = "UPDATE protein set status = 1 where definition is not null and definition not like ''";
-  print "SQL_CODE:$updateString\n" ;
+ if(($loglevel eq 'debug')){  print "SQL_CODE:$updateString\n" ;}
   $dbh->update_set($updateString);
 #blast hits, interpro domains and keggs
 #my @tableList = qw(blast_hit domain protein_ortholog signalP);
@@ -638,7 +658,7 @@ my @tableList = qw(domain protein_ortholog signalP);
  foreach my $dbItem(@tableList)
  {
    $updateString = "UPDATE protein set status = 1 where protein_id in (select distinct protein_id from $dbItem )";
-   print "SQL_CODE:$updateString\n";
+  if(($loglevel eq 'debug')){  print "SQL_CODE:$updateString\n";}
    $dbh->update_set($updateString);
  }
  
@@ -701,7 +721,7 @@ sub uploadCDsearchData
 
      $selectString = "SELECT $tableId from $table where protein_id=$proteinId and $uniqField=\"$tmpHash{$fieldName}\"";
      $updateString = "UPDATE $table SET $setString where protein_id=$proteinId and $uniqField=\"$tmpHash{$fieldName}\"";
-     print $insertString."\n";
+    if(($loglevel eq 'debug')){   print $insertString."\n".$updateString."\n";}
      $blastHitId = $dbh->select_update_insert("blast_hit_id", $selectString, $updateString, $insertString, $update);
 
     }#foreach result line - each domain or feature, do its uploading
@@ -893,7 +913,7 @@ elsif($line=/^\#\s+/)
  if(scalar @tmp > 4)  
   {$blastFormat = 'blasttable';}
 
- print "blastFormat: $blastFormat\n";
+ if(($loglevel eq 'debug')){  print "blastFormat: $blastFormat\n";}
  
 
 my $in = new Bio::SearchIO(-format => $blastFormat,
@@ -1033,7 +1053,7 @@ sub checkGFFData
     #print "$line\n $transcriptDirection\n";
     if($tmp[8]!~/ID\=/)
      {
-      print STDOUT  "Line $count: gene description does not contain ID!\n$line\n";
+      if(($loglevel eq 'debug')||($loglevel eq 'info')){  print STDOUT  "Line $count: gene description does not contain ID!\n$line\n";}
       $returnData=0;
      }
   }
@@ -1042,12 +1062,12 @@ sub checkGFFData
    $exonDirection = $tmp[6];
    if($transcriptDirection ne $exonDirection)
    {
-    print STDOUT "Line $count: strand of the transcript is contrary to  ones in the gene!\n $line\n";
+    if(($loglevel eq 'debug')||($loglevel eq 'info')){ print STDOUT "Line $count: strand of the transcript is contrary to  ones in the gene!\n $line\n";}
     $returnData = 0;
    }
    if($tmp[8] !~/Target\=/)
    {
-     print STDOUT  "Line $count: CDS description doesnot contain Target!\n$line\n";
+     if(($loglevel eq 'debug')||($loglevel eq 'info')){ print STDOUT  "Line $count: CDS description doesnot contain Target!\n$line\n";}
       $returnData=0;
    }
   }
@@ -1090,7 +1110,7 @@ sub insert_set_sqlite {
     my $fieldString = join(',', @fields);
     my $valueString = join(',', @values);
     my $insString = "INSERT INTO $table_name($fieldString) VALUES($valueString)";
-    print STDERR "### doing insert  $insString ###\n";
+    if(($loglevel eq 'debug')){ print STDERR "### doing insert  $insString ###\n";}
     my $sth = $dbh->prepare_stmt($insString);
     $sth->execute() || warn "insert failed : $DBI::errstr";
     my $select = "SELECT last_insert_rowid() as id ";
@@ -1104,7 +1124,7 @@ sub insert_set {
     my ($dbh, $stmt, $table_name) = @_;
     #print "here" . $stmt . "\n";
     my $s = "INSERT INTO $table_name SET  $stmt";
-    print STDERR "### doing insert  $s ###\n";
+    if(($loglevel eq 'debug')){ print STDERR "### doing insert  $s ###\n";}
     my $sth = $dbh->prepare_stmt($s);
     $sth->execute() || warn "insert failed : $DBI::errstr";
     my $dbi = $sth->{'mysql_insertid'};
