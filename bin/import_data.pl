@@ -70,7 +70,7 @@ my $cfg = new Config::Simple($confFile);
 my %config = $cfg->vars();
 #my %conf =  %::conf;
 my $debug = $config{'debug'};
-my $loglevel=$config{'loglevel'}
+my $loglevel=$config{'loglevel'};
 my $debugSQL = $config{'debugSQL'};
 
 #check whether protein fa and annotation gff3 files exists
