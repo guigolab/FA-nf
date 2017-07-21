@@ -100,6 +100,7 @@ sub prepareInputFiles
  my $tmpFolder = $configRecord->{'tmp_dir'};
  my $resultFolder = $configRecord->{'resultPath'};
  my $specieName = $configRecord->{'specie_name'};
+ my $loglevel =  $configRecord->{'loglevel'};
  
  $tmpFolder = $resultFolder.$tmpFolder;
  my $count=0;
@@ -115,7 +116,7 @@ sub prepareInputFiles
  my @returnData;
  my($protName, $protId, $protSeq);
  
-if(($config{'loglevel'} eq 'debug'))
+if(($loglevel eq 'debug'))
  {
   print "outFile: $outFile\n";
   print "chunk: $chunkSize\n";
@@ -138,7 +139,7 @@ if(($config{'loglevel'} eq 'debug'))
     $protName = $result->{'stable_id'};
     $protId = $result->{'protein_id'};
     $protSeq = $result->{'sequence'};
-  if(($config{'loglevel'} eq 'debug'))
+  if(($loglevel eq 'debug'))
    {  print "Name: $protName\n";}
     $count++;
     print OUT "\>$protName\n$protSeq\n";
@@ -147,7 +148,7 @@ if(($config{'loglevel'} eq 'debug'))
      close(OUT);
      $countFile++;
      $count=0;
-  if(($config{'loglevel'} eq 'debug'))
+  if(($loglevel eq 'debug'))
   {  print "outFile: $outFile\n";}
      $outFile = $tmpFolder.$specieName.'_'.$countFile.'.fa';
      open(OUT, ">$outFile")|| die "Can't open $outFile for writing! $!\n";
