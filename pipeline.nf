@@ -185,10 +185,7 @@ process blastDef {
  """
 }
   
-
-
-
-if(!exists){
+ 
 
 process initDB {
 
@@ -197,27 +194,14 @@ process initDB {
 
  output:
   file 'config'  into config4perl
- 
- """
- mkdir -p $params.resultPath
- grep -vP '[{}]' $config_file | sed 's/\\s\\=\\s/:/gi' > config
- fa_main.v1.pl init -conf config
- """
-} 
-} else {
- process prepareConfig{
- input:
-  file config_file
 
- output:
-  file 'config'  into config4perl
- 
- """
- grep -vP '[{}]' $config_file | sed 's/\\s\\=\\s/:/gi' > config
- """
-
-}
- println "File $dbFile exists, continue";
+ script:
+ command = "mkdir -p $params.resultPath\n"
+ command += "grep -vP '[{}]' $config_file | sed 's/\\s\\=\\s/:/gi' > config\n"
+ if (!exists) {
+     command += "fa_main.v1.pl init -conf config"
+ } 
+ command
 }
 
 
@@ -290,8 +274,6 @@ process 'targetP' {
 Upload results into DB -- in current version of the pipeline DB is implemented with SQLite, but mySQL is also supported
 */
 
-if(exists){
-
 process 'signalP_upload'{
  input:
  file signalP_res from signalP_result1
@@ -362,7 +344,7 @@ process 'kegg_upload'{
  load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf $config
  """
 }
-}
+
 
 
 
