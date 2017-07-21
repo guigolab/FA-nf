@@ -72,6 +72,13 @@ my %config = $cfg->vars();
 my $debug = $config{'debug'};
 my $update=0;
 
+my $logFile =$config{'resultPath'}.$config{'stdoutLog'};
+ my $errFile =$config{'resultPath'}.$config{'stderrLog'};
+ open OUTPUT, '>>', $logFile or die $!;
+ open ERROR,  '>>', $errFile  or die $!;
+ STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
+ STDERR->fdopen( \*ERROR,  'w' ) or die $!;
+
 my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
  $year += 1900;
  my $date = "$year/$mon/$mday $hour:$min:$sec";
