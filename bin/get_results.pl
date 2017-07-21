@@ -88,10 +88,8 @@ else
 #$dbh->do('SET SESSION group_concat_max_len = 320000');
 #my $sth = $dbh->do('SET @@group_concat_max_len = 320000');
 
-if(! defined $config{'results_dir'} )
-{$config{'results_dir'} = 'results';}
 
-my $outputFolder=$config{'resultPath'}.$config{'results_dir'};
+my $outputFolder=$config{'resultPath'};
 system("mkdir $outputFolder") if (!-d $outputFolder);
 
 my @listIds=();
