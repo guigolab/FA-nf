@@ -107,7 +107,7 @@ else
 
 my $outputFolder=$config{'resultPath'};
 system("mkdir $outputFolder") if (!-d $outputFolder);
-my $outputFile = $outputFolder.'/'.$config{'specie_name'}.'.gff3';
+my $outputFile = $outputFolder.'/'.$config{'specie_name'}.'.gff';
 
 my @listIds=();
 #create a list with protein ids, if ones is setted up
