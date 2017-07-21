@@ -101,8 +101,9 @@ if(defined $listFile)
 
 #First - need to fulfill go term information if there are go terms without name and term_type fields fulfilled. To fulfill GO term information
 #I will use file gene_ontology_ext.obo in bin/ folder. This file is taken from Gene Ontology consortium http://www.geneontology.org/ontology/gene_ontology.obo
- my $ontologyFile=$RealBin.'/dataset/gene_ontology_ext.obo';
+ my $ontologyFile=$RealBin.'/gene_ontology_ext.obo';
 
+print "Ontology File is here: $ontologyFile\n";
 &uploadGOInfo($dbh, $ontologyFile);
 
 #Then need to update annotation status to 'annotated' for those proteins with hits in any source of evidence (including blast). 
