@@ -71,7 +71,7 @@ my $debug = $conf{'global'}{'debug'};
 my $debugSQL = $conf{'global'}{'debugSQL'};
 my $mysql_path =$conf{'default'}{'mysql_path'};
 my $tmpdir = $conf{'default'}{'tmp_dir'};
-my $loglevel=$conf{'loglevel'};
+#my $loglevel=$conf{'loglevel'};
 
 sub new {
   my ($caller) =shift @_;
@@ -120,7 +120,7 @@ sub new {
    }
   elsif($engine eq 'sqlite')
   {
-   if(($loglevel eq 'debug')||($loglevel eq 'info')){ print "LOG: DBI:SQLite:database=$db\n"; }
+   #print " DBI:SQLite:database=$db\n"; 
    my $dsn = "DBI:SQLite:dbname=$db";
    $dbh = DBI->connect($dsn, "", "", { RaiseError => 1 }) 
                       or die $DBI::errstr;
@@ -216,7 +216,7 @@ sub truncate_table {
     my ($self,$table_name) = @_;
 
     my $par=qq{truncate $table_name;};
-    if(($loglevel eq 'debug')){ print STDOUT "SQL CODE: $par\n";}
+    #if(($loglevel eq 'debug')){ print STDOUT "SQL CODE: $par\n";}
 
     my $sth=$self->prepare_stmt($par);
     $sth->execute();
@@ -253,7 +253,7 @@ sub update_set {
 sub select_from_table {
     my ($self, $par) = @_;
 
-    if(($loglevel eq 'debug')){ $debugSQL && print STDOUT "SQL CODE: $par\n";}
+    #if(($loglevel eq 'debug')){ $debugSQL && print STDOUT "SQL CODE: $par\n";}
     my $sth = $self->prepare_stmt($par);
     $sth->execute();
     $self->{'sth'} = $sth;
@@ -294,7 +294,7 @@ sub delete_from_table {
     
     my $sth = $self->prepare_stmt($par);
     
-    if(($loglevel eq 'debug')){ $debugSQL && print STDOUT "SQL CODE: $par\n";}
+    #if(($loglevel eq 'debug')){ $debugSQL && print STDOUT "SQL CODE: $par\n";}
     my $dbID;
     $sth->execute();
     $dbID = $sth->rows;
@@ -309,7 +309,7 @@ sub check_return {
     my $sth = $self->sth;
     my $r = $sth->rows;
     if ($r == 0) {
-	if(($loglevel eq 'debug')){ print STDERR "DB:check_return => CANNOT FIND THIS $value IN THE $table_name TABLE AND $table_column COLUMN\n";}
+	print STDERR "DB:check_return => CANNOT FIND THIS $value IN THE $table_name TABLE AND $table_column COLUMN\n";
     }
     $self->{'_check_return'} = $r;
     return $self->{'_check_return'};
@@ -324,10 +324,10 @@ sub select_update_insert {
     my $res = $res[0];
     my $dbID = $res->{$table_column};
     if (defined $dbID) {
-	if(($loglevel eq 'debug')){ print STDOUT "This $table_column already exists\n$sqlupdate => id: $dbID\n";}
+	#if(($loglevel eq 'debug')){ print STDOUT "This $table_column already exists\n$sqlupdate => id: $dbID\n";}
 	if ($do_update && $sqlupdate) {
 	    #$sqlupdate=~s/;$/ WHERE $table_column=\"$dbID\";/;     
-            if(($loglevel eq 'debug')){ print "$sqlupdate\n";}
+            #if(($loglevel eq 'debug')){ print "$sqlupdate\n";}
 	    my $sth = $self->prepare_stmt($sqlupdate);
 	    $debugSQL && print STDOUT "SQL CODE: $sqlupdate\n";
 	    $sth->execute();
