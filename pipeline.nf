@@ -413,7 +413,7 @@ process 'generateGFF3File'{
   file config from config4perl
 
  output:
-  file(params.resultPath + params.specie_name+".gff"))
+  file(params.resultPath + params.specie_name+".gff")
   
  """
  get_gff3.pl -conf $config
