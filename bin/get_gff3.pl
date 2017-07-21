@@ -72,6 +72,19 @@ my %config = $cfg->vars();
 my $debug = $config{'debug'};
 my $update=0;
 
+my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+ $year += 1900;
+ my $date = "$year/$mon/$mday $hour:$min:$sec";
+
+if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
+{
+ print '#' x35 ."\n";
+ print '#' x5 . 'Generate results in gff format, '.$date.' '.'#' x5 ."\n";
+ print '#' x35 ."\n";
+ 
+}
+
+
 #connect to mysqlDB
 if(!defined $config{'dbEngine'}){$config{'dbEngine'} = 'mysql';}
 my $dbh;
@@ -85,10 +98,7 @@ else
   $dbh= FunctionalAnnotation::DB->new('sqlite',$dbName);
 }
 
-if(! defined $config{'results_dir'})
-{$config{'results_dir'} = 'results';}
-
-my $outputFolder=$config{'resultPath'}.$config{'results_dir'};
+my $outputFolder=$config{'resultPath'};
 system("mkdir $outputFolder") if (!-d $outputFolder);
 my $outputFile = $outputFolder.'/'.$config{'specie_name'}.'.gff3';
 

@@ -401,6 +401,8 @@ process 'generateResultFiles'{
   file config from config4perl
  
  """
+  mkdir dataset
+  wget -o dataset/gene_ontology_ext.obo http://www.geneontology.org/ontology/obo_format_1_2/gene_ontology_ext.obo
   get_results.pl -conf $config
  """
 }
