@@ -400,10 +400,7 @@ process 'generateResultFiles'{
  input: 
   file config from config4perl
  
- output:
-  file(params.resultPath + 'go_terms.txt') 
-
- """
+  """
   get_results.pl -conf $config
  """
 }
@@ -411,9 +408,6 @@ process 'generateResultFiles'{
 process 'generateGFF3File'{
  input: 
   file config from config4perl
-
- output:
-  file(params.resultPath + params.specie_name+".gff")
   
  """
  get_gff3.pl -conf $config
