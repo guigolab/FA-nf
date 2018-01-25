@@ -63,7 +63,7 @@ use Data::Dumper;
 use File::Spec;
 #use vars qw(@ISA);
 use FunctionalAnnotation::Utils::Argument qw(rearrange);
-use Bio::Root::Root;
+#use Bio::Root::Root;
 #@ISA = qw(Bio::Root::Root);
 
 my %conf =  %::conf;
