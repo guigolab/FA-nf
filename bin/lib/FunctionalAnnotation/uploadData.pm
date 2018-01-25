@@ -9,12 +9,12 @@
               Based on the scripts written by Guglielmo Roma
 
 =head2 Description
-        
+
              This module have method to upload sequence and annotation data into database
-             
+
 =head2 Example
-  
-            
+
+
 =cut
 
 package FunctionalAnnotation::uploadData;
@@ -27,8 +27,8 @@ use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use Data::Dumper;
 use Digest::SHA1  qw(sha1_hex);
-use Bio::SeqIO;
-use Bio::SearchIO;
+#use Bio::SeqIO;
+#use Bio::SearchIO;
 
 
 #######################################################################
@@ -46,7 +46,7 @@ sub readListFile
   chomp($line);
   $returnData{$line}=1;
  }
- close(INFILE); 
+ close(INFILE);
 return %returnData;
 }
 
@@ -62,15 +62,47 @@ sub uploadFastaData
  if($numberElements eq '')
    {$processFlag ='all';}
 
- my $in = Bio::SeqIO->new(-file => "$inFile", '-format' => 'Fasta');
+
+  #update 25/01/2018 -- Bioperl does not work anymore in CRG cluster, so I will need to substitute it. Actually, I use it only to read fasta sequence
+  my %seqData=();
+  my $prevSeq='';
+  my $prevHeader='';
+  my $headee='';
+
+  open(IN, $inFile)||die "Cant read fasta file $inFile !\n$!\n";
+   while(my $line=<IN>)
+    {
+      chomp($line);
+      if($line=~/^\>(\S+)/)
+      {
+        $header=$1;
+        if($prevSeq ne ''){
+          $seqData{$prevHeader} = $prevSeq;
+          $prevSeq='';
+        }
+        $prevHeader=$header;
+      }
+      else{
+        $prevSeq .=$line;
+      }
+    }
+  close(IN);
+  $seqData{$prevHeader} = $prevSeq;
+
+
+ #my $in = Bio::SeqIO->new(-file => "$inFile", '-format' => 'Fasta');
 
   my $commString ='';
  if(defined $comment && $comment ne '')
  {$commString = ", comment=\"$comment\""; }
 
- while (my $seqio = $in->next_seq) {
-	my $stable_id = $seqio->display_id;
-        
+
+
+ #while (my $seqio = $in->next_seq) {
+ foreach my $seqKey (keys %seqData){
+	#my $stable_id = $seqio->display_id;
+  my $stable_id = $seqKey;
+
  #Small patch to Wheat genome - Francisco added protein length into the header of fasta sequence, now its look like 'NNN_186'
  #and pipeline recognize protein name as new one  even if protein with name NN is already in DB.
        #if($stable_id =~/^(TAES1a\S+)\_\d+$/)
@@ -85,35 +117,37 @@ sub uploadFastaData
 
    #print "STABLE id : $stable_id, $processFlag, $do_update\n";
 
-	my $seq = $seqio->seq;
+	#my $seq = $seqio->seq;
+  my $seq = $seqData{$seqKey};
+
 #10/02/2016 Vlasova AV
-#patch for comparing  annotations - it can be that the two sequences are differ from each other just by presence or absence stop codone *. from FA point of view, this sequences will remain the same, 
+#patch for comparing  annotations - it can be that the two sequences are differ from each other just by presence or absence stop codone *. from FA point of view, this sequences will remain the same,
 #but sha1 checksum will be very different.
         my $seqString4SHA=$seq;
         $seqString4SHA=~s/\*$//;
-	my $sha1 =   sha1_hex($seqString4SHA);
+	      my $sha1 =   sha1_hex($seqString4SHA);
        if(($loglevel eq 'debug'))
 	{print STDOUT "Stable_id $stable_id\nSequence $seq\n\n";}
-	
+
 	if(($processFlag eq 'all')||(exists $idList->{$stable_id})) {
 		# check if protein already exists (yes && do_update => update record; no => insert new protein)
 		my $protein_sql_select = qq{ SELECT protein_id FROM protein WHERE stable_id=\"$stable_id\" };
                 my ($protein_sql_update, $protein_sql_insert);
                 if($engine eq 'SQLite')
-                   { 
+                   {
                     $protein_sql_update= qq{ UPDATE protein SET stable_id=\"$stable_id\",protein_name=\"$stable_id\",sequence=\"$seq\", sha1=\"$sha1\" $commString where stable_id=\"$stable_id\";};
-		    $protein_sql_insert = qq{ INSERT INTO protein (protein_id,stable_id, protein_name, sequence,sha1,gene_id) VALUES (NULL,\"$stable_id\",\"$stable_id\",\"$seq\",\"$sha1\",0);};                       
+		    $protein_sql_insert = qq{ INSERT INTO protein (protein_id,stable_id, protein_name, sequence,sha1,gene_id) VALUES (NULL,\"$stable_id\",\"$stable_id\",\"$seq\",\"$sha1\",0);};
                   }
                else
-                   { 
+                   {
                     $protein_sql_update= qq{ UPDATE protein SET stable_id=\"$stable_id\",protein_name=\"$stable_id\",sequence=\"$seq\", sha1=\"$sha1\" $commString stable_id=\"$stable_id\";};
 		    $protein_sql_insert = qq{ INSERT INTO protein SET stable_id=\"$stable_id\",protein_name=\"$stable_id\",sequence=\"$seq\", sha1=\"$sha1\", gene_id="0" $commString;};
                    }
-    
+
 
 	#	my $protein_sql_update = qq{ UPDATE protein SET stable_id=\"$stable_id\",protein_name=\"$stable_id\",sequence=\"$seq\",gene_id=\"$gene_id\";};
        #		my $protein_sql_insert = qq{ INSERT INTO protein SET stable_id=\"$stable_id\",protein_name=\"$stable_id\",sequence=\"$seq\",gene_id=\"$gene_id\";};
-             if(($loglevel eq 'debug'))   
+             if(($loglevel eq 'debug'))
                {print "$protein_sql_insert\n$protein_sql_select\n$protein_sql_update\n";		}
 
 		my $protein_id = $dbh->select_update_insert("protein_id", $protein_sql_select, $protein_sql_update, $protein_sql_insert, $do_update);
@@ -122,7 +156,7 @@ sub uploadFastaData
    }#while
 }#sub
 
-# 
+#
 #
 #Note: here I assume that gff file is correct and soesnot contain errors, e.g. all genes and their transcript are at the same strand and so on. All genes definition is prior to cds definition!
 # For checking correctness on the gff file there is another subroutine.
@@ -168,7 +202,7 @@ open FH,"$inFile";
 
     $gene_name=$1 if $elms[$ids_ix]=~/ID=(\w+)/;
  #patch for pc2127 isolate, p.cucumerina project - gene name contains . symbol in the name
-  #if( $elms[$ids_ix]=~/ID=(PCUC.+)$/) 
+  #if( $elms[$ids_ix]=~/ID=(PCUC.+)$/)
   #  {$gene_name=$1;}
 
     # check that this gene is not present in DB
@@ -213,13 +247,13 @@ open FH,"$inFile";
        #print Dumper($results);
        $g_id=$results->[0]->{'id'};
      }
-    if(($loglevel eq 'debug'))   
+    if(($loglevel eq 'debug'))
      { print "GENE_ID: $g_id\n";}
    }
    #elsif ($elms[$type_ix] eq 'CDS') {
 #29/01/2016 - Francisco's annotation does not contain transcript field, but CDs
 #14/09/2016 - Tyler's annotation contains both - transcript field and CDs, so there is a clear confusion - protein information is uploading twice.
-# I need to check with CDs, if the prot_id is already present - just skip it. 
+# I need to check with CDs, if the prot_id is already present - just skip it.
 #14/09/2016 - new Francisco's annotation contains mRNA field in combination with Name attribute
   elsif (($elms[$type_ix] eq 'transcript' )||($elms[$type_ix] eq 'mRNA' )||(($elms[$type_ix] eq 'CDS') && ( !$c_prot_id || $c_prot_id eq ''))) {
    my $prot_id='';
@@ -231,7 +265,7 @@ if($prot_id eq '')
 
 if($prot_id eq '')
       {   $prot_id=$1 if $elms[$ids_ix]=~/Name\=([^;]+)/;}
- 
+
 #In some annotation versions, provided by Tyler, Target field is absent and only present Parent transcript id.
  if($prot_id eq '')
       {   $prot_id=$1 if $elms[$ids_ix]=~/Parent\=([^;]+)/;}
@@ -291,7 +325,7 @@ sub insertProtein
       if (scalar(@res)) {
        if(($loglevel eq 'debug')||($loglevel eq 'info'))
   	{print STDOUT "NOTICE: $c_prot_id already exists in the DB. SKipping\n";}
- 	$duplicated=1; 
+ 	$duplicated=1;
       }
       # insert new protein
       my $protein_sql_insert;
@@ -341,12 +375,12 @@ sub updateProteinDefinition
        next;
      }
      #update blast2go definition in protein table
-    
+
     # print Dumper(@{$annotData->{$protItem}{'definition'}});
      my @tmpDefinition = &uniqueValues(\@{$annotData->{$protItem}{'annot'}});
 
      my $definition = $oldDefinition.$source.':'.join(' ',@tmpDefinition);
-      
+
      $updateString = "UPDATE protein SET definition =\"$definition\" where protein_id='$proteinId';";
     if(($loglevel eq 'debug'))
     { print "$updateString\n";}
@@ -381,23 +415,23 @@ sub uploadGoAnnotation
        {print STDERR "There is no protein_id for $protItem, skipped!\n";}
        next;
      }
-  
+
     my @goList = &uniqueValues(\@{$annotData->{$protItem}{'annot'}});
     foreach my $goItem(@goList)
     {
       #select go_term_id: if this go is present then select id, otherwise upload it.
       if($engine eq 'SQLite')
-         { 
-          $insertString = qq{INSERT INTO go_term (go_term_id,go_acc) VALUES (NULL,\"$goItem\");};             
+         {
+          $insertString = qq{INSERT INTO go_term (go_term_id,go_acc) VALUES (NULL,\"$goItem\");};
          }
         else
-          { 
-           $insertString = "INSERT INTO go_term SET go_acc=\"$goItem\"";		
+          {
+           $insertString = "INSERT INTO go_term SET go_acc=\"$goItem\"";
           }
-    
+
        $selectString = "SELECT go_term_id FROM go_term where go_acc like '$goItem'";
-       $updateString = '';    
- 
+       $updateString = '';
+
        $goId = $dbh->select_update_insert("go_term_id", $selectString, $updateString, $insertString, 0);
        if(!defined $goId)
        {
@@ -416,7 +450,7 @@ sub uploadGoAnnotation
        $sourceInDB = $res->[0]->{'source'}||'';
        if($proteinGoId ne '')
        {
-       #check source 
+       #check source
        # print "SOURCE: $source\n";
         if($sourceInDB!~/$source/)
          {
@@ -437,7 +471,7 @@ sub uploadGoAnnotation
        }
    #die;
   } #foreach $goItem
- 
+
  }#foreach $proteinItem
 }#sub
 
@@ -455,19 +489,19 @@ sub uploadInterProResults
  {
  #retrive sequence and reference_gene_id once more from DB for new inputseq_id  data
   $select = "select protein_id,sequence from protein where stable_id like '$protKey'";
-  $results = $dbh->select_from_table($select);  
+  $results = $dbh->select_from_table($select);
   my $sequence = $results->[0]{'sequence'};
   my $protId = $results->[0]{'protein_id'};
 
  #check that domains are not present for this protein in the domain table. If there are domains and update flag is 0 (do not do update) then skip this protein and pass to the next one.
   $select = "select count(*) from domain where protein_id in (select distinct protein_id from protein where stable_id like '$protKey')";
   #print "$select";
-  $results = $dbh->select_from_table($select);  
+  $results = $dbh->select_from_table($select);
   my $countSeqs = $results->[0]{'count(*)'};
   if($countSeqs>0)
    {
     next if $updateFlag==0;
-   
+
   #if updateFlag ==1
    #delete from ipscn_version first (?)
    #$delete = "delete from ipscn_version where domain_id in (select distinct domain_id from)";
@@ -506,13 +540,13 @@ sub uploadInterProResults
       $domain{'ip_desc'} = $ip_desc;
       $domain{'go'} = $go;
 
-# insert domain			
+# insert domain
     my $domain_id;
   if ($engine eq 'SQLite')
    { $domain_id = &insert_set_sqlite($dbh, 'domain',\%domain);	}
   else
    {	my $st_domain = &constructStatment(\%domain);
-	$domain_id = &insert_set($dbh, $st_domain, 'domain');	
+	$domain_id = &insert_set($dbh, $st_domain, 'domain');
    }
 #insert ipscan version
       my %ipscn;
@@ -524,7 +558,7 @@ sub uploadInterProResults
       else
       {
        my $st_ipscn = &constructStatment(\%ipscn);
-       $ipscn_id = &insert_set($dbh, $st_ipscn, 'ipscn_version');	
+       $ipscn_id = &insert_set($dbh, $st_ipscn, 'ipscn_version');
       }
 
 #Vlasova A. 16-01-2013
@@ -533,10 +567,10 @@ sub uploadInterProResults
   $go =~s/\s+$//;
   my @goList=split(/\|/, $go);
   push(@{$retGOData{$protKey}{'go'}}, @goList);
-  
-  }#foreach count key 
 
-   
+  }#foreach count key
+
+
  }#for each protein
 
 return \%retGOData;
@@ -583,7 +617,7 @@ sub uploadBlastResults
       }
      $setString = join(', ', @setData);
      my $setValuesString = join(',', @setValues);
- 
+
      if($engine eq 'SQLite')
       {$insertString = "INSERT INTO blast_hit(blast_hit_id, protein_id, hit_id, $setValuesString) VALUES(NULL,\"$proteinId\", \"$tmpHash{'hit_id'}\",$setString)"; }
      else
@@ -591,15 +625,15 @@ sub uploadBlastResults
      $selectString = "SELECT blast_hit_id from blast_hit where protein_id=$proteinId and hit_id=\"$tmpHash{'hit_id'}\"";
      $updateString = "UPDATE blast_hit SET $setString where protein_id=$proteinId and hit_id=\"$tmpHash{'hit_id'}\"";
    if(($loglevel eq 'debug')){
-     print $selectStrinng."\n"; 
+     print $selectStrinng."\n";
      print $insertString."\n";
      print $updateString."\n";
    }
      $blastHitId = $dbh->select_update_insert("blast_hit_id", $selectString, $updateString, $insertString, $update);
     }#foreach blast result
-  
+
   } #foreach protein_id
- 
+
 } #sub
 
 sub uploadGOInfo
@@ -610,13 +644,13 @@ sub uploadGOInfo
   {print "Please provide ontology file in obo format!\nOtherwise information about GO terms will be incomplete!\n"; exit();}
 
  my %goData=&parseOboFile($ontologyFile);
- 
+
  my %goTermAcc =();
 
  my $selectString = "SELECT distinct go_acc from go_term where go_name is NULL";
  #print "SQL_CODE:$selectString\n" if $debug==1;
  my $results = $dbh->select_from_table($selectString);
- foreach my $result (@{$results}) 
+ foreach my $result (@{$results})
    {
     $goTermAcc{$result->{'go_acc'}}{'acc'}=1;
    }
@@ -639,14 +673,14 @@ return 1;
 sub updateAnnotationStatus
 {
  my $dbh=shift;
- #annotation status can be either 0 = not annotated, or 1 - annotated. Status==1 setting up when there is at least one hit from any 
+ #annotation status can be either 0 = not annotated, or 1 - annotated. Status==1 setting up when there is at least one hit from any
  # source of evidence was used for annotation.
 
  #lets reset to zero status any of the protein in DB
   my $updateString = "UPDATE protein set status = 0";
 if(($loglevel eq 'debug')){   print "SQL_CODE:$updateString\n";}
   $dbh->update_set($updateString);
- 
+
  #then lets go through all tables and update status to 1 in case if protein had a record in selected table_name
  #definition blast2go and kegg
   $updateString = "UPDATE protein set status = 1 where definition is not null and definition not like ''";
@@ -661,22 +695,22 @@ my @tableList = qw(domain protein_ortholog signalP);
   if(($loglevel eq 'debug')){  print "SQL_CODE:$updateString\n";}
    $dbh->update_set($updateString);
  }
- 
+
  return 1;
 }
 
 sub uploadCDsearchData
 {
  my ($dbh, $dataHash,$engine, $type)=@_;
- 
+
  my($select, $result,$table,$tableId ,$selectString, $insertString, $updateString,$uniqField,$fieldName);
 
  foreach my $protItem (keys %{$dataHash})
  {
   $select = "select protein_id from protein where stable_id like '%$protItem%'";
-  $results = $dbh->select_from_table($select);  
+  $results = $dbh->select_from_table($select);
   my $proteinId = $results->[0]{'protein_id'};
-  
+
   #foreach result line - do its uploading
   for(my $i=0; $i<scalar @{$dataHash->{$protItem}}; $i++)
     {
@@ -699,7 +733,7 @@ sub uploadCDsearchData
       }
      $setString = join(', ', @setData);
      my $setValuesString = join(',', @setValues);
- 
+
      if($type eq 'h')
       {
         $table = 'cd_search_hit';
@@ -713,7 +747,7 @@ sub uploadCDsearchData
        $uniqField='title';
        $fieldName = 'Title';
       }
-  
+
      if($engine eq 'SQLite')
       {$insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField, $setValuesString) VALUES(NULL,\"$proteinId\",\"$tmpHash{$fieldName}\",$setString)"; }
      else
@@ -756,7 +790,7 @@ sub parseCDsearchData
    if($line=~/^\#/){next;}
    if($line=~/^Query/)
     {
-    @fields=split(/\t+/,$line); 
+    @fields=split(/\t+/,$line);
     #substitute spaces for '_' characters
     foreach my $item(@fields)
      {
@@ -769,16 +803,16 @@ sub parseCDsearchData
     }
    @data = split(/\t+/,$line);
    %tmpHash=();
- 
+
    if(scalar @data != scalar @fields)
     {
-     #Loop features does not contain coordinate field in the resulting line, and have 1 column less. Unfortunately, this column is in the middle, so I would need to assign 
+     #Loop features does not contain coordinate field in the resulting line, and have 1 column less. Unfortunately, this column is in the middle, so I would need to assign
      #field names and their values by hand. !Temporary solution!
      if($type eq 'f')
       {
        print "Warning: unusial feature, most probably does not contain coordinate column. Assigned by hands '$line'\n";
        $idData=$data[0];
-       $idData =~s/.+\>(.+)$/$1/;      
+       $idData =~s/.+\>(.+)$/$1/;
        $tmpHash{'Type'} = $data[1];
        $tmpHash{'Title'} = $data[2];
        $tmpHash{'coordinates'} = '';
@@ -844,7 +878,7 @@ sub parseOboFile
     $type=$1;
     $data{$acc}{'type'}=$type;
    }
-  
+
  }
  close(INPUT);
  return %data;
@@ -861,11 +895,11 @@ sub parseAnnotation
   {
    chomp($line);
    ($proteinName, $annotTerm)=$line=~/^(\S+)\s+(\S+)\s*/;
-   
+
 #some patch - new Lynx annotation had transcript name within protein name: LYPA23B012832T1|LYPA23B012832P1 I need only the second part, not the first one:
         # $proteinName=~s/LYPA[^|]+\|(.+)/$1/;
 
-#some patch for stable_id in general - in new Tylers pipeline transcript names are included into fasta header. If they were not removed at the stage of uploding data to kaas server, 
+#some patch for stable_id in general - in new Tylers pipeline transcript names are included into fasta header. If they were not removed at the stage of uploding data to kaas server,
 #then resulting file contains something like 'TranscriptName|ProteinName'
  if($proteinName =~/^[^|]+\d+T\S+\|(\S+)$/)
       {$proteinName=$1;}
@@ -874,13 +908,13 @@ sub parseAnnotation
 #  $proteinName=~s/^(TAES1a\S+)\_\d+$/$1/;
  if($proteinName =~/([^_]+)\_\d+/)
  {$proteinName=$1;}
-     
-  
-   push(@{$returnData{$proteinName}{'annot'}}, $annotTerm);   
+
+
+   push(@{$returnData{$proteinName}{'annot'}}, $annotTerm);
 
    #if($line=~/\S+\s+\S+\s+(.+)$/)
    # {push(@{$returnData{$proteinName}{'definition'}}, $1); }
-   
+
   }
  close(INFILE);
  return %returnData;
@@ -904,25 +938,25 @@ sub parseBlastResults
  if($line=~/^\<\?xml/)
   {$blastFormat = 'blastxml';}
 #tabular format -m 9 option
-elsif($line=/^\#\s+/)  
+elsif($line=/^\#\s+/)
   {$blastFormat = 'blasttable';}
 
 #tabular format -m 8 == 12 columns
 #other formats - 3 or 4 columns - hashtag(in m -9), program, version, release
  my @tmp=split(/\s+/,$line);
- if(scalar @tmp > 4)  
+ if(scalar @tmp > 4)
   {$blastFormat = 'blasttable';}
 
  if(($loglevel eq 'debug')){  print "blastFormat: $blastFormat\n";}
- 
+
 
 my $in = new Bio::SearchIO(-format => $blastFormat,
                            -file   => $fileName);
 while( my $result = $in->next_result ) {
   ## $result is a Bio::Search::Result::ResultI compliant object
   while( my $hit = $result->next_hit ) {
-     
-    %tmpHash=();   
+
+    %tmpHash=();
     ## $hit is a Bio::Search::Hit::HitI compliant object
      my $hsp = $hit->next_hsp ;
       #queryName == proteinId
@@ -932,18 +966,18 @@ while( my $result = $in->next_result ) {
        # $queryName=~s/LYPA[^|]+\|(.+)/$1/;
     #another patch - Wheat proteins from fasta file (that was used for kegg web search) have additional protein length in it., need to remove it/
       # $queryName=~s/^(TAES1a\S+)\_\d+$/$1/;
-#some patch for stable_id in general - in new Tylers pipeline transcript names are included into fasta header. If they were not removed at the stage of uploding data to kaas server, 
+#some patch for stable_id in general - in new Tylers pipeline transcript names are included into fasta header. If they were not removed at the stage of uploding data to kaas server,
 #then resulting file contains something like 'TranscriptName|ProteinName'
  #if($queryName =~/^[^|]+\d+T\S+\|(\S+)$/)
  #        {$queryName=$1;}
 
-      #subject == hit in NR 
+      #subject == hit in NR
          my $subjectName= $hit->name;
          my $subjectAcc = $hit->accession;
          my $start =  $hsp->start('hit');
          my  $stop = $hsp->end('hit');
-         my  $identity =  $hsp->percent_identity; 
-         my $score =  $hsp->score;  
+         my  $identity =  $hsp->percent_identity;
+         my $score =  $hsp->score;
          my $evalue = $hsp->evalue;
          my $description = $hit->description;
          #need to remove '"' characters from all text fields - they couse an uploading problem afterwards.
@@ -970,11 +1004,11 @@ sub parseInterProTSV
 {
  my $inputFile = shift;
 
- my %ipscanHash =(); 
+ my %ipscanHash =();
 my $count=0;
 my @inputIds =();
  my ($protValue,$inputseq_id, $checksum, $length, $method, $dbentry, $dbdesc, $start, $end, $evalue, $status, $date, $ip_id, $ip_desc, $go) ;
-open (FILE, $inputFile) || die "Can't open $inputFile for reading! $!\n";	
+open (FILE, $inputFile) || die "Can't open $inputFile for reading! $!\n";
  while (defined (my $line=<FILE>)) {
   chomp($line);
  ($protValue, $checksum, $length, $method, $dbentry, $dbdesc, $start, $end, $evalue, $status, $date, $ip_id, $ip_desc, $go) = split(/\t/, $line);
@@ -986,20 +1020,20 @@ open (FILE, $inputFile) || die "Can't open $inputFile for reading! $!\n";
  if(($protValue =~/\|/) && ($protValue !~/^gi\|/)     )
  {@inputIds = split(/\|/,$protValue);}
  else
-  {push(@inputIds, $protValue);} 
+  {push(@inputIds, $protValue);}
 #some patch for Lynx new annotation - it has transcript name within protein name: LYPA23B012832T1|LYPA23B012832P1 I need only the second part, not the first one:
-#Interesting - how it will work for normal sets? 
+#Interesting - how it will work for normal sets?
 #my @tmp;
 #for(my $i=0; $i<scalar @inputIds; $i++)
 # {
 #  push(@tmp, $inputIds[$i]);
-#} 
+#}
 #then I need only unique ids
 #@inputIds = @tmp;
 
 foreach my $inputseq_id(@inputIds)
  {
- #some genomic annotations, produced by Tyler have transcript name within protein name.But at the same time  Interpro collapsed similar proteins into one line, separate them with | tag. 
+ #some genomic annotations, produced by Tyler have transcript name within protein name.But at the same time  Interpro collapsed similar proteins into one line, separate them with | tag.
 #So I need to skip transcripts, but keep information about proteins.
  #if($inputseq_id=~/T\d+$/){next;}
 
@@ -1036,7 +1070,7 @@ sub checkGFFData
 {
  my $inFile = shift;
  my $returnData =1;
-  
+
  my($transcriptDirection, $exonDirection);
  my @tmp=();
  my $count=0;
@@ -1072,7 +1106,7 @@ sub checkGFFData
    }
   }
  }#while
- 
+
 close(INFILE);
 
  return $returnData;
@@ -1137,7 +1171,7 @@ sub constructStatment {
     my %params = %{$par};
     #construct statment nd quote
     my $stmt;
-    
+
     foreach my $f (keys %params) {
         $stmt .= " , " if $stmt;
         $stmt .= $f . " = \"".$params{$f}."\"";
