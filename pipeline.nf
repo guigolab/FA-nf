@@ -7,19 +7,19 @@
  *
  * Copyright (c) 2017, Emilio Palumbo
  *
- * Functional Annotation Pipeline for protein annotation from non-model organisms 
+ * Functional Annotation Pipeline for protein annotation from non-model organisms
  * from Genome Annotation Team in Catalyña (GATC) implemented in Nextflow
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -36,7 +36,7 @@ params.debug="false"
 //print usage
 if (params.help) {
   log.info ''
-  log.info 'Functional annotation pipeline' 
+  log.info 'Functional annotation pipeline'
   log.info '----------------------------------------------------'
   log.info 'Run functional annotation for a given specie.'
   log.info ''
@@ -51,7 +51,7 @@ if (params.help) {
 }
 
 
-/* 
+/*
 * Parse the input parameters
 */
 
@@ -114,8 +114,8 @@ process blast{
  input:
  file seq from seq_file6
  file db_path
- 
- output: 
+
+ output:
  file(blastXml) into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
 
  """
@@ -150,7 +150,7 @@ process b2g4pipe {
  file blastAnnot into b2g4pipeAnnot
 
  """
- $params.b2g4pipe -in $blastXml -out blastAnnot -prop /software/bi/programs/b2g4pipe/b2gPipe.test.properties -annot 
+ $params.b2g4pipe -in $blastXml -out blastAnnot -prop /software/bi/programs/b2g4pipe/b2gPipe.test.properties -annot
  mv blastAnnot.annot blastAnnot
  """
 }
@@ -173,7 +173,7 @@ process blast_annotator {
 
 }
 
-process blastDef { 
+process blastDef {
  input:
  file blastXml from blastXmlResults3.flatMap()
 
@@ -184,8 +184,8 @@ process blastDef {
   definitionFromBlast.pl  -in $blastXml -out protDef -format xml
  """
 }
-  
- 
+
+
 
 process initDB {
 
@@ -198,24 +198,25 @@ process initDB {
  script:
  command = "mkdir -p $params.resultPath\n"
  command += "grep -vP '[{}]' $config_file | sed 's/\\s\\=\\s/:/gi' > config\n"
+ command += "module load Perl/5.20.0-goolf-1.4.10-no-OFED"
  if (!exists) {
      command += "fa_main.v1.pl init -conf config"
- } 
+ }
  command
 }
 
 
 process ipscn {
-   
+
     module "Java/1.8.0_74"
 
     input:
     file seq from seq_file1
-    
+
     output:
     file('out') into (ipscn_result1, ipscn_result2)
 
-    """  
+    """
     sed 's/*//' $seq > tmp4ipscn
     $interpro -i tmp4ipscn --goterms --iprlookup --pathways  -o out -f TSV
     """
@@ -224,19 +225,19 @@ process ipscn {
 process 'cdSearchHit' {
     input:
     file seq from seq_file2
-    
+
     output:
     file 'out' into cdSearch_hit_result
 
     """
-    submitCDsearch.pl  -o out -in $seq 
+    submitCDsearch.pl  -o out -in $seq
     """
 }
 
 process 'cdSearchFeat' {
     input:
     file seq from seq_file3
-    
+
     output:
     file 'out' into cdSearch_feat_result
 
@@ -249,7 +250,7 @@ process 'cdSearchFeat' {
 process 'signalP' {
     input:
     file seq from seq_file4
-    
+
     output:
     file('out') into (signalP_result1, signalP_result2)
 
@@ -261,7 +262,7 @@ process 'signalP' {
 process 'targetP' {
     input:
     file seq from seq_file5
-    
+
     output:
     file('out') into (targetP_result1, targetP_result2)
 
@@ -270,7 +271,7 @@ process 'targetP' {
     """
 }
 
-/* 
+/*
 Upload results into DB -- in current version of the pipeline DB is implemented with SQLite, but mySQL is also supported
 */
 
@@ -278,7 +279,7 @@ process 'signalP_upload'{
  input:
  file signalP_res from signalP_result1
  file config from config4perl
- 
+
  """
   load_CBSpredictions.signalP.pl -i $signalP_res -conf $config -type s
  """
@@ -353,11 +354,11 @@ process 'b2go4pipe_upload'{
  file blastAnnot from b2g4pipeAnnot
  file config from config4perl
 
- """ 
+ """
  awk '{print \$1, \$3}' $blastAnnot > two_column_file
  upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'b2go4pipe'
  """
- 
+
 }
 
 
@@ -366,20 +367,20 @@ process 'definition_upload'{
  file defFile from blastDef_results
  file config from config4perl
 
- """ 
+ """
   upload_go_definitions.pl -i $defFile -conf $config -mode def -param 'blast_def'
  """
- 
+
 }
 
 //
- 
- 
+
+
 process 'blast_annotator_upload'{
- input: 
+ input:
   file blastAnnot from blast_annotator_results
   file config from config4perl
- 
+
  """
   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' $blastAnnot > two_column_file
   upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'blast_annotator'
@@ -388,7 +389,7 @@ process 'blast_annotator_upload'{
 }
 
 
-} 
+}
 //the end of the exists loop for uploading
 
 /*
@@ -397,18 +398,18 @@ Generate result files and report
 
 if(params.results != "" && exists ){
 process 'generateResultFiles'{
- input: 
+ input:
   file config from config4perl
- 
+
   """
   get_results.pl -conf $config
  """
 }
 
 process 'generateGFF3File'{
- input: 
+ input:
   file config from config4perl
-  
+
  """
  get_gff3.pl -conf $config
  """
