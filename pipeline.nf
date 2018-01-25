@@ -198,7 +198,7 @@ process initDB {
  script:
  command = "mkdir -p $params.resultPath\n"
  command += "grep -vP '[{}]' $config_file | sed 's/\\s\\=\\s/:/gi' > config\n"
- command += "module load Perl/5.20.0-goolf-1.4.10-no-OFED"
+ command += "module load Perl/5.20.0-goolf-1.4.10-no-OFED\n"
  if (!exists) {
      command += "fa_main.v1.pl init -conf config"
  }
