@@ -9,7 +9,7 @@
               vlasova.av@gmail.com
 
 =head2 Description
-        
+
              This module have method to handle with the database for the FA, both under Mysql and SQLite engines
              Based on the module Bio::Melon::DB
 =head2 Example
@@ -33,22 +33,22 @@
 
 	use Bio::Melon::File;
 	my $file = Bio::Melon::File->writeDataToFile("testtable.sql",$tmpdir, $data,1);
-	
+
 	my $sec_value = "second insert";
 	my $par = qq{INSERT INTO $table_name SET $column_name = \"$sec_value\"};
 	my $newdbID = $newdb_obj->insert_set($par);
-	
+
 	my $condition = "$primary=$newdbID";
 	my $uppar = qq{UPDATE $table_name SET $column_name = \"$sec_value\" WHERE $condition};
 	my $updbID = $newdb_obj->update_set($uppar);
-	
-	my $condition = "$primary=$updbID";                                                                              
+
+	my $condition = "$primary=$updbID";
 	my $selpar = qq{SELECT  $column_name FROM $table_name WHERE $condition};
 	my $res = $newdb_obj->select_from_table($selpar);
 
 	my $delpar = qq{DELETE FROM $table_name WHERE $condition};
-	my $deldbID = $newdb_obj->delete_from_table($delpar);   
-            
+	my $deldbID = $newdb_obj->delete_from_table($delpar);
+
 =cut
 
 
@@ -61,10 +61,10 @@ use FindBin qw($RealBin);
 use lib "$RealBin";
 use Data::Dumper;
 use File::Spec;
-use vars qw(@ISA);
+#use vars qw(@ISA);
 use FunctionalAnnotation::Utils::Argument qw(rearrange);
 use Bio::Root::Root;
-@ISA = qw(Bio::Root::Root);
+#@ISA = qw(Bio::Root::Root);
 
 my %conf =  %::conf;
 my $debug = $conf{'global'}{'debug'};
@@ -89,7 +89,7 @@ sub new {
     = rearrange( [
     'ENGINE',
     'DBNAME',
-    'HOST', 
+    'HOST',
     'USER',
     'PASS',
     'PORT',
@@ -97,7 +97,7 @@ sub new {
     ],
     @_
     );
-  
+
   unless($host){$host = $conf{'dbaccess'}{'dbhost'}};
   unless($db){$db= $conf{'dbaccess'}{'dbname'}};
   unless($user){$user= $conf{'dbaccess'}{'dbuser'}};
@@ -120,9 +120,9 @@ sub new {
    }
   elsif($engine eq 'sqlite')
   {
-   #print " DBI:SQLite:database=$db\n"; 
+   #print " DBI:SQLite:database=$db\n";
    my $dsn = "DBI:SQLite:dbname=$db";
-   $dbh = DBI->connect($dsn, "", "", { RaiseError => 1 }) 
+   $dbh = DBI->connect($dsn, "", "", { RaiseError => 1 })
                       or die $DBI::errstr;
   }
   $dbh && $self->db_connection($dbh);
@@ -200,7 +200,7 @@ sub exec_import () {
     my $res = system $mysql_path."mysql -u $user -p$pass -h $host $db < $file";
     unless ($res){$self->{'exec_import'} = 1}
     else{$self->{'exec_import'} = 0}
-    return $self->{'exec_import'}; 
+    return $self->{'exec_import'};
 }
 
 sub prepare_stmt {
@@ -226,8 +226,8 @@ sub truncate_table {
 sub insert_set {
     my ($self,$par)=@_;
 
-    $par = $self->_clean_sql($par);    
-    my $sth = $self->prepare_stmt($par);    
+    $par = $self->_clean_sql($par);
+    my $sth = $self->prepare_stmt($par);
     my $dbID;
     $sth->execute();
     $self->{'sth'} = $sth;
@@ -239,7 +239,7 @@ sub insert_set {
 sub update_set {
     my ($self, $par) = @_;
 
-    $par = $self->_clean_sql($par);    
+    $par = $self->_clean_sql($par);
     my $sth = $self->prepare_stmt($par);
     my $dbID;
 
@@ -273,7 +273,7 @@ sub sth {
 
 sub exec_dump () {
     my ($self, $no_data) = @_;
-    
+
     my $attr='';
     my $user  = $self->user;
     my $pass = $self->pass;
@@ -282,7 +282,7 @@ sub exec_dump () {
     if ($no_data) {
         $attr = "--no_data";
     }
-    
+
     my $file = File::Spec->catfile($tmpdir,$db.".sql");
     eval{system $mysql_path."mysqldump -u $user -p$pass -h $host $attr $db > $file"};
     unless($@){$self->{'exec_dump'} = $db.".sql";}
@@ -291,9 +291,9 @@ sub exec_dump () {
 
 sub delete_from_table {
     my ($self,$par) = @_;
-    
+
     my $sth = $self->prepare_stmt($par);
-    
+
     #if(($loglevel eq 'debug')){ $debugSQL && print STDOUT "SQL CODE: $par\n";}
     my $dbID;
     $sth->execute();
@@ -305,7 +305,7 @@ sub delete_from_table {
 
 sub check_return {
     my ($self, $value, $table_name, $table_column) = @_;
-    
+
     my $sth = $self->sth;
     my $r = $sth->rows;
     if ($r == 0) {
@@ -317,7 +317,7 @@ sub check_return {
 
 sub select_update_insert {
     my ($self, $table_column, $sqlselect, $sqlupdate, $sqlinsert, $do_update) = @_;
-    
+
     $do_update=0 unless defined $do_update;
     $debugSQL && print STDOUT "SQL CODE: $sqlselect\n";
     my @res = @{$self->select_from_table($sqlselect)};
@@ -326,7 +326,7 @@ sub select_update_insert {
     if (defined $dbID) {
 	#if(($loglevel eq 'debug')){ print STDOUT "This $table_column already exists\n$sqlupdate => id: $dbID\n";}
 	if ($do_update && $sqlupdate) {
-	    #$sqlupdate=~s/;$/ WHERE $table_column=\"$dbID\";/;     
+	    #$sqlupdate=~s/;$/ WHERE $table_column=\"$dbID\";/;
             #if(($loglevel eq 'debug')){ print "$sqlupdate\n";}
 	    my $sth = $self->prepare_stmt($sqlupdate);
 	    $debugSQL && print STDOUT "SQL CODE: $sqlupdate\n";
@@ -343,14 +343,14 @@ sub select_update_insert {
 
 sub _clean_sql () {
    my ($self, $par) = @_;
-   
+
    $par =~ s/(\"\s+|\s+\")/\"/g;
    return $par;
 }
 
 #sub exec_command_sql () {
 #     my ($self, $path, $user, $pass, $db, $host, $file, $sql, $debug) = @_;
-# 
+#
 #     $debug && print STDOUT $path."mysql -u $user -h $host -p$pass $db -e \"$sql\" > $file\n";
 #     system $path."mysql -u $user -h $host -p$pass $db -e \"$sql\" > $file";
 # }
