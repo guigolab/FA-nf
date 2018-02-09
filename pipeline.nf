@@ -230,6 +230,7 @@ process 'cdSearchHit' {
     file 'out' into cdSearch_hit_result
 
     """
+    module load Perl/5.20.0-goolf-1.4.10-no-OFED
     submitCDsearch.pl  -o out -in $seq
     """
 }
@@ -242,6 +243,7 @@ process 'cdSearchFeat' {
     file 'out' into cdSearch_feat_result
 
     """
+    module load Perl/5.20.0-goolf-1.4.10-no-OFED
     submitCDsearch.pl -t feats -o out -in $seq
     """
 }
@@ -281,6 +283,7 @@ process 'signalP_upload'{
  file config from config4perl
 
  """
+  module load Perl/5.20.0-goolf-1.4.10-no-OFED
   load_CBSpredictions.signalP.pl -i $signalP_res -conf $config -type s
  """
 }
@@ -292,6 +295,7 @@ process 'targetP_upload'{
  file config from config4perl
 
  """
+  module load Perl/5.20.0-goolf-1.4.10-no-OFED
   load_CBSpredictions.signalP.pl -i $targetP_res -conf $config -type t
  """
 }
@@ -303,6 +307,7 @@ process 'interpro_upload'{
  file config from config4perl
 
  """
+  module load Perl/5.20.0-goolf-1.4.10-no-OFED
   run_interpro.pl -mode upload -i $ipscn_res -conf $config
 
  """
@@ -315,6 +320,7 @@ process 'CDsearch_hit_upload'{
  file config from config4perl
 
  """
+ module load Perl/5.20.0-goolf-1.4.10-no-OFED
  upload_CDsearch.pl -i $cdsearch_hit_res -type h -conf $config
  """
 }
@@ -325,6 +331,7 @@ process 'CDsearch_feat_upload'{
  file config from config4perl
 
  """
+ module load Perl/5.20.0-goolf-1.4.10-no-OFED
  upload_CDsearch.pl -i $cdsearch_feat_res -type f -conf $config
  """
 }
@@ -342,6 +349,7 @@ process 'kegg_upload'{
  file config from config4perl
 
  """
+ module load Perl/5.20.0-goolf-1.4.10-no-OFED
  load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf $config
  """
 }
@@ -355,7 +363,9 @@ process 'b2go4pipe_upload'{
  file config from config4perl
 
  """
+ module load Perl/5.20.0-goolf-1.4.10-no-OFED
  awk '{print \$1, \$3}' $blastAnnot > two_column_file
+ 
  upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'b2go4pipe'
  """
 
@@ -368,6 +378,7 @@ process 'definition_upload'{
  file config from config4perl
 
  """
+ module load Perl/5.20.0-goolf-1.4.10-no-OFED
   upload_go_definitions.pl -i $defFile -conf $config -mode def -param 'blast_def'
  """
 
@@ -382,6 +393,7 @@ process 'blast_annotator_upload'{
   file config from config4perl
 
  """
+ module load Perl/5.20.0-goolf-1.4.10-no-OFED
   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' $blastAnnot > two_column_file
   upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'blast_annotator'
  """
@@ -402,6 +414,7 @@ process 'generateResultFiles'{
   file config from config4perl
 
   """
+  module load Perl/5.20.0-goolf-1.4.10-no-OFED
   get_results.pl -conf $config
  """
 }
@@ -411,6 +424,7 @@ process 'generateGFF3File'{
   file config from config4perl
 
  """
+ module load Perl/5.20.0-goolf-1.4.10-no-OFED
  get_gff3.pl -conf $config
  """
 }
@@ -424,6 +438,7 @@ process 'generateReport'{
  output:
 
  """
+ module load Perl/5.20.0-goolf-1.4.10-no-OFED
   pdflatex bin\/report_template
 """
 
