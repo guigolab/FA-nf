@@ -320,7 +320,6 @@ process 'CDsearch_hit_upload'{
  file config from config4perl
 
  """
- module load Perl/5.20.0-goolf-1.4.10-no-OFED
  upload_CDsearch.pl -i $cdsearch_hit_res -type h -conf $config
  """
 }
