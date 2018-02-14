@@ -549,17 +549,18 @@ sub uploadInterProResults
 	$domain_id = &insert_set($dbh, $st_domain, 'domain');
    }
 #insert ipscan version
-      my %ipscn;
-      $ipscn{'domain_id'} = $domain_id;
-      $ipscn{'ipscn_version'} =$iprscnVersion;
-      my $ipscn_id;
-      if ($engine eq 'SQLite')
-      { $ipscn_id = &insert_set_sqlite($dbh, 'ipscn_version',\%ipscn);	}
-      else
-      {
-       my $st_ipscn = &constructStatment(\%ipscn);
-       $ipscn_id = &insert_set($dbh, $st_ipscn, 'ipscn_version');
-      }
+#update 14/02/2018 -- I dont need interproscan version for now
+  #    my %ipscn;
+  #    $ipscn{'domain_id'} = $domain_id;
+  #    $ipscn{'ipscn_version'} =$iprscnVersion;
+  #    my $ipscn_id;
+  #    if ($engine eq 'SQLite')
+  #    { $ipscn_id = &insert_set_sqlite($dbh, 'ipscn_version',\%ipscn);	}
+  #    else
+  #    {
+  #     my $st_ipscn = &constructStatment(\%ipscn);
+  #     $ipscn_id = &insert_set($dbh, $st_ipscn, 'ipscn_version');
+  #    }
 
 #Vlasova A. 16-01-2013
 #insert go information into go_term table and then into protein_go
