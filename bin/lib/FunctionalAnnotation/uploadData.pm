@@ -478,7 +478,7 @@ sub uploadGoAnnotation
 
 sub uploadInterProResults
 {
- my ($dbh, $ipscanHash, $engine,$loglevel)= @_;
+ my ($dbh, $ipscanHash, $engine)= @_;
 
  my $update =0;
  my ($protValue,$inputseq_id, $checksum, $length, $method, $dbentry, $dbdesc, $start, $end, $evalue, $status, $date, $ip_id, $ip_desc, $go) ;
