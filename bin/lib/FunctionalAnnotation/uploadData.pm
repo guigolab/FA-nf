@@ -495,17 +495,17 @@ sub uploadInterProResults
 
  #check that domains are not present for this protein in the domain table. If there are domains and update flag is 0 (do not do update) then skip this protein and pass to the next one.
   $select = "select count(*) from domain where protein_id in (select distinct protein_id from protein where stable_id like '$protKey')";
-  #print "$select";
+ # print "$select";
   $results = $dbh->select_from_table($select);
   my $countSeqs = $results->[0]{'count(*)'};
-  if($countSeqs>0)
-   {
-    next if $updateFlag==0;
+  #if($countSeqs>0)
+  # {
+  #  next if $updateFlag==0;
 
   #if updateFlag ==1
    #delete from ipscn_version first (?)
    #$delete = "delete from ipscn_version where domain_id in (select distinct domain_id from)";
-   }
+  # }
 
   foreach my $countKey(keys %{$ipscanHash->{$protKey}})
     {
