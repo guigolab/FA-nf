@@ -1134,6 +1134,7 @@ sub uniqueValues
 
 sub insert_set_sqlite {
     my ($dbh, $table_name, $dataHash) = @_;
+    if(!defined $loglevel){$loglevel=1;}
     #prepare insert string
     my @fields = keys %{$dataHash};
     my @values;
