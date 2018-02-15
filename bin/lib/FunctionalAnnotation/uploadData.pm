@@ -26,7 +26,7 @@ require Exporter;
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use Data::Dumper;
-use Digest::SHA1  qw(sha1_hex);
+#use Digest::SHA1  qw(sha1_hex);
 #use Bio::SeqIO;
 #use Bio::SearchIO;
 
@@ -125,7 +125,9 @@ sub uploadFastaData
 #but sha1 checksum will be very different.
         my $seqString4SHA=$seq;
         $seqString4SHA=~s/\*$//;
-	      my $sha1 =   sha1_hex($seqString4SHA);
+	   #   my $sha1 =   sha1_hex($seqString4SHA);
+     #Temporary solution unless I'll fix problem with perl libraries
+      my $sha1="";
        if(($loglevel eq 'debug'))
 	{print STDOUT "Stable_id $stable_id\nSequence $seq\n\n";}
 
