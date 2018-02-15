@@ -26,7 +26,7 @@ require Exporter;
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use Data::Dumper;
-#use Digest::SHA1  qw(sha1_hex);
+use Digest::SHA1  qw(sha1_hex);
 #use Bio::SeqIO;
 #use Bio::SearchIO;
 
