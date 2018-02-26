@@ -165,7 +165,7 @@ sub uploadCDsearchDataFast
 #will skip definition so far.
        next if ($keyItem eq 'Definition' && $type eq 'h');
        next if ($keyItem eq 'Title' && $type eq 'f');
-       push(@setValues, $keyItem);
+      # push(@setValues, $keyItem);
        if($engine eq 'SQLite')
         {push(@setData, "\"$tmpHash{$keyItem}\"");}
        else
