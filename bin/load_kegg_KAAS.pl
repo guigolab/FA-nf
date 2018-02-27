@@ -84,7 +84,7 @@ my $loglevel = $config{'loglevel'};
 #kegg codes for orthologs to include in the DB
 #my @kegg_codes = split(",",$config{'kegg_species'});
 #update 27/02/2018 Now this item in config is read as array and not as a string, as before.
-my @kegg_codes = $config{'kegg_species'};
+my @kegg_codes = @{$config{'kegg_species'}};
 
 #print "$kegg_codes\n";
 
