@@ -55,11 +55,11 @@ my $confFile = 'main_configuration.ini';
 my $USAGE = "perl load_kegg_KAAS.pl [-i input]  [-rel Kegg release] [-h help] [-conf configuration file] \n";
 my ($do_update, $show_help, $input,$kegg_release);
 
-&GetOptions(    	
+&GetOptions(
 			'update|u=s'	=> \$do_update,
                         'input|i=s'     => \$input,
                         'rel|r=s'       => \$kegg_release,
-                        'conf=s'=>\$confFile, 
+                        'conf=s'=>\$confFile,
 			'help|h'        => \$show_help
 	   )
   or pod2usage(-verbose=>2);
@@ -73,7 +73,7 @@ if (!$input || !$kegg_release)
 #read configuration file
 
 my $cfg = new Config::Simple($confFile);
-#put config parameters into %config                                             
+#put config parameters into %config
 my %config = $cfg->vars();
 
 #my %conf =  %::conf;
@@ -82,7 +82,9 @@ my %config = $cfg->vars();
 my $loglevel = $config{'loglevel'};
 
 #kegg codes for orthologs to include in the DB
-my @kegg_codes = split(",",$config{'kegg_species'});
+#my @kegg_codes = split(",",$config{'kegg_species'});
+#update 27/02/2018 Now this item in config is read as array and not as a string, as before.
+my @kegg_codes = $config{'kegg_species'};
 
 #print "$kegg_codes\n";
 
@@ -103,9 +105,9 @@ else
 my %codes=();
 my %organisms=();
 foreach my $item(@kegg_codes)
- {  
+ {
     $item=~s/\s+//;
-    $codes{$item}=1; 
+    $codes{$item}=1;
  }
 
 #get list of organisms from the KEGG server and select only ones that needed
@@ -176,7 +178,7 @@ sub uploadKeggInformation
      my $res = $dbh->select_from_table($protein_sql_select);
      my $protein_id=$res->[0]->{'protein_id'};
      my $protein_definition=$res->[0]->{'definition'};
-         
+
     #add orthologus information from the list of species for proteins associated to this KO group
      my $gene_string=$hash->{'GENES'};
      #print "gene string: $gene_string\n";
@@ -189,7 +191,7 @@ sub uploadKeggInformation
        # determine if $gene_id containt a cluster of genes
         my @cluster=split/ /,$gene_id;
         $is_cluster=1 if scalar(@cluster)>1;
-        $is_cluster=0 if scalar(@cluster)==1; 
+        $is_cluster=0 if scalar(@cluster)==1;
         my $lcode=lc($code);
         # next if ortholog is not in the list of species to analyze
          next if !$codesOrg->{$lcode};
@@ -241,14 +243,14 @@ sub uploadKeggInformation
 #      $sqlUpdate = "UPDATE protein set definition='$protein_definition' where protein_id=$protein_id";
 #      print "SQL_CODE:$sqlUpdate\n" ;
 #      $dbh->update_set($sqlUpdate);
-     
-    #add GO terms info into go_term and protein_go table  
+
+    #add GO terms info into go_term and protein_go table
     if(defined $hash->{'DBLINKS'})
      {
        my $goId =parseKEGGDBLInks($hash->{'DBLINKS'});
        if($goId ne '')
         {
-           #insert go term, associated with this protein into go_term table, and then into protein_go 
+           #insert go term, associated with this protein into go_term table, and then into protein_go
            my $sqlSelect = "SELECT go_term_id from go_term where go_acc like '$goId'";
            my $sqlUpdate ="";
            my $sqlInsert = "";
@@ -292,9 +294,9 @@ sub uploadKeggInformation
  }#foreach kegg KO item
 
  #update protein definition for KEGG source
-  
+
   &updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
- 
+
 }#sub
 
 
@@ -303,7 +305,7 @@ sub parseKEGGDBLInks
  my $dbLinks = shift;
 
  my $retGO='';
- 
+
  $dbLinks=~s/\n//g;
  if($dbLinks =~/(GO\:\s*\d+)\s*/)
   {
@@ -341,7 +343,7 @@ sub parse_kegg_record {
        $item =~s/\"//g;
        $returnData{$name} .= ','.$item;
      }
-     
+
     }
 
    return \%returnData;
@@ -350,11 +352,11 @@ sub parse_kegg_record {
 # subroutine to get organism_id for a specific 3-letter code
 sub organism_table {
     my ($codeList, $engine,$dbh)=@_;
-     
+
     #check whether this organism is already present in the DB (without additional connction to NCBI taxonomy and KEGG rest server)
     my $url = "http://rest.kegg.jp/list/genome";
     my $response = get $url;
-   
+
     my %returnData=();
 
     foreach my $code(@{$codeList})
@@ -373,7 +375,7 @@ sub organism_table {
    #example of the record:
    #genome:T00006	mpn, MYCPN, 272634; Mycoplasma pneumoniae M129
    #genome:T00007	eco, ECOLI, 511145; Escherichia coli K-12 MG1655
-    
+
      ($codeItem,  $taxonId, $scName)=$item=~ /\S+\s+(...)\,\s+[^0-9]*(\d+)\;\s+(.+)$/;
      if(!defined $codeItem){next;}
      if($codeItem eq $code)
@@ -399,7 +401,7 @@ sub organism_table {
         #print Dumper($results);
         $organism_id=$results->[0]->{'id'};
        }
-     
+
     }#if ! defined organism id
     $returnData{$code}=$organism_id;
    }
