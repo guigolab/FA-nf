@@ -208,7 +208,7 @@ process initDB {
 
 process ipscn {
 
-    module "Java/1.8.0_74"
+    module "Java/1.8.0_162"
 
     input:
     file seq from seq_file1
