@@ -82,11 +82,12 @@ my %config = $cfg->vars();
 my $loglevel = $config{'loglevel'};
 
 #kegg codes for orthologs to include in the DB
-#my @kegg_codes = split(",",$config{'kegg_species'});
+my @kegg_codes = split(",",$config{'kegg_species'});
 #update 27/02/2018 Now this item in config is read as array and not as a string, as before.
-my @kegg_codes = @{$config{'kegg_species'}};
+#It was fixed in new perl release, so I dont need that anymore.
+#my @kegg_codes = @{$config{'kegg_species'}};
 
-print "$kegg_codes\n"; die;
+#print "Dumper @kegg_codes\n"; die;
 
 
 if(!defined $config{'dbEngine'}){$config{'dbEngine'} = 'mysql';}
