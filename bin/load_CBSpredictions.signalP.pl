@@ -79,9 +79,11 @@ else
 {
   my $dbName = $config{'resultPath'}.$config{'dbname'}.'.db';
   my $dsn = "DBI:SQLite:dbname=$dbName";
-  $dbh= DBI->connect("DBI:SQLite:dbname=$dbName","", "", { RaiseError => 1,
-     sqlite_use_immediate_transaction => 0,
-     AutoCommit => 1});
+  $dbh= DBI->connect("DBI:SQLite:dbname=$dbName","", "", { 
+     RaiseError => 1,
+     ShowErrorStatement               => 1,
+     sqlite_use_immediate_transaction => 1,
+     AutoCommit => 0});
 }
 
 #my %conf =  %::conf;
@@ -146,8 +148,10 @@ sub uploadCBSpredictionsFast
    my $setValuesString = join(',', @setData);
    #print "$setValuesString\n";
    $sth->execute(@setData);
+   $sth->commit;
 #   $sth->finish();
 }
+ 
  $sth->finish();
 }
 
