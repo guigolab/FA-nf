@@ -79,7 +79,9 @@ else
 {
   my $dbName = $config{'resultPath'}.$config{'dbname'}.'.db';
   my $dsn = "DBI:SQLite:dbname=$dbName";
-  $dbh= DBI->connect("DBI:SQLite:dbname=$dbName","", "", { RaiseError => 1 });
+  $dbh= DBI->connect("DBI:SQLite:dbname=$dbName","", "", { RaiseError => 1,
+     sqlite_use_immediate_transaction => 0,
+     AutoCommit => 1});
 }
 
 #my %conf =  %::conf;
