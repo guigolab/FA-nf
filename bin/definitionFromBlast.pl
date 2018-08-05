@@ -183,7 +183,7 @@ while( my $result = $in->next_result ) {
   #if($count==10){last;}
    $id=$result->query_description();
   $id2 = $result->query_accession();
- #print "$id $id2\n";
+  print "$id $id2\n";
   @str=();
   while( my $hit = $result->next_hit ) {
     ## $hit is a Bio::Search::Hit::HitI compliant object
