@@ -167,7 +167,7 @@ sub uploadCDsearchDataFast
 #will skip definition so far.
        next if ($keyItem eq 'Definition' && $type eq 'h');
        next if ($keyItem eq 'Title' && $type eq 'f');
-      # push(@setValues, $keyItem);
+       push(@setValues, $keyItem);
        if($engine eq 'SQLite')
         {push(@setData, "\"$tmpHash{$keyItem}\"");}
        else
@@ -175,7 +175,8 @@ sub uploadCDsearchDataFast
       }
      $setString = join(', ', @setData);
      my $setValuesString = join(',', @setValues);
-     #print "$setValuesString\n";
+     print "$setValuesString\n";
+     
      #$dbh->disconnect();
      #die();
 
@@ -186,7 +187,7 @@ sub uploadCDsearchDataFast
 
     # $selectString = "SELECT $tableId from $table where protein_id=$proteinId and $uniqField=\"$tmpHash{$fieldName}\"";
     # $updateString = "UPDATE $table SET $setString where protein_id=$proteinId and $uniqField=\"$tmpHash{$fieldName}\"";
-    # print $insertString."\n";
+    print $insertString."\n";
     # $blastHitId = $dbh->select_update_insert("blast_hit_id", $selectString, $updateString, $insertString, $update);
      #my $setString = join(',', @setData);
      print "$setString\n";
