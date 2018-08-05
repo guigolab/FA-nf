@@ -189,7 +189,7 @@ sub uploadCDsearchDataFast
     # print $insertString."\n";
     # $blastHitId = $dbh->select_update_insert("blast_hit_id", $selectString, $updateString, $insertString, $update);
      #my $setString = join(',', @setData);
-     print "$setString\n"
+     print "$setString\n";
      my $id= $dbh->insert_set($insertString);
      #my $sth = $dbh->prepare($insertString);
      #$sth->execute(@setData);
