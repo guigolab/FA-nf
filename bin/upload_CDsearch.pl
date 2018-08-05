@@ -95,8 +95,8 @@ my %blastData=();
 
 my %dataHash = &parseCDsearchData($input,$type);
   #print Dumper(%dataHash); die();
- # &uploadCDsearchData($dbh, \%dataHash,$config{'dbEngine'}, $type);
-&uploadCDsearchDataFast($dbh, \%dataHash,$config{'dbEngine'}, $type);
+  &uploadCDsearchData($dbh, \%dataHash,$config{'dbEngine'}, $type);
+#&uploadCDsearchDataFast($dbh, \%dataHash,$config{'dbEngine'}, $type);
 
 $dbh->disconnect();
 
