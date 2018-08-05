@@ -190,10 +190,10 @@ sub uploadCDsearchDataFast
     # $blastHitId = $dbh->select_update_insert("blast_hit_id", $selectString, $updateString, $insertString, $update);
      #my $setString = join(',', @setData);
      print "$setString\n"
-     my $id= insert_set($insertString);
+     my $id= $dbh->insert_set($insertString);
      #my $sth = $dbh->prepare($insertString);
      #$sth->execute(@setData);
      }#foreach result line - each domain or feature, do its uploading
-  $sth->finish();
+ # $sth->finish();
  }#foreach protein item
 }
