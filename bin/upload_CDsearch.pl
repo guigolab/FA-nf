@@ -193,9 +193,9 @@ sub uploadCDsearchDataFast
     # my $id= $dbh->insert_set($insertString);
      my $sth = $dbh->prepare($insertString);
      $sth->execute();
-
+  $sth->finish();
+ 
      #$sth->execute(@setData);
      }#foreach result line - each domain or feature, do its uploading
-  $sth->finish();
  }#foreach protein item
 }
