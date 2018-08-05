@@ -174,7 +174,7 @@ my @str=();
 open(OUT, ">$outputFile")|| die "Can't open $outputFile for reading!\n";
 
 my ($id, $id2, $def);
- my $in = new Bio::SearchIO(-format => $format, 
+ my $in = Bio::SearchIO->new(-format => $format, 
                               -blasttype => 'blastp',
                            -file   => $blastFileName);
 
