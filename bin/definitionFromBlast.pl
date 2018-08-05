@@ -180,8 +180,8 @@ my ($id, $id2, $def);
 while( my $result = $in->next_result ) {
   ## $result is a Bio::Search::Result::ResultI compliant object
   $count++;
-  if($count==10){last;}
-  print $result."\n";
+  if($count==2){last;}
+  print Dumper($result)."\n";
   my $id3 = $result->query_name();
 
    $id=$result->query_description();
