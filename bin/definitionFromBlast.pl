@@ -168,7 +168,7 @@ my $count=0;
 my @str=();
  
  my $format='blast';
- if($blastFileName =~/\.xml/ || $fileFormat eq 'xml')
+ if($blastFileName =~/\.xml/ || $fileFormat eq 'xml'|| $blastFileName=~/Xml/)
   {$format='blastxml';}
 
 open(OUT, ">$outputFile")|| die "Can't open $outputFile for reading!\n";
