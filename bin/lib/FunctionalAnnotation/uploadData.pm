@@ -26,6 +26,8 @@ require Exporter;
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use Data::Dumper;
+use FunctionalAnnotation::DB;
+
 #use Digest::SHA1  qw(sha1_hex);
 #use Bio::SeqIO;
 #use Bio::SearchIO;
@@ -711,8 +713,13 @@ sub uploadCDsearchData
  foreach my $protItem (keys %{$dataHash})
  {
   $select = "select protein_id from protein where stable_id like '%$protItem%'";
-  $results = $dbh->select_from_table($select);
-  my $proteinId = $results->[0]{'protein_id'};
+  my $sth2 = $dbh->prepare($select);
+  $sth2->execute();
+  my $proteinId = $sth2->fetchrow()||'';
+  $sth2->finish();
+  
+  #$results = $dbh->select_from_table($select);
+  #my $proteinId = $results->[0]{'protein_id'};
 
   #foreach result line - do its uploading
   for(my $i=0; $i<scalar @{$dataHash->{$protItem}}; $i++)
