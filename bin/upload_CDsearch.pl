@@ -43,7 +43,9 @@ use Getopt::Long;
 use Pod::Usage;
 use Bio::SeqIO;
 use Data::Dumper;
+use FunctionalAnnotation::DB;
 use FunctionalAnnotation::uploadData;
+use FunctionalAnnotation::sqlLiteDB;
 use Config::Simple;
 use DBI;
 
@@ -95,8 +97,8 @@ my %blastData=();
 
 my %dataHash = &parseCDsearchData($input,$type);
   #print Dumper(%dataHash); die();
-  &uploadCDsearchData($dbh, \%dataHash,$config{'dbEngine'}, $type);
-#&uploadCDsearchDataFast($dbh, \%dataHash,$config{'dbEngine'}, $type);
+#  &uploadCDsearchData($dbh, \%dataHash,$config{'dbEngine'}, $type);
+&uploadCDsearchDataFast($dbh, \%dataHash,$config{'dbEngine'}, $type);
 
 $dbh->disconnect();
 
@@ -132,7 +134,7 @@ sub uploadCDsearchDataFast
       }
 
 
- my $sth = $dbh->prepare($insertString);
+# my $sth = $dbh->prepare($insertString);
 
  foreach my $protItem (keys %{$dataHash})
  {
@@ -171,24 +173,26 @@ sub uploadCDsearchDataFast
        else
         {push(@setData, "$keyItem = \"$tmpHash{$keyItem}\"");}
       }
-     #$setString = join(', ', @setData);
-     #my $setValuesString = join(',', @setValues);
+     $setString = join(', ', @setData);
+     my $setValuesString = join(',', @setValues);
      #print "$setValuesString\n";
      #$dbh->disconnect();
      #die();
 
-     #     if($engine eq 'SQLite')
-     # {$insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField, $setValuesString) VALUES(NULL,\"$proteinId\",\"$tmpHash{$fieldName}\",$setString)"; }
-     #else
-     # {$insertString = "INSERT INTO $table SET protein_id=$proteinId,$setString ";}
+          if($engine eq 'SQLite')
+      {$insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField, $setValuesString) VALUES(NULL,\"$proteinId\",\"$tmpHash{$fieldName}\",$setString)"; }
+     else
+      {$insertString = "INSERT INTO $table SET protein_id=$proteinId,$setString ";}
 
     # $selectString = "SELECT $tableId from $table where protein_id=$proteinId and $uniqField=\"$tmpHash{$fieldName}\"";
     # $updateString = "UPDATE $table SET $setString where protein_id=$proteinId and $uniqField=\"$tmpHash{$fieldName}\"";
     # print $insertString."\n";
     # $blastHitId = $dbh->select_update_insert("blast_hit_id", $selectString, $updateString, $insertString, $update);
-     my $setString = join(',', @setData);
-     print "$setString\n";
-     $sth->execute(@setData);
+     #my $setString = join(',', @setData);
+     print "$setString\n"
+     my $id= insert_set($insertString);
+     #my $sth = $dbh->prepare($insertString);
+     #$sth->execute(@setData);
      }#foreach result line - each domain or feature, do its uploading
   $sth->finish();
  }#foreach protein item
