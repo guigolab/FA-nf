@@ -174,6 +174,9 @@ process blast_annotator {
 }
 
 process blastDef {
+
+ module "Perl/5.22.1-foss-2016a"
+ 
  input:
  file blastXml from blastXmlResults3.flatMap()
 
