@@ -148,7 +148,7 @@ sub uploadCBSpredictionsFast
    my $setValuesString = join(',', @setData);
    #print "$setValuesString\n";
    $sth->execute(@setData);
-   $sth->commit;
+  # $sth->commit;
 #   $sth->finish();
 }
  
