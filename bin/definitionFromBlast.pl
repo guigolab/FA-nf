@@ -171,12 +171,11 @@ my @str=();
  if($blastFileName =~/\.xml/ || $fileFormat eq 'xml'|| $blastFileName=~/Xml/)
   {$format='blastxml';}
 
-print $format."\n";
-exit;
 open(OUT, ">$outputFile")|| die "Can't open $outputFile for reading!\n";
 
 my ($id, $id2, $def);
  my $in = new Bio::SearchIO(-format => $format, 
+                              -blasttype => 'blastp',
                            -file   => $blastFileName);
 
 while( my $result = $in->next_result ) {
