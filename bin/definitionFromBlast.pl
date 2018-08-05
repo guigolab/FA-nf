@@ -171,6 +171,8 @@ my @str=();
  if($blastFileName =~/\.xml/ || $fileFormat eq 'xml'|| $blastFileName=~/Xml/)
   {$format='blastxml';}
 
+print $format."\n";
+exit;
 open(OUT, ">$outputFile")|| die "Can't open $outputFile for reading!\n";
 
 my ($id, $id2, $def);
@@ -181,7 +183,7 @@ while( my $result = $in->next_result ) {
   ## $result is a Bio::Search::Result::ResultI compliant object
   $count++;
   if($count==2){last;}
-  print Dumper($result)."\n";
+  #print Dumper($result)."\n";
   my $id3 = $result->query_name();
 
    $id=$result->query_description();
