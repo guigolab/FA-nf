@@ -80,12 +80,13 @@ my %config = $cfg->vars();
 #my $debug = $config{'debug'};
 
 my $loglevel = $config{'loglevel'};
+if(! defined $loglevel){$loglevel='info';}
 
 #kegg codes for orthologs to include in the DB
-my @kegg_codes = split(",",$config{'kegg_species'});
+#my @kegg_codes = split(",",$config{'kegg_species'});
 #update 27/02/2018 Now this item in config is read as array and not as a string, as before.
 #It was fixed in new perl release, so I dont need that anymore.
-#my @kegg_codes = @{$config{'kegg_species'}};
+my @kegg_codes = @{$config{'kegg_species'}};
 
 #print "Dumper @kegg_codes\n"; die;
 
@@ -126,6 +127,8 @@ while (my $line = <FH>) {
 }
 close FH;
 
+#print Dumper(%keggs)."\n"; die;
+
 if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {print STDOUT "Number of unique KEGG groups:",scalar(keys %keggs),"\n";}
 #upload KEGG group information into DB - this will speed-up uploading process.. There are usually fewer groups then proteins assigned to them
 
@@ -143,7 +146,9 @@ sub uploadKeggInformation
  {
   #get KO information from server
   my $hash=parse_kegg_record($kegg_id);
-  my @proteinList = @{$keggData->{$kegg_id}};
+#  print Dumper($hash)."\n"; die;
+ 
+ my @proteinList = @{$keggData->{$kegg_id}};
   my $numberProteinsInGroup=scalar @proteinList;
   #upload information about KO group into DB if its absent in DB
   my @absentList=qw(PATHWAY CLASS MODULE DEFINITION DBLINKS);
@@ -324,7 +329,7 @@ sub parse_kegg_record {
     my %returnData;
     my $url = "http://rest.kegg.jp/get/ko:$kegg_id";
     my $response = get $url;
-    #print $response;
+#    print $response;
     my @lines = split(/\n/,$response);
     my($name, $value);
     foreach my $item (@lines)
@@ -360,8 +365,11 @@ sub organism_table {
 
     my %returnData=();
 
+   #print Dumper($codeList)."\n";
+
     foreach my $code(@{$codeList})
     {
+    # print "Code:$code\n";
 
      my $selectString = "SELECT organism_id from organism where kegg_code like '$code'";
      my $results = $dbh->select_from_table($selectString);
@@ -369,21 +377,30 @@ sub organism_table {
      if($organism_id eq '')
     {
     #get information from KEGG server (it does contains NCBI taxonomy record, we do not need to connect to NCBI)
-    my @lines = split(/\n/,$response);
+    #print "Getting organism info from KEGG server...\n";
+     my @lines = split(/\n/,$response);
     my($codeItem,$abbr, $taxonId, $scName);
     foreach my $item(@lines)
     {
    #example of the record:
    #genome:T00006	mpn, MYCPN, 272634; Mycoplasma pneumoniae M129
    #genome:T00007	eco, ECOLI, 511145; Escherichia coli K-12 MG1655
+     ($codeItem,  $taxonId, $scName)=$item=~/[^,]+(...)\,[^,]+\,.(\d+)\;.(.+)$/;
 
-     ($codeItem,  $taxonId, $scName)=$item=~ /\S+\s+(...)\,\s+[^0-9]*(\d+)\;\s+(.+)$/;
+    if(! defined $scName){
+     ($codeItem,  $taxonId, $scName)=$item=~/[^,]+(...)\,.(\d+)\;.(.+)$/;
+     }
+  
      if(!defined $codeItem){next;}
      if($codeItem eq $code)
      {last;}
     }
     if(!defined $taxonId)
     {print "Warning: there is no information about this specie: $code! skipped\n";next;}
+
+     #remove brackets from scName
+     $scName=~s/[()]+//gi;
+
          # check if organism already exists (yes && do_update => update record; no => insert new organism)
     my $organism_sql_select = qq{ SELECT organism_id FROM organism WHERE taxonomy_id=\"$taxonId\" };
     my $organism_sql_update = qq{ UPDATE organism SET species=\"$scName\",name=\"$scName\",reign=\"\",taxonomy_id=\"$taxonId\",kegg_code=\"$code\";};
@@ -392,8 +409,13 @@ sub organism_table {
     {$organism_sql_insert = qq{ INSERT INTO organism (organism_id,species,name, reign,taxonomy_id,kegg_code) VALUES(NULL,\"$scName\",\"$scName\",\"\",\"$taxonId\",\"$code\");};}
     else
     { $organism_sql_insert = qq{ INSERT INTO organism SET species=\"$scName\",name=\"$scName\",reign=\"\",taxonomy_id=\"$taxonId\",kegg_code=\"$code\";};}
-    $do_update=0;
+#    $do_update=0;
+    #print "$organism_sql_insert\n";
+    #print "$organism_sql_select\n";
+   #print "$organism_sql_update\n $do_update\n";
+
     my $organism_id = $dbh->select_update_insert("organism_id", $organism_sql_select, $organism_sql_update, $organism_sql_insert, $do_update);
+
     #small patch for SQLite - the current insert function could not return id of the last inserted record...
      if(!defined $organism_id)
        {
