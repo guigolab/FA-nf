@@ -53,9 +53,7 @@ my $confFile = 'main_configuration.ini';
 
 
 my $USAGE = "perl load_kegg_KAAS.pl [-i input]  [-rel Kegg release] [-h help] [-conf configuration file] \n";
-my ($do_update, $show_help, $input,$kegg_release, $loglevel);
-
-$loglevel='info';
+my ($do_update, $show_help, $input,$kegg_release);
 
 &GetOptions(
 			'update|u=s'	=> \$do_update,
@@ -82,6 +80,7 @@ my %config = $cfg->vars();
 #my $debug = $config{'debug'};
 
 my $loglevel = $config{'loglevel'};
+if(! defined $loglevel){$loglevel='info';}
 
 #kegg codes for orthologs to include in the DB
 my @kegg_codes = split(",",$config{'kegg_species'});
