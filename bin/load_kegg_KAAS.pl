@@ -127,7 +127,6 @@ while (my $line = <FH>) {
 }
 close FH;
 
-#print Dumper(%keggs)."\n"; die;
 
 if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {print STDOUT "Number of unique KEGG groups:",scalar(keys %keggs),"\n";}
 #upload KEGG group information into DB - this will speed-up uploading process.. There are usually fewer groups then proteins assigned to them
