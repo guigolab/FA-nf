@@ -179,13 +179,15 @@ my ($id, $id2, $def);
 
 while( my $result = $in->next_result ) {
   ## $result is a Bio::Search::Result::ResultI compliant object
-#  $count++;
-  #if($count==2){last;}
-  #print Dumper($result)."\n";
-  #my $id3 = $result->query_name();
+#
+  #$count++;
 
-   $id=$result->query_description();
-  $id2 = $result->query_accession();
+  #if($count==3){last;}
+  #print Dumper($result)."\n";
+  $id = $result->query_name();
+
+  # $id=$result->query_description();
+  #$id2 = $result->query_accession();
   #print "!$id! !$id2! $id3\n";
   @str=();
   while( my $hit = $result->next_hit ) {
