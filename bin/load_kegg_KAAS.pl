@@ -53,7 +53,9 @@ my $confFile = 'main_configuration.ini';
 
 
 my $USAGE = "perl load_kegg_KAAS.pl [-i input]  [-rel Kegg release] [-h help] [-conf configuration file] \n";
-my ($do_update, $show_help, $input,$kegg_release);
+my ($do_update, $show_help, $input,$kegg_release, $loglevel);
+
+$loglevel='info';
 
 &GetOptions(
 			'update|u=s'	=> \$do_update,
@@ -125,6 +127,8 @@ while (my $line = <FH>) {
      }
 }
 close FH;
+
+print Dumper(%keggs); die;
 
 if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {print STDOUT "Number of unique KEGG groups:",scalar(keys %keggs),"\n";}
 #upload KEGG group information into DB - this will speed-up uploading process.. There are usually fewer groups then proteins assigned to them
