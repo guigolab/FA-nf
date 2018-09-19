@@ -27,9 +27,12 @@ ENV PERLBREW_PATH $PERLBREW_ROOT/bin
 RUN perlbrew install $PERL_BUILD perl-$PERL_VERSION
 RUN perlbrew install-cpanm
 RUN bash -c 'source $PERLBREW_ROOT/etc/bashrc'
-		
+
+# Place /scripts
+RUN mkdir -p /scripts
+
 ENV PERLBREW_ROOT $PERLBREW_ROOT
-ENV PATH $PERLBREW_ROOT/perls/perl-$PERL_VERSION/bin:$PATH
+ENV PATH $PERLBREW_ROOT/perls/perl-$PERL_VERSION/bin:/scripts:$PATH
 ENV PERLBREW_PERL perl-$PERL_VERSION
 ENV PERLBREW_MANPATH $PELRBREW_ROOT/perls/perl-$PERL_VERSION/man
 ENV PERLBREW_SKIP_INIT 1
@@ -49,5 +52,7 @@ RUN set -x; rm -rf /var/lib/apt/lists/*
 # Workdir place
 RUN mkdir -p /project
 WORKDIR /project
+
+COPY bin/ /scripts/
 
 
