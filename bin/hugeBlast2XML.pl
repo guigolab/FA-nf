@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #This script takes input blast file in usual ncbi output format and change it into xml format. 
 #This concrete version of the script take huge file, from more then 10.000 queries to more then 20 subjects. Thats the reason not to use BioPerl, since operation in memory could dramatically affect speed of the process.

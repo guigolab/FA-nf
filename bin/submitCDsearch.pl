@@ -1,4 +1,6 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
+
+use warnings;
 
 # Script to POST and retrieve CD search via HTTP protocol, taken from 
 #https://www.ncbi.nlm.nih.gov/Structure/cdd/cdd_help.shtml

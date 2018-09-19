@@ -1,4 +1,7 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
+
+use warnings;
+
 =head1 NAME
 
  get_gff3.pl

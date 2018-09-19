@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #This script takes input blast file in ncbi or xml formats and return definition for queries, analogous of blast description annotator from blast2go
 #I am excluding words 'putative, predicted and so on', and then range phrases based on frequency
