@@ -44,7 +44,7 @@ RUN apt-get install -y r-base sqlite
 RUN apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
 
 # Perl packages
-RUN cpanm Bio::SearchIO Bio::SeqIO Config::Simple Config::JSON DBI File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util LWP::Simple LWP::UserAgent
+RUN cpanm Bio::SearchIO Bio::SeqIO Config::Simple Config::JSON DBI File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util LWP::Protocol::https LWP::Simple LWP::UserAgent
 
 # Clean cache
 RUN apt-get clean

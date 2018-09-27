@@ -157,7 +157,7 @@ process b2g4pipe {
 }
 
 
-if(params.blast_annotator != ""){
+if(params.gogourl != ""){
 
 process blast_annotator {
  input:
@@ -246,6 +246,9 @@ process 'cdSearchFeat' {
 
 
 process 'signalP' {
+
+    label 'sigtarp'
+
     input:
     file seq from seq_file4
 
@@ -258,6 +261,9 @@ process 'signalP' {
 }
 
 process 'targetP' {
+
+    label 'sigtarp'
+
     input:
     file seq from seq_file5
 
