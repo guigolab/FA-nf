@@ -60,10 +60,6 @@ protein = file(params.proteinFile)
 annotation = file(params.gffFile)
 config_file = file(params.config)
 
-// program-specific parameters
-db_name = file(params.blastDB_path).name
-db_path = file(params.blastDB_path).parent
-
 interpro = params.interproscan
 signalP = params.signalP
 targetP = params.targetP
@@ -109,6 +105,10 @@ else
 
 
 if (params.blastFile == "" ||  params.blastFile == null ){
+
+// program-specific parameters
+db_name = file(params.blastDB_path).name
+db_path = file(params.blastDB_path).parent
 
 process blast{
  input:
@@ -167,7 +167,7 @@ process blast_annotator {
  file blastAnnot into blast_annotator_results
 
 """
- perl $params.blast_annotator -in $blastXml -out blastAnnot --url  http://gogo.test.crg.eu/api --format blastxml
+ perl $params.blast_annotator -in $blastXml -out blastAnnot --url  $params.gogourl --format blastxml
 """
 }
 
