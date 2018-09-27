@@ -45,7 +45,10 @@ RUN apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-font
 
 # Perl packages
 RUN cpanm Bio::SearchIO Bio::SeqIO Config::Simple Config::JSON DBI File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util
-RUN cpanm IO::Socket::SSL Net::SSLeay LWP::Protocol::https LWP::Simple LWP::UserAgent
+
+RUN apt-get install -y libssl-dev
+
+RUN cpanm IO::Socket::SSL LWP::Simple LWP::Protocol::https LWP::UserAgent
 
 # Clean cache
 RUN apt-get clean
