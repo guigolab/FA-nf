@@ -14,7 +14,7 @@ ARG PERL_BUILD=
 RUN set -x; \
 apt-get update && apt-get upgrade; \
 apt-get install -y perl bzip2 zip curl \
-	build-essential
+    build-essential
 #RUN apt-get build-dep perl
 
 RUN mkdir -p $PERLBREW_ROOT
@@ -29,7 +29,7 @@ RUN perlbrew install-cpanm
 RUN bash -c 'source $PERLBREW_ROOT/etc/bashrc'
 
 # Place /scripts
-RUN mkdir -p /scripts
+RUN mkdir -p /external
 
 ENV PERLBREW_ROOT $PERLBREW_ROOT
 ENV PATH $PERLBREW_ROOT/perls/perl-$PERL_VERSION/bin:/scripts:$PATH
@@ -39,21 +39,19 @@ ENV PERLBREW_SKIP_INIT 1
 
 RUN ln -s $PELRBREW_ROOT/perls/perl-$PERL_VERSION/bin/perl /usr/local/bin/perl
 
-# Specific of FA pipeline
-RUN apt-get install -y r-base sqlite 
-RUN apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
+ARG SIGNALP_PATH=/data/soft/signalp/
+ARG TARGETP_PATH=/data/soft/targetp/
 
-# Perl packages
-RUN cpanm Bio::SearchIO Bio::SeqIO Config::Simple Config::JSON DBI File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util LWP::Simple LWP::UserAgent
+RUN mkdir -p /external/signalp
+RUN mkdir -p /external/targetp
 
-# Clean cache
-RUN apt-get clean
-RUN set -x; rm -rf /var/lib/apt/lists/*
+COPY $SIGNALP_PATH /external/signalp
+COPY $TARGETP_PATH /external/targetp
+
+RUN ln -s /external/signalp/signalp /usr/local/bin/signalp
+RUN ln -s /external/signalp/targetp /usr/local/bin/targetp
 
 # Workdir place
 RUN mkdir -p /project
 WORKDIR /project
-
-COPY bin/ /scripts/
-
 

@@ -290,7 +290,6 @@ process 'targetP_upload'{
  file config from config4perl
 
  """
-  module load Perl/5.26.1-GCCcore-6.4.0
   load_CBSpredictions.signalP.pl -i $targetP_res -conf $config -type t
  """
 }
