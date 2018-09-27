@@ -43,7 +43,7 @@ RUN ln -s $PELRBREW_ROOT/perls/perl-$PERL_VERSION/bin/perl /usr/local/bin/perl
 RUN apt-get install -y r-base sqlite
 
 # Perl packages
-RUN cpanm Bio::SearchIO Bio::SeqIO Config::Simple DBI File::Basename Getopt::Long IO::Handle Lingua::EN::Ngram List::Util LWP::Simple LWP::UserAgent
+RUN cpanm Bio::SearchIO Bio::SeqIO Config::Simple Config::JSON DBI File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util LWP::Simple LWP::UserAgent
 
 # Clean cache
 RUN apt-get clean
