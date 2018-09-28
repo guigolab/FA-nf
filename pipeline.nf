@@ -258,7 +258,7 @@ process 'signalP' {
     file('out') into (signalP_result1, signalP_result2)
 
     """
-    $signalP  $seq > out
+    signalP  $seq > out
     """
 }
 
@@ -273,7 +273,7 @@ process 'targetP' {
     file('out') into (targetP_result1, targetP_result2)
 
     """
-    $targetP -P -c  $seq > out
+    targetP -P -c  $seq > out
     """
 }
 
