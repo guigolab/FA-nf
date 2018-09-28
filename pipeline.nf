@@ -208,6 +208,8 @@ process initDB {
 
 process ipscn {
 
+    label 'ipscan'
+
     input:
     file seq from seq_file1
 
@@ -216,7 +218,7 @@ process ipscn {
 
     """
     sed 's/*//' $seq > tmp4ipscn
-    $interpro -i tmp4ipscn --goterms --iprlookup --pathways  -o out -f TSV
+    interproscan.sh -i tmp4ipscn --goterms --iprlookup --pathways  -o out -f TSV
     """
 }
 
