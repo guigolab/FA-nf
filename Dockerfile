@@ -44,7 +44,7 @@ RUN apt-get install -y r-base sqlite
 RUN apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
 
 # Perl packages
-RUN cpanm Bio::SearchIO Bio::SeqIO Config::Simple Config::JSON DBI File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util
+RUN cpanm Bio::SearchIO Bio::SeqIO Config::Simple Config::JSON DBI DBD::SQLite File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util
 
 RUN apt-get install -y libssl-dev
 
@@ -58,6 +58,6 @@ RUN set -x; rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /project
 WORKDIR /project
 
-COPY bin/ /scripts/
+COPY scripts/ /scripts/
 
 
