@@ -218,7 +218,7 @@ process ipscn {
 
     """
     sed 's/*//' $seq > tmp4ipscn
-    interproscan.sh -i tmp4ipscn --goterms --iprlookup --pathways  -o out -f TSV
+    interproscan.sh -i tmp4ipscn --goterms --iprlookup --pathways  -o out -f TSV -T ${params.ipscantmp}
     """
 }
 
