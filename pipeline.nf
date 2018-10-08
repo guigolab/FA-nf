@@ -343,8 +343,11 @@ process 'definition_upload'{
  file defFile from blastDef_results
  file config from config4perl
 
+ output:
+ file 'def_done' into definition_passed
+
  """
-  upload_go_definitions.pl -i $defFile -conf $config -mode def -param 'blast_def'
+  upload_go_definitions.pl -i $defFile -conf $config -mode def -param 'blast_def' > def_done
  """
 
 }
@@ -359,6 +362,7 @@ process 'kegg_upload'{
  input:
  file keggfile from keggfile
  file config from config4perl
+ file def_done from definition_passed
 
  """
  load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf $config
@@ -367,23 +371,11 @@ process 'kegg_upload'{
 
 }
 
-process 'b2go4pipe_upload'{
- input:
- file blastAnnot from b2g4pipeAnnot
- file config from config4perl
-
- """
- awk '{print \$1, \$3}' $blastAnnot > two_column_file
- 
- upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'b2go4pipe'
- """
-
-}
-
 process 'blast_annotator_upload'{
  input:
   file blastAnnot from blast_annotator_results
   file config from config4perl
+  file def_done from definition_passed
 
  """
   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' $blastAnnot > two_column_file
