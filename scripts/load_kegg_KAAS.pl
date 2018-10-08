@@ -83,10 +83,7 @@ my $loglevel = $config{'loglevel'};
 if(! defined $loglevel){$loglevel='info';}
 
 #kegg codes for orthologs to include in the DB
-#my @kegg_codes = split(",",$config{'kegg_species'});
-#update 27/02/2018 Now this item in config is read as array and not as a string, as before.
-#It was fixed in new perl release, so I dont need that anymore.
-my @kegg_codes = @{$config{'kegg_species'}};
+my @kegg_codes = map {s/^\s+|\s+$//g; $_}, split(",",$config{'kegg_species'});
 
 #print "Dumper @kegg_codes\n"; die;
 
