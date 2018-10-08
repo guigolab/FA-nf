@@ -49,6 +49,7 @@ use Bio::SeqIO;
 use Data::Dumper;
 use LWP::Simple;
 use Config::Simple;
+use String::Util 'trim';
 my $confFile = 'main_configuration.ini';
 
 
@@ -83,7 +84,7 @@ my $loglevel = $config{'loglevel'};
 if(! defined $loglevel){$loglevel='info';}
 
 #kegg codes for orthologs to include in the DB
-my @kegg_codes = map {s/^\s+|\s+$//g; $_}, split(",",$config{'kegg_species'});
+my @kegg_codes = map { trim($_) } split /,/, $config{'kegg_species'};
 
 #print "Dumper @kegg_codes\n"; die;
 

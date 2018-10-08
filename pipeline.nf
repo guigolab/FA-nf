@@ -92,6 +92,8 @@ seqData= Channel
  .from(protein)
  .splitFasta(by: params.chunkSize)
 
+iscan_properties = file("/usr/local/interproscan/interproscan.properties")
+
 if(params.debug=="TRUE"||params.debug=="true")
 {
  println("Debugging.. only the first 2 chunks will be processed")
@@ -212,6 +214,7 @@ process ipscn {
 
     input:
     file seq from seq_file1
+    file ("interproscan.properties") from file( iscan_properties )
 
     output:
     file('out') into (ipscn_result1, ipscn_result2)
@@ -335,8 +338,18 @@ process 'CDsearch_feat_upload'{
  """
 }
 
-if(params.keggFile == "" ||  params.keggFile == null )
-{
+process 'definition_upload'{
+ input:
+ file defFile from blastDef_results
+ file config from config4perl
+
+ """
+  upload_go_definitions.pl -i $defFile -conf $config -mode def -param 'blast_def'
+ """
+
+}
+
+if(params.keggFile == "" ||  params.keggFile == null ) {
  println "Please run KEGG KO group annotation on the web server http://www.genome.jp/tools/kaas/"
 }else{
 
@@ -352,8 +365,7 @@ process 'kegg_upload'{
  """
 }
 
-
-
+}
 
 process 'b2go4pipe_upload'{
  input:
@@ -368,21 +380,6 @@ process 'b2go4pipe_upload'{
 
 }
 
-
-process 'definition_upload'{
- input:
- file defFile from blastDef_results
- file config from config4perl
-
- """
-  upload_go_definitions.pl -i $defFile -conf $config -mode def -param 'blast_def'
- """
-
-}
-
-//
-
-
 process 'blast_annotator_upload'{
  input:
   file blastAnnot from blast_annotator_results
@@ -396,7 +393,6 @@ process 'blast_annotator_upload'{
 }
 
 
-}
 //the end of the exists loop for uploading
 
 /*
