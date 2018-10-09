@@ -180,25 +180,6 @@ process blastDef {
  """
 }
 
-process 'definition_upload'{
-
- maxForks 1
-
- publishDir "results", mode: 'copy'
- input:
- file defFile from blastDef_results
- file config from config4perl
-
- output:
- file 'def_done' into definition_passed
-
-
- """
-  upload_go_definitions.pl -i $defFile -conf $config -mode def -param 'blast_def' > def_done
- """
-
-}
-
 process initDB {
 
  input:
@@ -216,6 +197,24 @@ process initDB {
  command
 }
 
+process 'definition_upload'{
+
+ maxForks 1
+
+ publishDir "results", mode: 'copy'
+ input:
+ file defFile from blastDef_results
+ file config from config4perl
+
+ output:
+ file 'def_done' into ( definition_passed1, definition_passed2, definition_passed3, definition_passed4, definition_passed5, definition_passed6, definition_passed7 )
+
+
+ """
+  upload_go_definitions.pl -i $defFile -conf $config -mode def -param 'blast_def' > def_done
+ """
+
+}
 
 process ipscn {
 
@@ -304,7 +303,7 @@ process 'signalP_upload'{
  input:
  file signalP_res from signalP_result1
  file config from config4perl
- file def_done from definition_passed
+ file def_done from definition_passed1
 
  """
   load_CBSpredictions.signalP.pl -i $signalP_res -conf $config -type s
@@ -319,7 +318,7 @@ process 'targetP_upload'{
  input:
  file targetP_res from targetP_result1
  file config from config4perl
- file def_done from definition_passed
+ file def_done from definition_passed2
 
  """
   load_CBSpredictions.signalP.pl -i $targetP_res -conf $config -type t
@@ -334,7 +333,7 @@ process 'interpro_upload'{
  input:
  file ipscn_res from ipscn_result1
  file config from config4perl
- file def_done from definition_passed
+ file def_done from definition_passed3
 
  """
   run_interpro.pl -mode upload -i $ipscn_res -conf $config
@@ -350,7 +349,7 @@ process 'CDsearch_hit_upload'{
  input:
  file cdsearch_hit_res from cdSearch_hit_result
  file config from config4perl
- file def_done from definition_passed
+ file def_done from definition_passed4
 
  """
  upload_CDsearch.pl -i $cdsearch_hit_res -type h -conf $config
@@ -364,7 +363,7 @@ process 'CDsearch_feat_upload'{
  input:
  file cdsearch_feat_res from cdSearch_feat_result
  file config from config4perl
- file def_done from definition_passed
+ file def_done from definition_passed5
 
  """
  upload_CDsearch.pl -i $cdsearch_feat_res -type f -conf $config
@@ -385,7 +384,7 @@ process 'kegg_upload'{
  input:
  file keggfile from keggfile
  file config from config4perl
- file def_done from definition_passed
+ file def_done from definition_passed6
 
  """
  load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf $config
@@ -399,7 +398,7 @@ process 'blast_annotator_upload'{
  input:
   file blastAnnot from blast_annotator_results
   file config from config4perl
-  file def_done from definition_passed
+  file def_done from definition_passed7
 
  """
   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' $blastAnnot > two_column_file
