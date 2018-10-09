@@ -223,6 +223,7 @@ process ipscn {
     file('out') into (ipscn_result1, ipscn_result2)
 
     """
+    ln -s ${params.ipscandb} data
     sed 's/*//' $seq > tmp4ipscn
     interproscan.sh -i tmp4ipscn --goterms --iprlookup --pathways  -o out -f TSV -T ${params.ipscantmp}
     """
