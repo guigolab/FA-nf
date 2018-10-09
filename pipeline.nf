@@ -113,6 +113,9 @@ db_name = file(params.blastDB_path).name
 db_path = file(params.blastDB_path).parent
 
 process blast{
+
+ label 'blast'
+
  input:
  file seq from seq_file6
  file db_path
