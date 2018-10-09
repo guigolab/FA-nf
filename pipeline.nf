@@ -215,6 +215,8 @@ process ipscn {
 
     label 'ipscan'
 
+    maxRetries 2
+
     input:
     file seq from seq_file1
     file ("interproscan.properties") from file( iscan_properties )
