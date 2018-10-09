@@ -180,7 +180,24 @@ process blastDef {
  """
 }
 
+process 'definition_upload'{
 
+ maxForks 1
+
+ publishDir "results", mode: 'copy'
+ input:
+ file defFile from blastDef_results
+ file config from config4perl
+
+ output:
+ file 'def_done' into definition_passed
+
+
+ """
+  upload_go_definitions.pl -i $defFile -conf $config -mode def -param 'blast_def' > def_done
+ """
+
+}
 
 process initDB {
 
@@ -287,7 +304,7 @@ process 'signalP_upload'{
  input:
  file signalP_res from signalP_result1
  file config from config4perl
- file 'def_done' from definition_passed
+ file def_done from definition_passed
 
  """
   load_CBSpredictions.signalP.pl -i $signalP_res -conf $config -type s
@@ -302,7 +319,7 @@ process 'targetP_upload'{
  input:
  file targetP_res from targetP_result1
  file config from config4perl
- file 'def_done' from definition_passed
+ file def_done from definition_passed
 
  """
   load_CBSpredictions.signalP.pl -i $targetP_res -conf $config -type t
@@ -342,7 +359,7 @@ process 'CDsearch_hit_upload'{
 
 process 'CDsearch_feat_upload'{
 
-   maxForks 1
+ maxForks 1
 
  input:
  file cdsearch_feat_res from cdSearch_feat_result
@@ -352,25 +369,6 @@ process 'CDsearch_feat_upload'{
  """
  upload_CDsearch.pl -i $cdsearch_feat_res -type f -conf $config
  """
-}
-
-process 'definition_upload'{
-
-   maxForks 1
-
- publishDir "results", mode: 'copy'
- input:
- file defFile from blastDef_results
- file config from config4perl
-
- output:
- file 'def_done' into definition_passed
-
-
- """
-  upload_go_definitions.pl -i $defFile -conf $config -mode def -param 'blast_def' > def_done
- """
-
 }
 
 if(params.keggFile == "" ||  params.keggFile == null )
