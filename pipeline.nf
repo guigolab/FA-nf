@@ -60,9 +60,6 @@ protein = file(params.proteinFile)
 annotation = file(params.gffFile)
 config_file = file(params.config)
 
-interpro = params.interproscan
-signalP = params.signalP
-targetP = params.targetP
 dbFileName = params.resultPath+params.dbname+'.db'
 
 //println(dbFileName)
@@ -116,15 +113,17 @@ process blast{
 
  label 'blast'
 
+ publishDir "results", mode: 'copy'
+
  input:
  file seq from seq_file6
  file db_path
 
  output:
- file(blastXml) into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
+ file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
 
  """
-  blastp -db $db_path/$db_name -query $seq -num_threads 8 -evalue  0.00001 -out blastXml -outfmt 5
+  blastp -db $db_path/$db_name -query $seq -num_threads 8 -evalue  0.00001 -out "blastXml${seq}" -outfmt 5
  """
 }
 
@@ -133,6 +132,9 @@ process blast{
 blastInput=file(params.blastFile)
 
 process convertBlast{
+
+ publishDir "results", mode: 'copy'
+
  input:
  file blastFile from blastInput
 
@@ -145,22 +147,6 @@ process convertBlast{
 
 }
 }
-
-if(params.b2g4pipe != ""){
-process b2g4pipe {
- input:
- file blastXml  from blastXmlResults1.flatMap()
-
- output:
- file blastAnnot into b2g4pipeAnnot
-
- """
- $params.b2g4pipe -in $blastXml -out blastAnnot -prop /software/bi/programs/b2g4pipe/b2gPipe.test.properties -annot
- mv blastAnnot.annot blastAnnot
- """
-}
-}
-
 
 if(params.gogourl != ""){
 
@@ -179,15 +165,18 @@ process blast_annotator {
 }
 
 process blastDef {
+
+ publishDir "results", mode: 'copy'
+ tag "${blastXml}"
  
  input:
  file blastXml from blastXmlResults3.flatMap()
 
  output:
- file protDef into blastDef_results
+ file "blastDef${blastXml}" into blastDef_results
 
  """
-  definitionFromBlast.pl  -in $blastXml -out protDef -format xml
+  definitionFromBlast.pl  -in $blastXml -out "blastDef${blastXml}" -format xml
  """
 }
 
@@ -217,6 +206,8 @@ process ipscn {
 
     maxRetries 2
 
+    errorStrategy 'retry'
+
     input:
     file seq from seq_file1
     file ("interproscan.properties") from file( iscan_properties )
@@ -225,9 +216,8 @@ process ipscn {
     file('out') into (ipscn_result1, ipscn_result2)
 
     """
-    ln -s ${params.ipscandb} data
     sed 's/*//' $seq > tmp4ipscn
-    interproscan.sh -i tmp4ipscn --goterms --iprlookup --pathways  -o out -f TSV -T ${params.ipscantmp}
+    interproscan.sh -i tmp4ipscn --goterms --iprlookup --pathways -o out -f TSV -T ${params.ipscantmp}
     """
 }
 
@@ -291,9 +281,13 @@ Upload results into DB -- in current version of the pipeline DB is implemented w
 */
 
 process 'signalP_upload'{
+
+   maxForks 1
+
  input:
  file signalP_res from signalP_result1
  file config from config4perl
+ file 'def_done' from definition_passed
 
  """
   load_CBSpredictions.signalP.pl -i $signalP_res -conf $config -type s
@@ -302,9 +296,13 @@ process 'signalP_upload'{
 
 
 process 'targetP_upload'{
+
+   maxForks 1
+
  input:
  file targetP_res from targetP_result1
  file config from config4perl
+ file 'def_done' from definition_passed
 
  """
   load_CBSpredictions.signalP.pl -i $targetP_res -conf $config -type t
@@ -313,9 +311,13 @@ process 'targetP_upload'{
 
 
 process 'interpro_upload'{
+
+   maxForks 1
+
  input:
  file ipscn_res from ipscn_result1
  file config from config4perl
+ file def_done from definition_passed
 
  """
   run_interpro.pl -mode upload -i $ipscn_res -conf $config
@@ -325,9 +327,13 @@ process 'interpro_upload'{
 
 
 process 'CDsearch_hit_upload'{
+
+   maxForks 1
+
  input:
  file cdsearch_hit_res from cdSearch_hit_result
  file config from config4perl
+ file def_done from definition_passed
 
  """
  upload_CDsearch.pl -i $cdsearch_hit_res -type h -conf $config
@@ -335,9 +341,13 @@ process 'CDsearch_hit_upload'{
 }
 
 process 'CDsearch_feat_upload'{
+
+   maxForks 1
+
  input:
  file cdsearch_feat_res from cdSearch_feat_result
  file config from config4perl
+ file def_done from definition_passed
 
  """
  upload_CDsearch.pl -i $cdsearch_feat_res -type f -conf $config
@@ -345,6 +355,10 @@ process 'CDsearch_feat_upload'{
 }
 
 process 'definition_upload'{
+
+   maxForks 1
+
+ publishDir "results", mode: 'copy'
  input:
  file defFile from blastDef_results
  file config from config4perl
@@ -352,19 +366,24 @@ process 'definition_upload'{
  output:
  file 'def_done' into definition_passed
 
+
  """
   upload_go_definitions.pl -i $defFile -conf $config -mode def -param 'blast_def' > def_done
  """
 
 }
 
-if(params.keggFile == "" ||  params.keggFile == null ) {
+if(params.keggFile == "" ||  params.keggFile == null )
+{
  println "Please run KEGG KO group annotation on the web server http://www.genome.jp/tools/kaas/"
 }else{
 
  keggfile=file(params.keggFile)
 
 process 'kegg_upload'{
+
+   maxForks 1
+
  input:
  file keggfile from keggfile
  file config from config4perl
@@ -375,9 +394,10 @@ process 'kegg_upload'{
  """
 }
 
-}
-
 process 'blast_annotator_upload'{
+
+   maxForks 1
+
  input:
   file blastAnnot from blast_annotator_results
   file config from config4perl
@@ -391,6 +411,7 @@ process 'blast_annotator_upload'{
 }
 
 
+}
 //the end of the exists loop for uploading
 
 /*
