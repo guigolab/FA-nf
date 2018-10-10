@@ -179,6 +179,12 @@ sub uploadKeggInformation
     #select protein_id infor (because items are stable_ids in protein table)
      my $protein_sql_select= qq{ SELECT protein_id,definition FROM protein WHERE stable_id=\"$proteinItem\"};
      my $res = $dbh->select_from_table($protein_sql_select);
+					
+					# If no content, next. Cases of partial tests.
+					if ( $#{$res} < 0 ){
+						next;
+					}
+					
      my $protein_id=$res->[0]->{'protein_id'};
      my $protein_definition=$res->[0]->{'definition'};
 
