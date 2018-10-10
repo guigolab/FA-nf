@@ -145,6 +145,10 @@ sub uploadCDsearchDataFast
   $sth2->execute();
   my $proteinId = $sth2->fetchrow()||'';
   $sth2->finish();
+		
+		if ( $proteinId eq '' ) {
+				next;
+		}
 
   #foreach result line - do its uploading
   for(my $i=0; $i<scalar @{$dataHash->{$protItem}}; $i++)
@@ -156,29 +160,15 @@ sub uploadCDsearchDataFast
 		#and it should be exactly the order which is specified in insert string, otherwise script will insert nonsense data into DB without error
 
   #   my @keyList = keys %tmpHash;
-     my $setString='';
-     my @setData=();
-    # my @setValues=();
-     push(@setData,$proteinId);
-     push(@setData,"\"$tmpHash{$fieldName}\"" );
-
-     #foreach my $keyItem(@keyList)
-		 foreach my $keyItem(@setValues)
-      {
-       next if ($keyItem eq 'Accession' && $type eq 'h');
-#will skip definition so far.
-       next if ($keyItem eq 'Definition' && $type eq 'h');
-       next if ($keyItem eq 'Title' && $type eq 'f');
-       push(@setValues, $keyItem);
-       if($engine eq 'SQLite')
-        {push(@setData, "\"$tmpHash{$keyItem}\"");}
-       else
-        {push(@setData, "$keyItem = \"$tmpHash{$keyItem}\"");}
-      }
-     $setString = join(', ', @setData);
-     my $setValuesString = join(',', @setValues);
-     print "$setValuesString\n";
+     my $append = "$uniqField = \"$tmpHash{$fieldName}\"";
+					
+					my $setString = assignQuery( \%tmpHash, \@setValues, $type, $engine, $append );
      
+					# If problem, then empty
+					if ( $setString eq '' ) {
+						next;
+					}
+					
      #$dbh->disconnect();
      #die();
 
@@ -192,7 +182,6 @@ sub uploadCDsearchDataFast
     print $insertString."\n";
     # $blastHitId = $dbh->select_update_insert("blast_hit_id", $selectString, $updateString, $insertString, $update);
      #my $setString = join(',', @setData);
-     print "$setString\n";
     # my $id= $dbh->insert_set($insertString);
      my $sth = $dbh->prepare($insertString);
      $sth->execute();
@@ -201,4 +190,63 @@ sub uploadCDsearchDataFast
      #$sth->execute(@setData);
      }#foreach result line - each domain or feature, do its uploading
  }#foreach protein item
+}
+
+sub assignQuery {
+	
+#     #foreach my $keyItem(@keyList)
+#	 foreach my $keyItem(@setValues)
+#      {
+#       next if ($keyItem eq 'Accession' && $type eq 'h');
+##will skip definition so far.
+#       next if ($keyItem eq 'Definition' && $type eq 'h');
+#       next if ($keyItem eq 'Title' && $type eq 'f');
+#       push(@setValues, $keyItem);
+#       if($engine eq 'SQLite')
+#        {push(@setData, "\"$tmpHash{$keyItem}\"");}
+#       else
+#        {push(@setData, "$keyItem = \"$tmpHash{$keyItem}\"");}
+#      }
+#     $setString = join(', ', @setData);
+#     my $setValuesString = join(',', @setValues);
+#     print "$setValuesString\n";
+	
+		my $hash = shift;
+		my $keys = shift; 
+		my $type = shift;
+		my $engine = shift;
+		my $append = shift;
+		
+		my @setData;
+		my $setString = "";
+		
+		foreach my $key ( @{$keys} ) {
+		
+			if ( $hash->{$key} ) {
+				if ( $engine  eq 'SQLite' ) {
+					
+					push( @setData, "\"$hash->{$key}\"" );
+					
+				} else {
+					push( @setData, "$key = \"$hash->{$key}\"" );
+				}
+				
+			} else {
+				# If no key, then trigger fail
+				return '';
+			}
+			
+		}
+		
+		if ( $#setData >= 0 ) {
+			
+			if ( $engine ne 'SQLite' ) {
+				push( @setData, $append );
+			}
+			
+			$setString = join( ', ', @setData );
+		}
+		
+		return $setString;
+	
 }
