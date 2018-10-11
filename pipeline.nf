@@ -7,6 +7,8 @@
  *
  * Copyright (c) 2017, Emilio Palumbo
  *
+ * Copyright (c) 2018, Toni Hermoso Pulido
+ * 
  * Functional Annotation Pipeline for protein annotation from non-model organisms
  * from Genome Annotation Team in Catalyña (GATC) implemented in Nextflow
  *
@@ -113,7 +115,7 @@ process blast{
 
  label 'blast'
 
- publishDir "results", mode: 'copy'
+ // publishDir "results", mode: 'copy'
 
  input:
  file seq from seq_file6
@@ -133,7 +135,7 @@ blastInput=file(params.blastFile)
 
 process convertBlast{
 
- publishDir "results", mode: 'copy'
+ // publishDir "results", mode: 'copy'
 
  input:
  file blastFile from blastInput
@@ -201,7 +203,7 @@ process 'definition_upload'{
 
  maxForks 1
 
- publishDir "results", mode: 'copy'
+ // publishDir "results", mode: 'copy'
  input:
  file defFile from blastDef_results
  file config from config4perl
@@ -298,7 +300,7 @@ Upload results into DB -- in current version of the pipeline DB is implemented w
 
 process 'signalP_upload'{
 
-   maxForks 1
+ maxForks 1
 
  input:
  file signalP_res from signalP_result1
@@ -313,7 +315,7 @@ process 'signalP_upload'{
 
 process 'targetP_upload'{
 
-   maxForks 1
+ maxForks 1
 
  input:
  file targetP_res from targetP_result1
@@ -328,7 +330,7 @@ process 'targetP_upload'{
 
 process 'interpro_upload'{
 
-   maxForks 1
+ maxForks 1
 
  input:
  file ipscn_res from ipscn_result1
@@ -344,7 +346,7 @@ process 'interpro_upload'{
 
 process 'CDsearch_hit_upload'{
 
-   maxForks 1
+ maxForks 1
 
  input:
  file cdsearch_hit_res from cdSearch_hit_result
@@ -370,16 +372,17 @@ process 'CDsearch_feat_upload'{
  """
 }
 
-if(params.keggFile == "" ||  params.keggFile == null )
-{
+if(params.keggFile == "" ||  params.keggFile == null ) {
+
  println "Please run KEGG KO group annotation on the web server http://www.genome.jp/tools/kaas/"
+ 
 }else{
 
  keggfile=file(params.keggFile)
 
 process 'kegg_upload'{
 
-   maxForks 1
+ maxForks 1
 
  input:
  file keggfile from keggfile
@@ -393,7 +396,7 @@ process 'kegg_upload'{
 
 process 'blast_annotator_upload'{
 
-   maxForks 1
+ maxForks 1
 
  input:
   file blastAnnot from blast_annotator_results
@@ -435,21 +438,21 @@ workflow.onComplete {
   """
  }
 
-
-}
-
 /*
-process 'generateReport'{
- input:
-
- output:
-
+ process 'generateReport'{
+  input:
+ 
+  output:
+ 
+  """
+   pdflatex bin\/report_template
  """
-  pdflatex bin\/report_template
-"""
+ 
+ }
+*/
 
 }
-*/
+
 
 signalP_result2
  .collectFile(name: file(params.resultPath + "signalP.res.tsv"))
