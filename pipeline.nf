@@ -235,11 +235,15 @@ process ipscn {
 
     """
     sed 's/*//' $seq > tmp4ipscn
+    ln -s interproscan.properties .
     interproscan.sh -i tmp4ipscn --goterms --iprlookup --pathways -o out -f TSV -T ${params.ipscantmp}
     """
 }
 
 process 'cdSearchHit' {
+
+    maxForks 1
+
     input:
     file seq from seq_file2
 
@@ -252,6 +256,9 @@ process 'cdSearchHit' {
 }
 
 process 'cdSearchFeat' {
+
+    maxForks 1
+
     input:
     file seq from seq_file3
 
