@@ -415,24 +415,26 @@ process 'blast_annotator_upload'{
 Generate result files and report
 */
 
-if(params.results != "" && exists ){
-process 'generateResultFiles'{
- input:
-  file config from config4perl
+workflow.onComplete {
 
+ process 'generateResultFiles'{
+  input:
+   file config from config4perl
+ 
+   """
+   get_results.pl -conf $config
   """
-  get_results.pl -conf $config
- """
-}
+ }
+ 
+ process 'generateGFF3File'{
+  input:
+   file config from config4perl
+ 
+  """
+  get_gff3.pl -conf $config
+  """
+ }
 
-process 'generateGFF3File'{
- input:
-  file config from config4perl
-
- """
- get_gff3.pl -conf $config
- """
-}
 
 }
 
