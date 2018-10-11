@@ -48,9 +48,8 @@ More information can be found in the [Nextflow documentation](https://www.nextfl
 
 Used software is encapsulated in 4 containers:
 
-* NCBI Blast
+* [NCBI Blast](https://github.com/biocorecrg/ncbi-blast_docker)
 * SignalP and TargetP
-* Interproscan
-* Environment for our custom scripts
+* [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker)
+* Environment for annotation scripts
 
-INSTRUCTIONS TO BUILD CONTAINERS TO BE DONE
