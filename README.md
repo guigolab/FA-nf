@@ -27,9 +27,9 @@ The example of configuration file is included into this repository with name mai
 
 ## Running the pipeline
 
-The pipline has two main steps, executed one after another:
-1. The annotation itself, when various software is excuted and the results are stored in the internal database
-2. Generation of result files, including main annotation file in gff format and annotation report in pdf format.
+The annotation itself, when various software is excuted and the results are stored in a internal database.
+
+Result files, including main annotation file in gff format and annotation report in pdf format, are generated at the end of the pipeline.
 
 The annotation step can be launched by using the following command:
 
@@ -37,15 +37,20 @@ The annotation step can be launched by using the following command:
 ./nextflow run  pipeline.nf  --config  configuration_file.config 
 ```
 
-The result file generation step can be launched by using the following command:
-```
-./nextflow run  pipeline.nf  --config  configuration_file.config  --results
-```
 
 ## Pipeline parameters
 
-#### `--results`
-This parameter is specifying the execution of the final steps of the pipeline, where result files are generated
 #### `-resume`
 This Nextflow build-in parameter allow to re-execute processes that has changed or crashed during the pipeline run. Only processes that not finished will be executed.
 More information can be found in the [Nextflow documentation](https://www.nextflow.io/docs/latest/getstarted.html#modify-and-resume)
+
+## Associated containers
+
+Used software is encapsulated in 4 containers:
+
+* NCBI Blast
+* SignalP and TargetP
+* Interproscan
+* Environment for our custom scripts
+
+INSTRUCTIONS TO BUILD CONTAINERS TO BE DONE
