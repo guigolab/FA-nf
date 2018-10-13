@@ -168,7 +168,7 @@ process blast_annotator {
 
 process blastDef {
 
- publishDir "results", mode: 'copy'
+ // publishDir "results", mode: 'copy'
  tag "${blastXml}"
  
  input:
