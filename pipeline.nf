@@ -104,6 +104,11 @@ else
 (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6) = seqData.into(6)
 }
 
+if(params.keggFile == "" ||  params.keggFile == null ) {
+
+ println "Please run KEGG KO group annotation on the web server http://www.genome.jp/tools/kaas/"
+ 
+}
 
 if (params.blastFile == "" ||  params.blastFile == null ){
 
@@ -378,28 +383,6 @@ process 'CDsearch_feat_upload'{
  """
 }
 
-if(params.keggFile == "" ||  params.keggFile == null ) {
-
- println "Please run KEGG KO group annotation on the web server http://www.genome.jp/tools/kaas/"
- 
-}else{
-
- keggfile=file(params.keggFile)
-
-process 'kegg_upload'{
-
- maxForks 1
-
- input:
- file keggfile from keggfile
- file config from config4perl
- file def_done from definition_passed6
-
- """
- load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf $config
- """
-}
-
 process 'blast_annotator_upload'{
 
  maxForks 1
@@ -425,6 +408,22 @@ Generate result files and report
 */
 
 workflow.onComplete {
+
+ keggfile=file(params.keggFile)
+ 
+ process 'kegg_upload'{
+ 
+  maxForks 1
+ 
+  input:
+  file keggfile from keggfile
+  file config from config4perl
+  file def_done from definition_passed6
+ 
+  """
+  load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf $config
+  """
+ }
 
  process 'generateResultFiles'{
   input:
