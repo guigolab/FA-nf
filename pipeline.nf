@@ -321,10 +321,10 @@ process 'signalP_upload'{
  file def_done from definition_passed1
 
  output:
- file('out') into upload_signalp
+ file('out_signalp') into upload_signalp
 
  """
-  load_CBSpredictions.signalP.pl -i $signalP_res -conf $config -type s > out
+  load_CBSpredictions.signalP.pl -i $signalP_res -conf $config -type s > out_signalp
  """
 }
 
@@ -339,10 +339,10 @@ process 'targetP_upload'{
  file def_done from definition_passed2
 
  output:
- file('out') into upload_targetp
+ file('out_targetp') into upload_targetp
 
  """
-  load_CBSpredictions.signalP.pl -i $targetP_res -conf $config -type t > out
+  load_CBSpredictions.signalP.pl -i $targetP_res -conf $config -type t > out_targetp
  """
 }
 
@@ -357,10 +357,10 @@ process 'interpro_upload'{
  file def_done from definition_passed3
 
  output:
- file('out') into upload_interpro
+ file('out_interpro') into upload_interpro
  
  """
-  run_interpro.pl -mode upload -i $ipscn_res -conf $config > out
+  run_interpro.pl -mode upload -i $ipscn_res -conf $config > out_interpro
 
  """
 }
@@ -376,10 +376,10 @@ process 'CDsearch_hit_upload'{
  file def_done from definition_passed4
 
  output:
- file('out') into upload_hit
+ file('out_hit') into upload_hit
  
  """
- upload_CDsearch.pl -i $cdsearch_hit_res -type h -conf $config > out
+ upload_CDsearch.pl -i $cdsearch_hit_res -type h -conf $config > out_hit
  """
 }
 
@@ -393,10 +393,10 @@ process 'CDsearch_feat_upload'{
  file def_done from definition_passed5
 
  output:
- file('out') into upload_feat
+ file('out_feat') into upload_feat
 
  """
- upload_CDsearch.pl -i $cdsearch_feat_res -type f -conf $config > out
+ upload_CDsearch.pl -i $cdsearch_feat_res -type f -conf $config > out_feat
  """
 }
 
@@ -410,11 +410,11 @@ process 'blast_annotator_upload'{
   file def_done from definition_passed6
 
  output:
- file('out') into upload_blast
+ file('out_blast') into upload_blast
 
  """
   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' $blastAnnot > two_column_file
-  upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'blast_annotator' > out
+  upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'blast_annotator' > out_blast
  """
 
 }
@@ -437,10 +437,10 @@ process 'kegg_upload'{
  file('*') from upload_blast.collect()
 
  output:
- file('out') into last_step
+ file('done') into last_step
 
  """
- load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf $config > out
+ load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf $config > done
  """
 }
 
