@@ -238,11 +238,11 @@ process ipscn {
     file ("interproscan.properties") from file( iscan_properties )
 
     output:
-    file('out') into (ipscn_result1, ipscn_result2)
+    file('out_interpro') into (ipscn_result1, ipscn_result2)
 
     """
     sed 's/*//' $seq > tmp4ipscn
-    interproscan.sh -i tmp4ipscn --goterms --iprlookup --pathways -o out -f TSV -T ${params.ipscantmp}
+    interproscan.sh -i tmp4ipscn --goterms --iprlookup --pathways -o out_interpro -f TSV -T ${params.ipscantmp}
     """
 }
 
@@ -254,10 +254,10 @@ process 'cdSearchHit' {
     file seq from seq_file2
 
     output:
-    file 'out' into cdSearch_hit_result
+    file 'out_hit' into cdSearch_hit_result
 
     """
-    submitCDsearch.pl  -o out -in $seq
+    submitCDsearch.pl  -o out_hit -in $seq
     """
 }
 
@@ -269,10 +269,10 @@ process 'cdSearchFeat' {
     file seq from seq_file3
 
     output:
-    file 'out' into cdSearch_feat_result
+    file 'out_feat' into cdSearch_feat_result
 
     """
-    submitCDsearch.pl -t feats -o out -in $seq
+    submitCDsearch.pl -t feats -o out_feat -in $seq
     """
 }
 
@@ -285,10 +285,10 @@ process 'signalP' {
     file seq from seq_file4
 
     output:
-    file('out') into (signalP_result1, signalP_result2)
+    file('out_signalp') into (signalP_result1, signalP_result2)
 
     """
-    signalp  $seq > out
+    signalp  $seq > out_signalp
     """
 }
 
@@ -300,10 +300,10 @@ process 'targetP' {
     file seq from seq_file5
 
     output:
-    file('out') into (targetP_result1, targetP_result2)
+    file('out_targetp') into (targetP_result1, targetP_result2)
 
     """
-    targetp -P -c  $seq > out
+    targetp -P -c  $seq > out_targetp
     """
 }
 
@@ -321,10 +321,10 @@ process 'signalP_upload'{
  file def_done from definition_passed1
 
  output:
- file('out_signalp') into upload_signalp
+ file('upload_signalp') into upload_signalp
 
  """
-  load_CBSpredictions.signalP.pl -i $signalP_res -conf $config -type s > out_signalp
+  load_CBSpredictions.signalP.pl -i $signalP_res -conf $config -type s > upload_signalp
  """
 }
 
@@ -339,10 +339,10 @@ process 'targetP_upload'{
  file def_done from definition_passed2
 
  output:
- file('out_targetp') into upload_targetp
+ file('upload_targetp') into upload_targetp
 
  """
-  load_CBSpredictions.signalP.pl -i $targetP_res -conf $config -type t > out_targetp
+  load_CBSpredictions.signalP.pl -i $targetP_res -conf $config -type t > upload_targetp
  """
 }
 
@@ -357,10 +357,10 @@ process 'interpro_upload'{
  file def_done from definition_passed3
 
  output:
- file('out_interpro') into upload_interpro
+ file('upload_interpro') into upload_interpro
  
  """
-  run_interpro.pl -mode upload -i $ipscn_res -conf $config > out_interpro
+  run_interpro.pl -mode upload -i $ipscn_res -conf $config > upload_interpro
 
  """
 }
@@ -376,10 +376,10 @@ process 'CDsearch_hit_upload'{
  file def_done from definition_passed4
 
  output:
- file('out_hit') into upload_hit
+ file('upload_hit') into upload_hit
  
  """
- upload_CDsearch.pl -i $cdsearch_hit_res -type h -conf $config > out_hit
+ upload_CDsearch.pl -i $cdsearch_hit_res -type h -conf $config > upload_hit
  """
 }
 
@@ -393,10 +393,10 @@ process 'CDsearch_feat_upload'{
  file def_done from definition_passed5
 
  output:
- file('out_feat') into upload_feat
+ file('upload_feat') into upload_feat
 
  """
- upload_CDsearch.pl -i $cdsearch_feat_res -type f -conf $config > out_feat
+ upload_CDsearch.pl -i $cdsearch_feat_res -type f -conf $config > upload_feat
  """
 }
 
@@ -410,11 +410,11 @@ process 'blast_annotator_upload'{
   file def_done from definition_passed6
 
  output:
- file('out_blast') into upload_blast
+ file('upload_blast') into upload_blast
 
  """
   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' $blastAnnot > two_column_file
-  upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'blast_annotator' > out_blast
+  upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'blast_annotator' > upload_blast
  """
 
 }
@@ -429,12 +429,12 @@ process 'kegg_upload'{
  file keggfile from keggfile
  file config from config4perl
  /** Ensure all other upload processes finished **/
- file('out_signalp') from upload_signalp.collect()
- file('out_targetp') from upload_targetp.collect()
- file('out_interpro') from upload_interpro.collect()
- file('out_hit') from upload_hit.collect()
- file('out_feat') from upload_feat.collect()
- file('out_blast') from upload_blast.collect()
+ file('upload_signalp') from upload_signalp.collect()
+ file('upload_targetp') from upload_targetp.collect()
+ file('upload_interpro') from upload_interpro.collect()
+ file('upload_hit') from upload_hit.collect()
+ file('upload_feat') from upload_feat.collect()
+ file('upload_blast') from upload_blast.collect()
 
  output:
  file('done') into last_step
