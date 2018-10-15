@@ -429,12 +429,12 @@ process 'kegg_upload'{
  file keggfile from keggfile
  file config from config4perl
  /** Ensure all other upload processes finished **/
- file('*') from upload_signalp.collect()
- file('*') from upload_targetp.collect()
- file('*') from upload_interpro.collect()
- file('*') from upload_hit.collect()
- file('*') from upload_feat.collect()
- file('*') from upload_blast.collect()
+ file('out_signalp') from upload_signalp.collect()
+ file('out_targetp') from upload_targetp.collect()
+ file('out_interpro') from upload_interpro.collect()
+ file('out_hit') from upload_hit.collect()
+ file('out_feat') from upload_feat.collect()
+ file('out_blast') from upload_blast.collect()
 
  output:
  file('done') into last_step
