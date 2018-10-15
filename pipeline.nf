@@ -32,7 +32,6 @@
 
 // default parameters
 params.help = false
-params.results = ""
 params.debug="false"
 
 //print usage
@@ -47,7 +46,6 @@ if (params.help) {
   log.info ''
   log.info 'Options:'
   log.info '-resume		resume pipeline from the previous step, i.e. in case of error'
-  log.info '-results	generate result files, the final step of the pipeline'
   log.info '-help		this message'
   exit 1
 }
@@ -482,7 +480,7 @@ process 'generateReport'{
 
 workflow.onComplete {
 
- println ( workflow.success ? "\nDone! Check results in --> $params.results\n" : "Oops .. something went wrong" )
+ println ( workflow.success ? "\nDone! Check results in --> $params.resultPath\n" : "Oops .. something went wrong" )
 
 }
 
