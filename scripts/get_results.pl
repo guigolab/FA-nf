@@ -24,7 +24,8 @@ Script to extract basic information about annotated and not annotated proteins
 
  Usage:   perl get_results.pl <options>
  Options  -conf      : Configuration file. [Mandatory]
-          -list      : File with selected protein IDs - script will process only those seqences          
+										-obo       : Obo file. Download from http://www.geneontology.org/ontology/gene_ontology.obo. [Mandatory]
+          -list      : File with selected protein IDs - script will process only those sequences
           -help      : This documentation
 
 Note: Don't forget to specify mandatory options in the main configuration file : 
@@ -53,10 +54,11 @@ use FunctionalAnnotation::getResults;
 use Data::Dumper;
 use Config::Simple;
 
-my ( $show_help,$confFile, $listFile);
+my ( $show_help,$confFile,$oboFile,$listFile);
 
 &GetOptions(    	
-                        'conf=s'=>\$confFile, 
+                        'conf=s'=>\$confFile,
+																								'obo=s'=>\$oboFile,
                         'list=s'=>\$listFile, 
 			'help|h'        => \$show_help
 	   )
@@ -65,6 +67,10 @@ pod2usage(-verbose=>2) if $show_help;
 
 if(!defined $confFile)
 { die("Please specify configuration file!\nLaunch 'perl get_results.pl -h' to see parameters description\n ");}
+
+if(!defined $oboFile)
+{ die("Please specify obo file!\nLaunch 'perl get_results.pl -h' to see parameters description\n ");}
+
 
 #read configuration file
 my $cfg = new Config::Simple($confFile);
@@ -103,9 +109,13 @@ if(defined $listFile)
 #First - need to fulfill go term information if there are go terms without name and term_type fields fulfilled. To fulfill GO term information
 #I will use file gene_ontology_ext.obo in bin/ folder. This file is taken from Gene Ontology consortium http://www.geneontology.org/ontology/gene_ontology.obo
  #my $ontologyFile=$RealBin.'/gene_ontology_ext.obo';
-my $ontologyFile=$RealBin.'/../dataset/gene_ontology_ext.obo';
+my $ontologyFile=$oboFile;
 
-print "Ontology File is here: $ontologyFile\n";
+if ( ! -f $ontologyFile ) {
+	die "OBO file not in its location;"
+}
+
+# print "Ontology File is here: $ontologyFile\n";
 &uploadGOInfo($dbh, $ontologyFile);
 
 #Then need to update annotation status to 'annotated' for those proteins with hits in any source of evidence (including blast). 

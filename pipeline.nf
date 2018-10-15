@@ -110,6 +110,15 @@ if(params.keggFile == "" ||  params.keggFile == null ) {
 
 keggfile=file(params.keggFile)
 
+if(params.oboFile == "" ||  params.oboFile == null ) {
+
+ println "Please download OBO File from http://www.geneontology.org/ontology/gene_ontology.obo"
+ 
+}
+
+obofile=file(params.oboFile)
+
+
 if (params.blastFile == "" ||  params.blastFile == null ){
 
 // program-specific parameters
@@ -446,9 +455,10 @@ process 'generateResultFiles'{
  input:
   file config from config4perl
   file all_done from last_step
+  file obofile from obofile
 
   """
-  get_results.pl -conf $config
+  get_results.pl -conf $config -obo $obofile
  """
 }
 
