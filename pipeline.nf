@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 /*
- * Copyright (c) 2017, Centre for Genomic Regulation (CRG)
+ * Copyright (c) 2017-2018, Centre for Genomic Regulation (CRG)
  *
  * Copyright (c) 2017, Anna Vlasova
  *
@@ -110,6 +110,8 @@ if(params.keggFile == "" ||  params.keggFile == null ) {
  
 }
 
+keggfile=file(params.keggFile)
+
 if (params.blastFile == "" ||  params.blastFile == null ){
 
 // program-specific parameters
@@ -214,7 +216,7 @@ process 'definition_upload'{
  file config from config4perl
 
  output:
- file 'def_done' into ( definition_passed1, definition_passed2, definition_passed3, definition_passed4, definition_passed5, definition_passed6, definition_passed7 )
+ file 'def_done' into ( definition_passed1, definition_passed2, definition_passed3, definition_passed4, definition_passed5, definition_passed6 )
 
 
  """
@@ -318,8 +320,11 @@ process 'signalP_upload'{
  file config from config4perl
  file def_done from definition_passed1
 
+ output:
+ file('out') into upload_signalp
+
  """
-  load_CBSpredictions.signalP.pl -i $signalP_res -conf $config -type s
+  load_CBSpredictions.signalP.pl -i $signalP_res -conf $config -type s > out
  """
 }
 
@@ -333,8 +338,11 @@ process 'targetP_upload'{
  file config from config4perl
  file def_done from definition_passed2
 
+ output:
+ file('out') into upload_targetp
+
  """
-  load_CBSpredictions.signalP.pl -i $targetP_res -conf $config -type t
+  load_CBSpredictions.signalP.pl -i $targetP_res -conf $config -type t > out
  """
 }
 
@@ -348,8 +356,11 @@ process 'interpro_upload'{
  file config from config4perl
  file def_done from definition_passed3
 
+ output:
+ file('out') into upload_interpro
+ 
  """
-  run_interpro.pl -mode upload -i $ipscn_res -conf $config
+  run_interpro.pl -mode upload -i $ipscn_res -conf $config > out
 
  """
 }
@@ -364,8 +375,11 @@ process 'CDsearch_hit_upload'{
  file config from config4perl
  file def_done from definition_passed4
 
+ output:
+ file('out') into upload_hit
+ 
  """
- upload_CDsearch.pl -i $cdsearch_hit_res -type h -conf $config
+ upload_CDsearch.pl -i $cdsearch_hit_res -type h -conf $config > out
  """
 }
 
@@ -378,8 +392,11 @@ process 'CDsearch_feat_upload'{
  file config from config4perl
  file def_done from definition_passed5
 
+ output:
+ file('out') into upload_feat
+
  """
- upload_CDsearch.pl -i $cdsearch_feat_res -type f -conf $config
+ upload_CDsearch.pl -i $cdsearch_feat_res -type f -conf $config > out
  """
 }
 
@@ -390,71 +407,82 @@ process 'blast_annotator_upload'{
  input:
   file blastAnnot from blast_annotator_results
   file config from config4perl
-  file def_done from definition_passed7
+  file def_done from definition_passed6
+
+ output:
+ file('out') into upload_blast
 
  """
   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' $blastAnnot > two_column_file
-  upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'blast_annotator'
+  upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'blast_annotator' > out
  """
 
 }
 
+/** Last step **/
 
+process 'kegg_upload'{
+
+ maxForks 1
+
+ input:
+ file keggfile from keggfile
+ file config from config4perl
+ /** Ensure all other upload processes finished **/
+ file('*') from upload_signalp.collect()
+ file('*') from upload_targetp.collect()
+ file('*') from upload_interpro.collect()
+ file('*') from upload_hit.collect()
+ file('*') from upload_feat.collect()
+ file('*') from upload_blast.collect()
+
+ output:
+ file('out') into last_step
+
+ """
+ load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf $config > out
+ """
 }
-//the end of the exists loop for uploading
+
+process 'generateResultFiles'{
+ input:
+  file config from config4perl
+  file all_done from last_step
+
+  """
+  get_results.pl -conf $config
+ """
+}
+
+process 'generateGFF3File'{
+ input:
+  file config from config4perl
+  file all_done from last_step
+
+ """
+ get_gff3.pl -conf $config
+ """
+}
 
 /*
-Generate result files and report
+process 'generateReport'{
+ input:
+
+ output:
+
+ """
+  pdflatex bin\/report_template
+"""
+
+}
 */
+
+
+
 
 workflow.onComplete {
 
- keggfile=file(params.keggFile)
- 
- process 'kegg_upload'{
- 
-  maxForks 1
- 
-  input:
-  file keggfile from keggfile
-  file config from config4perl
-  file def_done from definition_passed6
- 
-  """
-  load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf $config
-  """
- }
-
- process 'generateResultFiles'{
-  input:
-   file config from config4perl
- 
-   """
-   get_results.pl -conf $config
-  """
- }
- 
- process 'generateGFF3File'{
-  input:
-   file config from config4perl
- 
-  """
-  get_gff3.pl -conf $config
-  """
- }
-
-/*
- process 'generateReport'{
-  input:
- 
-  output:
- 
-  """
-   pdflatex bin\/report_template
- """
- 
- }
-*/
+ println ( workflow.success ? "\nDone! Check results in --> $params.results\n" : "Oops .. something went wrong" )
 
 }
 
