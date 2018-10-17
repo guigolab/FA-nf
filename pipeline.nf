@@ -219,7 +219,7 @@ process 'definition_upload'{
 
  // publishDir "results", mode: 'copy'
  input:
- file "*.txt" from blastDef_results.collect()
+ file "*.def" from blastDef_results.collect()
  file config from config4perl
 
  output:
@@ -227,7 +227,7 @@ process 'definition_upload'{
 
 
  """
-  cat *txt > allDef
+  cat *.def > allDef
   upload_go_definitions.pl -i allDef -conf $config -mode def -param 'blast_def' > def_done
  """
 
@@ -324,7 +324,7 @@ process 'signalP_upload'{
  maxForks 1
 
  input:
- file signalP_res from signalP_result1.collect()
+ file '*.out_signal' from signalP_result1.collect()
  file config from config4perl
  file def_done from definition_passed
 
@@ -332,7 +332,8 @@ process 'signalP_upload'{
  file('upload_signalp') into upload_signalp
 
  """
-  load_CBSpredictions.signalP.pl -i $signalP_res -conf $config -type s > upload_signalp
+  cat *.out_signal > allSignal
+  load_CBSpredictions.signalP.pl -i allSignal -conf $config -type s > upload_signalp
  """
 }
 
@@ -342,7 +343,7 @@ process 'targetP_upload'{
  maxForks 1
 
  input:
- file targetP_res from targetP_result1.collect()
+ file '*.out_target' from targetP_result1.collect()
  file config from config4perl
  file upload_signalp from upload_signalp
 
@@ -350,7 +351,8 @@ process 'targetP_upload'{
  file('upload_targetp') into upload_targetp
 
  """
-  load_CBSpredictions.signalP.pl -i $targetP_res -conf $config -type t > upload_targetp
+  cat *.out_target > allTarget
+  load_CBSpredictions.signalP.pl -i allTarget -conf $config -type t > upload_targetp
  """
 }
 
@@ -360,7 +362,7 @@ process 'interpro_upload'{
  maxForks 1
 
  input:
- file ipscn_res from ipscn_result1.collect()
+ file '*.ipscan' from ipscn_result1.collect()
  file config from config4perl
  file upload_targetp from upload_targetp
 
@@ -368,7 +370,8 @@ process 'interpro_upload'{
  file('upload_interpro') into upload_interpro
  
  """
-  run_interpro.pl -mode upload -i $ipscn_res -conf $config > upload_interpro
+  cat *.ipscan > allInterpro
+  run_interpro.pl -mode upload -i allInterpro -conf $config > upload_interpro
 
  """
 }
@@ -379,7 +382,7 @@ process 'CDsearch_hit_upload'{
  maxForks 1
 
  input:
- file cdsearch_hit_res from cdSearch_hit_result.collect()
+ file '*.cdsearch_hit' from cdSearch_hit_result.collect()
  file config from config4perl
  file upload_interpro from upload_interpro
 
@@ -387,7 +390,8 @@ process 'CDsearch_hit_upload'{
  file('upload_hit') into upload_hit
  
  """
- upload_CDsearch.pl -i $cdsearch_hit_res -type h -conf $config > upload_hit
+ cat *.cdsearch_hit > allCDsearchHit
+ upload_CDsearch.pl -i allCDsearchHit -type h -conf $config > upload_hit
  """
 }
 
@@ -396,7 +400,7 @@ process 'CDsearch_feat_upload'{
  maxForks 1
 
  input:
- file cdsearch_feat_res from cdSearch_feat_result.collect()
+ file '*.cdsearch_feat' from cdSearch_feat_result.collect()
  file config from config4perl
  file upload_hit from upload_hit
 
@@ -404,7 +408,8 @@ process 'CDsearch_feat_upload'{
  file('upload_feat') into upload_feat
 
  """
- upload_CDsearch.pl -i $cdsearch_feat_res -type f -conf $config > upload_feat
+ cat *.cdsearch_feat > allCDsearchFeat
+ upload_CDsearch.pl -i allCDsearchFeat -type f -conf $config > upload_feat
  """
 }
 
@@ -413,7 +418,7 @@ process 'blast_annotator_upload'{
  maxForks 1
 
  input:
-  file blastAnnot from blast_annotator_results.collect()
+  file "*.blast" from blast_annotator_results.collect()
   file config from config4perl
   file upload_feat from upload_feat
 
@@ -421,7 +426,8 @@ process 'blast_annotator_upload'{
   file('upload_blast') into upload_blast
 
  """
-  awk '\$2!=\"#\"{print \$1\"\t\"\$2}' $blastAnnot > two_column_file
+  cat *.blast > allBlast
+  awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file
   upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'blast_annotator' > upload_blast
  """
 
