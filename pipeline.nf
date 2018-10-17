@@ -219,11 +219,11 @@ process 'definition_upload'{
 
  // publishDir "results", mode: 'copy'
  input:
- file defFile from blastDef_results
+ file defFile from blastDef_results.collect()
  file config from config4perl
 
  output:
- file 'def_done' into ( definition_passed1, definition_passed2, definition_passed3, definition_passed4, definition_passed5, definition_passed6 )
+ file 'def_done' into definition_passed
 
 
  """
@@ -323,9 +323,9 @@ process 'signalP_upload'{
  maxForks 1
 
  input:
- file signalP_res from signalP_result1
+ file signalP_res from signalP_result1.collect()
  file config from config4perl
- file def_done from definition_passed1
+ file def_done from definition_passed
 
  output:
  file('upload_signalp') into upload_signalp
@@ -341,9 +341,9 @@ process 'targetP_upload'{
  maxForks 1
 
  input:
- file targetP_res from targetP_result1
+ file targetP_res from targetP_result1.collect()
  file config from config4perl
- file def_done from definition_passed2
+ file upload_signalp from upload_signalp
 
  output:
  file('upload_targetp') into upload_targetp
@@ -359,9 +359,9 @@ process 'interpro_upload'{
  maxForks 1
 
  input:
- file ipscn_res from ipscn_result1
+ file ipscn_res from ipscn_result1.collect()
  file config from config4perl
- file def_done from definition_passed3
+ file upload_targetp from upload_targetp
 
  output:
  file('upload_interpro') into upload_interpro
@@ -378,9 +378,9 @@ process 'CDsearch_hit_upload'{
  maxForks 1
 
  input:
- file cdsearch_hit_res from cdSearch_hit_result
+ file cdsearch_hit_res from cdSearch_hit_result.collect()
  file config from config4perl
- file def_done from definition_passed4
+ file upload_interpro from upload_interpro
 
  output:
  file('upload_hit') into upload_hit
@@ -395,9 +395,9 @@ process 'CDsearch_feat_upload'{
  maxForks 1
 
  input:
- file cdsearch_feat_res from cdSearch_feat_result
+ file cdsearch_feat_res from cdSearch_feat_result.collect()
  file config from config4perl
- file def_done from definition_passed5
+ file upload_hit from upload_hit
 
  output:
  file('upload_feat') into upload_feat
@@ -412,12 +412,12 @@ process 'blast_annotator_upload'{
  maxForks 1
 
  input:
-  file blastAnnot from blast_annotator_results
+  file blastAnnot from blast_annotator_results.collect()
   file config from config4perl
-  file def_done from definition_passed6
+  file upload_feat from upload_feat
 
- output:
- file('upload_blast') into upload_blast
+  output:
+  file('upload_blast') into upload_blast
 
  """
   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' $blastAnnot > two_column_file
@@ -435,13 +435,7 @@ process 'kegg_upload'{
  input:
  file keggfile from keggfile
  file config from config4perl
- /** Ensure all other upload processes finished **/
- file('upload_signalp') from upload_signalp.collect()
- file('upload_targetp') from upload_targetp.collect()
- file('upload_interpro') from upload_interpro.collect()
- file('upload_hit') from upload_hit.collect()
- file('upload_feat') from upload_feat.collect()
- file('upload_blast') from upload_blast.collect()
+ file('upload_blast') from upload_blast
 
  output:
  file('done') into last_step
