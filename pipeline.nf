@@ -189,10 +189,10 @@ process blastDef {
  file blastXml from blastXmlResults3.flatMap()
 
  output:
- file "blastDef${blastXml}" into blastDef_results
+ file "blastDef.txt" into blastDef_results
 
  """
-  definitionFromBlast.pl  -in $blastXml -out "blastDef${blastXml}" -format xml
+  definitionFromBlast.pl  -in $blastXml -out blastDef.txt -format xml
  """
 }
 
@@ -219,7 +219,7 @@ process 'definition_upload'{
 
  // publishDir "results", mode: 'copy'
  input:
- file defFile from blastDef_results.collect()
+ file "*.txt" from blastDef_results.collect()
  file config from config4perl
 
  output:
@@ -227,7 +227,8 @@ process 'definition_upload'{
 
 
  """
-  upload_go_definitions.pl -i $defFile -conf $config -mode def -param 'blast_def' > def_done
+  cat *txt > allDef
+  upload_go_definitions.pl -i allDef -conf $config -mode def -param 'blast_def' > def_done
  """
 
 }
