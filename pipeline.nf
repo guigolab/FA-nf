@@ -174,7 +174,7 @@ process blast_annotator {
  file blastAnnot into blast_annotator_results
 
 """
- blast-annotator.pl -in $blastXml -out blastAnnot --url  $params.gogourl --format blastxml
+ blast-annotator.pl -in $blastXml -out blastAnnot --url  $params.gogourl -q --format blastxml
 """
 }
 
