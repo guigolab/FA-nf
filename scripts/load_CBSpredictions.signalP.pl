@@ -96,6 +96,12 @@ die "You must specify a file with the predictions\n Use -h for help"
 my %dataHash = &parseCBSpredictionsData($idfile,$type);
 &uploadCBSpredictionsFast($dbh, \%dataHash,$config{'dbEngine'}, $type);
 
+# Commit needed for SQLite
+if($config{'dbEngine'} eq 'SQLite')
+{
+		$dbh->commit;
+}
+
 $dbh->disconnect();
 
 
