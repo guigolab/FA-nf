@@ -139,6 +139,7 @@ sub printSummaryInfo
   print OUTPUT "Proteins with definition(name): $resultNumber ($propAnnot %)\n";
  }
  
+ # TODO: To review all these tables
  #get proteins with domains and other features
  #$sqlSelect = "select protein_id from protein where protein_id in (select distinct protein_id from domain) $condStat2";
  my %dbHash=('domain'=>'InterPro domains',
@@ -256,7 +257,7 @@ sub printGoTerms
 
  if($param eq 'protein')
  {
-  open(OUTPUT, ">$fileName")||die("Can't opne $fileName for writing! $!\n");
+  open(OUTPUT, ">$fileName")||die("Can't open $fileName for writing! $!\n");
   print OUTPUT "#PROTEIN_NAME\tGO_ACC\tGO_NAME\tGO_TYPE\n";
   my $sqlSelect = "select protein.protein_id,stable_id, go_acc, go_name, term_type from protein,protein_go,go_term where $condStat  protein.protein_id=protein_go.protein_id  and protein_go.go_term_id=go_term.go_term_id order by protein.stable_id";  
  

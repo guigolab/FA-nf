@@ -134,7 +134,7 @@ my $definitionFile = $outputFolder.'/'.'protein_definition.txt';
 my $goFile=$outputFolder .'/'.'go_terms.txt';
 &printGoTerms(\@listIds, $goFile, $dbh, 'protein');
 my $goFile2=$outputFolder .'/'.'go_terms_byGene.txt';
-&printGoTerms(\@listIds, $goFile, $dbh, 'gene');
+&printGoTerms(\@listIds, $goFile2, $dbh, 'gene');
 
 
 #make annotated vs not annotated plot
