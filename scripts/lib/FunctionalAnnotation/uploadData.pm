@@ -908,7 +908,13 @@ sub parseAnnotation
  while(my $line=<INFILE>)
   {
    chomp($line);
-   ($proteinName, $annotTerm)=$line=~/^(\S+)\s+(\S+)\s*/;
+   ($proteinName, $annotTerm)=$line=~/^(\S+)\s+(\S.*)\s*/;
+   
+   if ( $annotTerm eq '#' ) {
+    
+    ($proteinName, $annotTerm)=$line=~/^(\S+)\s+\#\s+(\S.*)\s*/;
+    
+   }
 
 #some patch - new Lynx annotation had transcript name within protein name: LYPA23B012832T1|LYPA23B012832P1 I need only the second part, not the first one:
         # $proteinName=~s/LYPA[^|]+\|(.+)/$1/;
@@ -923,9 +929,13 @@ sub parseAnnotation
  if($proteinName =~/([^_]+)\_\d+/)
  {$proteinName=$1;}
 
+# Let's ensure everything uploaded should be OK
+  if ( $proteinName && $annotTerm ) {
 
-   push(@{$returnData{$proteinName}{'annot'}}, $annotTerm);
+    push(@{$returnData{$proteinName}{'annot'}}, $annotTerm);
 
+  }
+   
    #if($line=~/\S+\s+\S+\s+(.+)$/)
    # {push(@{$returnData{$proteinName}{'definition'}}, $1); }
 
