@@ -383,12 +383,16 @@ sub updateProteinDefinition
     # print Dumper(@{$annotData->{$protItem}{'definition'}});
      my @tmpDefinition = &uniqueValues(\@{$annotData->{$protItem}{'annot'}});
 
-     my $definition = $oldDefinition.$source.':'.join(' ',@tmpDefinition);
-
-     $updateString = "UPDATE protein SET definition =\"$definition\" where protein_id='$proteinId';";
-    if(($loglevel eq 'debug'))
-    { print "$updateString\n";}
-     $dbh->update_set($updateString);
+     if ( $#tmpDefinition >= 0 ) {
+     
+      my $definition = $oldDefinition.$source.':'.join(' ',@tmpDefinition);
+ 
+      $updateString = "UPDATE protein SET definition =\"$definition\" where protein_id='$proteinId';";
+     if(($loglevel eq 'debug'))
+     { print "$updateString\n";}
+      $dbh->update_set($updateString);
+      
+     }
    }
 
 return 1;
