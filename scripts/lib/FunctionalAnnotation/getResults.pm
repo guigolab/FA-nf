@@ -272,7 +272,7 @@ sub printGoTerms
  open(OUTPUT, ">$fileName")||die("Can't opne $fileName for writing! $!\n");
  print OUTPUT "#GENE_NAME\tGO_ACC\n";
 
-  my $sqlSelect = "select gene_name, GROUP_CONCAT(go_acc) as GO_acc from gene,protein,protein_go,go_term where $condStat  protein.protein_id=protein_go.protein_id  and protein_go.go_term_id=go_term.go_term_id and protein.gene_id=gene.gene_id order by gene_name";  
+  my $sqlSelect = "select gene_name, GROUP_CONCAT(go_acc) as GO_acc from gene,protein,protein_go,go_term where $condStat  protein.protein_id=protein_go.protein_id  and protein_go.go_term_id=go_term.go_term_id and protein.gene_id=gene.gene_id group by gene_name order by gene_name";  
  
   $results =$dbh->select_from_table($sqlSelect);
 
