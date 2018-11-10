@@ -192,7 +192,7 @@ process blastDef {
  file "blastDef.txt" into blastDef_results
 
  """
-  definitionFromBlast.pl  -in $blastXml -out blastDef.txt -format xml
+  definitionFromBlast.pl  -in $blastXml -out blastDef.txt -format xml -q
  """
 }
 
