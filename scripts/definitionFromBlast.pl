@@ -20,11 +20,13 @@ my $blastFileName ='';
 #blast output file name
 my $outputFile = 'definition.tsv';
 my $fileFormat = 'ncbi';
+my $query_desc;
 
 GetOptions(
      'in|blast=s'=>\$blastFileName,
      'output|out=s'=>\$outputFile,
      'f|format=s'=>\$fileFormat,
+     'query|q'	=> \$query_desc, #use query description instead of name
     ) or &usage;
 
 &usage if !$blastFileName;
@@ -184,9 +186,13 @@ while( my $result = $in->next_result ) {
 
   #if($count==3){last;}
   #print Dumper($result)."\n";
-  $id = $result->query_name();
-
-  # $id=$result->query_description();
+  
+	if ( $query_desc ) {
+		$id = $result->query_description();
+	} else {
+		$id = $result->query_name();
+	}
+ 
   #$id2 = $result->query_accession();
   #print "!$id! !$id2! $id3\n";
   @str=();

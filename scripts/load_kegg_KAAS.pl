@@ -303,7 +303,7 @@ sub uploadKeggInformation
  }#foreach kegg KO item
 
  #update protein definition for KEGG source
-
+  #print STDERR Dumper( \%protDefinitionData );
   &updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
 
 }#sub
