@@ -192,10 +192,8 @@ sub printDefinitionInfo
    $stbId=$result->{'stable_id'};
    foreach my $item (@defArray)
    {
-    if($item=~/^blast2go\:(.+)$/)
-     { print OUTPUT "$stbId\tBLAST2GO\t$1\n";}
-    elsif($item=~/^KEGG\:(.+)$/)
-     { print OUTPUT "$stbId\tKEGG\t$1\n";}
+    if($item=~/^(\S+?)\:(.+)$/)
+     { print OUTPUT "$stbId\t".uc( $1 )."\t$2\n";}
    }
 
   } 
