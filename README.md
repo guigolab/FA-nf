@@ -34,7 +34,7 @@ Result files, including main annotation file in gff format and annotation report
 The annotation step can be launched by using the following command:
 
 ```
-./nextflow run  pipeline.nf  --config  configuration_file.config 
+./nextflow run -bg pipeline.nf --config configuration_file.config &> logfile 
 ```
 
 
