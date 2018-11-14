@@ -14,6 +14,7 @@ sudo sudo /usr/local/bin/singularity build mariadb.simg Singularity.mysql
 singularity exec -B $MYSQLDIR/db:/var/lib/mysql -B ./mariadb-custom.cnf:/etc/mysql/conf.d/custom.cnf mariadb.simg mysql_install_db
 
 # Execute DB
+/sbin/ifconfig eth0 | perl -lane 'if ( $_=~/inet\s/ ) { $_=~/inet\s(\S+)\s/ ; print $1; }' > /path/to/mysql.ip
 
 singularity instance.start -B ./mysql/db:/var/lib/mysql -B ./mariadb-custom.cnf:/etc/mysql/conf.d/custom.cnf -B ./mysql/socket:/run/mysqld mariadb mysql
 
