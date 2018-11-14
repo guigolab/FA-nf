@@ -19,9 +19,9 @@ singularity exec -B $MYSQLDIR/db:/var/lib/mysql -B ./mariadb-custom.cnf:/etc/mys
 # mysql.ip will be dbhost
 # dbuser, dbpass and dbport from config
 
-singularity instance.start -B ./mysql/db:/var/lib/mysql -B ./mariadb-custom.cnf:/etc/mysql/conf.d/custom.cnf -B ./mysql/socket:/run/mysqld mariadb mysql
+singularity instance.start -B $MYSQLDIR/db:/var/lib/mysql -B ./mariadb-custom.cnf:/etc/mysql/conf.d/custom.cnf -B $MYSQLDIR/socket:/run/mysqld mariadb.simg mysql
 
-# Do some woke here on the DB
+# Do some work here on the DB ...
 
 singularity instance.stop mysql
 
