@@ -16,6 +16,9 @@ singularity exec -B $MYSQLDIR/db:/var/lib/mysql -B ./mariadb-custom.cnf:/etc/mys
 # Execute DB
 /sbin/ifconfig eth0 | perl -lane 'if ( $_=~/inet\s/ ) { $_=~/inet\s(\S+)\s/ ; print $1; }' > /path/to/mysql.ip
 
+# mysql.ip will be dbhost
+# dbuser, dbpass and dbport from config
+
 singularity instance.start -B ./mysql/db:/var/lib/mysql -B ./mariadb-custom.cnf:/etc/mysql/conf.d/custom.cnf -B ./mysql/socket:/run/mysqld mariadb mysql
 
 # Do some woke here on the DB
