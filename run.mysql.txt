@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# MySQL containerized instance
+
+MYSQLDIR=$1
+
+mkdir -p $MYSQLDIR
+mkdir -p $MYSQLDIR/db
+mkdir -p $MYSQLDIR/socket
+
+sudo sudo /usr/local/bin/singularity build mariadb.simg Singularity.mysql
+
+# Create DB
+singularity exec -B $MYSQLDIR/db:/var/lib/mysql -B ./mariadb-custom.cnf:/etc/mysql/conf.d/custom.cnf mariadb.simg mysql_install_db
+
+# Execute DB
+
+singularity instance.start -B ./mysql/db:/var/lib/mysql -B ./mariadb-custom.cnf:/etc/mysql/conf.d/custom.cnf -B ./mysql/socket:/run/mysqld mariadb mysql
+
+# Do some woke here on the DB
+
+singularity instance.stop mysql
+
+

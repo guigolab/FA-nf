@@ -1,0 +1,6 @@
+Bootstrap: docker
+From: library/mariadb:10.3
+
+%startscript
+	mysqld
+
