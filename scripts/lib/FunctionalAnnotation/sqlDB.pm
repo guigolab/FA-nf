@@ -28,11 +28,11 @@ Vlasova Anna: vlasova dot av A gmail dot com
 
 =cut
 
-package FunctionalAnnotation::sqlLiteDB;
+package FunctionalAnnotation::sqlDB;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT = qw(createSQLliteDB prepareInputFiles getSelectedIds);
+@EXPORT = qw(createSQLDB prepareInputFiles getSelectedIds);
 
 use strict;
 use DBI;
@@ -42,7 +42,7 @@ use lib "$RealBin/lib/";
 use Config::Simple;
 use Getopt::Long;
 
-sub createSQLliteDB
+sub createSQLDB
 {
  my $confFile = shift;
  my $cfg = new Config::Simple($confFile);
@@ -57,7 +57,7 @@ my $dbName = $config{'dbname'};
 my $dbPath = $config{'resultPath'};
 
 my $dbFileName = $dbPath.$dbName.'.db';
-my $sqlCommandFile = $RealBin.'/lib/SQLlite.scheme.sql';
+my $sqlCommandFile = $RealBin.'/lib/SQL.schema.sql';
 if(!-e $dbFileName)
 {  
 if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))

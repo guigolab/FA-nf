@@ -47,7 +47,7 @@ use Bio::SeqIO;
 use Data::Dumper;
 use FunctionalAnnotation::DB;
 use FunctionalAnnotation::uploadData;
-use FunctionalAnnotation::sqlLiteDB;
+use FunctionalAnnotation::sqlDB;
 use Config::Simple;
 use DBI;
 

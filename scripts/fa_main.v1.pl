@@ -47,7 +47,7 @@ use Getopt::Long;
 use Data::Dumper;
 use Config::Simple;
 use FunctionalAnnotation::DB;
-use FunctionalAnnotation::sqlLiteDB;
+use FunctionalAnnotation::sqlDB;
 use FunctionalAnnotation::uploadData;
 use FunctionalAnnotation::getResults;
 use IO::Handle;
@@ -173,7 +173,7 @@ if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
  print "Check DB presence...\n"; 
 }
  
- &createSQLliteDB($confFile);
+ &createSQLDB($confFile);
 
 if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
 {

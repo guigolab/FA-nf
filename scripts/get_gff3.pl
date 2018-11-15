@@ -47,7 +47,7 @@ use lib "$RealBin/lib/";
 use Getopt::Long;
 use Pod::Usage;
 use FunctionalAnnotation::DB;
-use FunctionalAnnotation::sqlLiteDB;
+use FunctionalAnnotation::sqlDB;
 use FunctionalAnnotation::uploadData;
 use FunctionalAnnotation::getResults;
 use Data::Dumper;

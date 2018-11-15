@@ -43,7 +43,7 @@ use DBI;
 use Getopt::Long;
 use Data::Dumper;
 use FunctionalAnnotation::DB;
-use FunctionalAnnotation::sqlLiteDB;
+use FunctionalAnnotation::sqlDB;
 use FunctionalAnnotation::uploadData;
 use Config::Simple;
 
