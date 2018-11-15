@@ -3,6 +3,7 @@
 # MySQL containerized instance
 
 MYSQLDIR=$1
+PROCESSFILE=/path/to/process
 
 mkdir -p $MYSQLDIR
 mkdir -p $MYSQLDIR/db
@@ -22,6 +23,15 @@ singularity exec -B $MYSQLDIR/db:/var/lib/mysql -B ./mariadb-custom.cnf:/etc/mys
 singularity instance.start -B $MYSQLDIR/db:/var/lib/mysql -B ./mariadb-custom.cnf:/etc/mysql/conf.d/custom.cnf -B $MYSQLDIR/socket:/run/mysqld mariadb.simg mysql
 
 # Do some work here on the DB ...
+
+# Create $PROCESSFILE here
+
+while true
+do
+	if [ -f $PROCESSFILE ];
+		sleep 60
+	fi
+done
 
 singularity instance.stop mysql
 
