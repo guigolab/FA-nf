@@ -58,20 +58,51 @@ my $dbPath = $config{'resultPath'};
 
 my $dbFileName = $dbPath.$dbName.'.db';
 my $sqlCommandFile = $RealBin.'/lib/SQL.schema.sql';
-if(!-e $dbFileName)
-{  
-if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
-{  print "DB $dbName does not exists, will create it!\n";}
 
-  my $systemCommand="sqlite3 $dbFileName < $sqlCommandFile";
-  system($systemCommand)==0 or die("Error running system command: <$systemCommand>\n");
+if ( $config{'dbEngine'} eq 'SQLite' ) {
+
+ if(!-e $dbFileName)
+ {  
+ if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
+ {  print "DB $dbName does not exists, will create it!\n";}
+ 
+   my $systemCommand="sqlite3 $dbFileName < $sqlCommandFile";
+   system($systemCommand)==0 or die("Error running system command: <$systemCommand>\n");
+   
+  }
+ else
+ {
+  if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
+  {  print "This DB is already exists! Continue..\n";}
+ }
+
+} else {
+ 
+  # MySQL connection
+  my $dsn = "DBI:mysql:;host=".$config{'dbhost'}.";port=".$config{'dbport'};
+  my $dbh = DBI->connect($dsn, $config{'dbuser'}, $config{'dbpass'});
+    
+  my $sth = $dbh->prepare("SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$config{$dbName}'") ||
+  die "Error:" . $dbh->errstr . "\n";
+  $sth->finish;
+  
+  if ( $sth->rows > 0 ) {
+   
+     if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
+    {  print "This DB is already exists! Continue..\n";}
+   
+  } else {
+   
+    if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
+   {  print "DB $dbName does not exists, will create it!\n";}
+   
+     my $systemCommand="mysql -u$config{'dbuser'} -p$config{'dbpass'} -h$config{'dbhost'} -P$config{'dbport'} -e 'CREATE DATABASE `$dbName`' ;";
+     $systemCommand.="mysql -u$config{'dbuser'} -p$config{'dbpass'} -h$config{'dbhost'} -P$config{'dbport'} $dbName < $sqlCommandFile";
+     system($systemCommand)==0 or die("Error running system command: <$systemCommand>\n");
+   
+  }
   
  }
-else
-{
- if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
- {  print "This DB is already exists! Continue..\n";}
-}
 
 }
 

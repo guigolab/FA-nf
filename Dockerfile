@@ -9,11 +9,11 @@ RUN set -x ; apt-get update && apt-get -y upgrade
 RUN mkdir -p /scripts
 
 # Specific of FA pipeline
-RUN apt-get install -y r-base sqlite 
+RUN apt-get install -y r-base sqlite mysql 
 RUN apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
 
 # Perl packages
-RUN cpanm Bio::SearchIO Bio::SearchIO::blastxml Bio::SeqIO Config::Simple Config::JSON DBI DBD::SQLite File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util String::Util
+RUN cpanm Bio::SearchIO Bio::SearchIO::blastxml Bio::SeqIO Config::Simple Config::JSON DBI DBD:mysql DBD::SQLite File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util String::Util
 
 RUN apt-get install -y libssl-dev
 
