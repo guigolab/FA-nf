@@ -25,7 +25,7 @@ singularity exec -B $MYSQLDIR/db:/var/lib/mysql -B $MYSQLCNF:/etc/mysql/conf.d/c
 # mysql.ip will be dbhost
 # dbuser, dbpass and dbport from config
 
-singularity instance.start -B $MYSQLDIR/db:/var/lib/mysql -B $MYSQLCNF:/etc/mysql/conf.d/custom.cnf -B $MYSQLDIR/socket:/run/mysqld mariadb.simg mysql
+singularity instance.start -B $MYSQLDIR/db:/var/lib/mysql -B $MYSQLCNF:/etc/mysql/conf.d/custom.cnf -B $MYSQLDIR/socket:/run/mysqld $MYSQLIMG mysql
 
 # Create $PROCESSFILE here
 date > $PROCESSFILE
