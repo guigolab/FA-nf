@@ -20,7 +20,7 @@ mkdir -p $MYSQLDIR/socket
 singularity exec -B $MYSQLDIR/db:/var/lib/mysql -B $MYSQLCNF:/etc/mysql/conf.d/custom.cnf $MYSQLIMG mysql_install_db
 
 # Execute DB
-/sbin/ifconfig eth0 | perl -lane 'if ( $_=~/inet\s/ ) { $_=~/inet\s(\S+)\s/ ; print $1; }' > $IPFILE
+/usr/bin/hostname -I | perl -ne 'if ( $_=~/^(\S+)\s/ ) { $_=~/^(\S+)\s/ ; print $1; }' > $IPFILE
 
 # mysql.ip will be dbhost
 # dbuser, dbpass and dbport from config

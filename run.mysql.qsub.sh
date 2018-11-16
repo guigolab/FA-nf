@@ -10,6 +10,7 @@
 #$ -m be
 #$ -M toni.hermoso@crg.eu
 #$ -q long-sl7
+#$ -cwd
 #$ -V 
 
 MYSQLIMG=/path/mysql/image
