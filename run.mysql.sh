@@ -49,4 +49,3 @@ done;
 singularity instance.stop mysql
 exit 0
 
-
