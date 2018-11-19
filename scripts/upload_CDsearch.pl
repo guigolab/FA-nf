@@ -120,7 +120,7 @@ sub uploadCDsearchDataFast
         $uniqField ='accession';
         $fieldName = 'Accession';
 				@setValues=qw( Hit_type coordinateFrom Bitscore Superfamily Incomplete PSSM_ID coordinateTo E_Value Short_name);
-				$setValuesString=join(",", @setValues);
+				$setValuesString=join(",", escapeArraySQL( \@setValues ));
 
         $insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField, $setValuesString) VALUES(NULL,?,?,?,?,?,?,?,?,?,?,? )";
       }
@@ -130,7 +130,7 @@ sub uploadCDsearchDataFast
        $uniqField='title';
        $fieldName = 'Title';
 			 @setValues  =qw(Type mapped_size coordinates complete_size source_domain);
-			 $setValuesString=join(",", @setValues);
+			 $setValuesString=join(",", escapeArraySQL( \@setValues ));
 
        $insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField,$setValuesString ) VALUES(NULL,?,?,?,?,?,?,?)";
       }
@@ -249,4 +249,15 @@ sub assignQuery {
 		
 		return $setString;
 	
+}
+
+# TODO: Move to library because it may be useful for other cases
+sub escapeArraySQL {
+	
+		my $array = shift;
+		
+		my (@escaped) = map { $_=~s/"/\\"/g; } @{$array};
+		
+		return @escaped;
+
 }
