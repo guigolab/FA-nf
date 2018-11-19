@@ -215,14 +215,19 @@ process initDB {
  
  if ( mysql ) {
   // Add dbhost to config
-  command+ = "DBHOST=\"dbhost:'`cat ${params.dbhostfile}`'\"; echo \"$(cat config)\$DBHOST\" > config\n"
-  
- }
- 
- if (!exists) {
-     command += "fa_main.v1.pl init -conf config"
+  command += "DBHOST=\"dbhost:'`cat $params.dbhostfile`'\"; echo \"\$(cat config)\n \$DBHOST\" > config ;\n"
+  command += "fa_main.v1.pl init -conf config"
+ } else {
+
+        if (!exists) {
+                command += "fa_main.v1.pl init -conf config"
+        }
  }
  command
+}
+
+
+
 }
 
 process 'definition_upload'{
