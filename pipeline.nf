@@ -224,9 +224,6 @@ process initDB {
         }
  }
  command
-}
-
-
 
 }
 
