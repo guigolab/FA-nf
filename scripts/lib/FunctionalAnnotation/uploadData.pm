@@ -58,7 +58,7 @@ sub uploadFastaData
 {
  my($inFile, $dbh, $idList, $do_update,$comment, $engine, $loglevel) =@_;
 
-  if(!defined $engine){$engine ='mydsql'};
+  if(!defined $engine){$engine ='mysql'};
  my $numberElements = scalar keys %{$idList}||'';
  my $processFlag = 'part';
  if($numberElements eq '')
@@ -246,7 +246,7 @@ open FH,"$inFile";
      $g_id =  $dbh->insert_set($gene_sql_insert,$dbh) if $duplicated==0;
     if(!defined $g_id)
      {
-       my $select = "SELECT last_insert_rowid() as id ";
+       my $select = &selectLastId( $engine );
        my $results = $dbh->select_from_table($select);
        #print Dumper($results);
        $g_id=$results->[0]->{'id'};
@@ -443,7 +443,7 @@ sub uploadGoAnnotation
        $goId = $dbh->select_update_insert("go_term_id", $selectString, $updateString, $insertString, 0);
        if(!defined $goId)
        {
-        my $select = "SELECT last_insert_rowid() as id ";
+        my $select = &selectLastId( $engine );
         my $results = $dbh->select_from_table($select);
         #print Dumper($results);
         $goId=$results->[0]->{'id'};
@@ -1172,7 +1172,7 @@ sub insert_set_sqlite {
     if(($loglevel eq 'debug')){ print STDERR "### doing insert  $insString ###\n";}
     my $sth = $dbh->prepare_stmt($insString);
     $sth->execute() || warn "insert failed : $DBI::errstr";
-    my $select = "SELECT last_insert_rowid() as id ";
+    my $select = &selectLastId( "sqlite" );
     my $results = $dbh->select_from_table($select);
     #print Dumper($results);
     my $dbi=$results->[0]->{'id'};
@@ -1204,5 +1204,20 @@ sub constructStatment {
     return $stmt;
 }
 
+sub selectLastId {
+
+	my $engine = shift;
+
+	if ( $engine eq 'mysql' ) {
+	
+		return "SELECT last_insert_id() as id ";
+
+	} else {
+		
+		return "SELECT last_insert_rowid() as id ";
+
+	}
+
+}
 
 1;

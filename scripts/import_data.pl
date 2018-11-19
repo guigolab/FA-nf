@@ -119,7 +119,7 @@ if(($loglevel eq 'debug')||($loglevel eq 'info'))
    #my $checkResult = &checkGFFData($annt_file);
    my $checkResult = 1;
    if ($checkResult==1)
-   {&uploadGFFData($annt_file, $dbh,\%IdsList, $do_update,'SQLite',$loglevel);}
+   {&uploadGFFData($annt_file, $dbh,\%IdsList, $do_update, $config{'dbEngine'}, $loglevel);}
   else
   { print STDOUT "Due to the errors in GFF file, data can not be uploaded. Correct the file first!\n"; 
     die;}
@@ -131,7 +131,7 @@ if(($loglevel eq 'debug')||($loglevel eq 'info'))
 
 if(! defined $fasta_file){print STDOUT "The fasta file was not specified, skipped.\n";}
 else
- {&uploadFastaData($fasta_file, $dbh,\%IdsList,1,$comment,'SQLite', $loglevel);}
+ {&uploadFastaData($fasta_file, $dbh,\%IdsList,1,$comment, $config{'dbEngine'}, $loglevel);}
 
 if(($loglevel eq 'debug')||($loglevel eq 'info'))
  {print "done.";}
