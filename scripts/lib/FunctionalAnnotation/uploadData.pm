@@ -28,7 +28,7 @@ use lib "$RealBin/lib";
 use Data::Dumper;
 use FunctionalAnnotation::DB;
 
-#use Digest::SHA1  qw(sha1_hex);
+use Digest::SHA qw(sha1_hex);
 #use Bio::SeqIO;
 #use Bio::SearchIO;
 
@@ -99,7 +99,6 @@ sub uploadFastaData
  {$commString = ", comment=\"$comment\""; }
 
 
-
  #while (my $seqio = $in->next_seq) {
  foreach my $seqKey (keys %seqData){
 	#my $stable_id = $seqio->display_id;
@@ -127,9 +126,8 @@ sub uploadFastaData
 #but sha1 checksum will be very different.
         my $seqString4SHA=$seq;
         $seqString4SHA=~s/\*$//;
-	   #   my $sha1 =   sha1_hex($seqString4SHA);
-     #Temporary solution unless I'll fix problem with perl libraries
-      my $sha1="";
+	my $sha1 =   sha1_hex($seqString4SHA);
+
        if(($loglevel eq 'debug'))
 	{print STDOUT "Stable_id $stable_id\nSequence $seq\n\n";}
 
@@ -144,7 +142,7 @@ sub uploadFastaData
                   }
                else
                    {
-                    $protein_sql_update= qq{ UPDATE protein SET stable_id=\"$stable_id\",protein_name=\"$stable_id\",sequence=\"$seq\", sha1=\"$sha1\" $commString stable_id=\"$stable_id\";};
+                    $protein_sql_update= qq{ UPDATE protein SET stable_id=\"$stable_id\",protein_name=\"$stable_id\",sequence=\"$seq\", sha1=\"$sha1\" $commString where stable_id=\"$stable_id\";};
 		    $protein_sql_insert = qq{ INSERT INTO protein SET stable_id=\"$stable_id\",protein_name=\"$stable_id\",sequence=\"$seq\", sha1=\"$sha1\", gene_id="0" $commString;};
                    }
 

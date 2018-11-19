@@ -229,7 +229,7 @@ sub insert_set {
     $par = $self->_clean_sql($par);
     my $sth = $self->prepare_stmt($par);
     my $dbID;
-    print STDERR $par;
+    #print STDERR $par;
     $sth->execute();
     $self->{'sth'} = $sth;
     $dbID = $sth->{'mysql_insertid'};

@@ -119,7 +119,9 @@ if(($loglevel eq 'debug')||($loglevel eq 'info'))
    #my $checkResult = &checkGFFData($annt_file);
    my $checkResult = 1;
    if ($checkResult==1)
-   {&uploadGFFData($annt_file, $dbh,\%IdsList, $do_update, $config{'dbEngine'}, $loglevel);}
+   { 
+	&uploadGFFData($annt_file, $dbh,\%IdsList, $do_update, $config{'dbEngine'}, $loglevel);
+   }
   else
   { print STDOUT "Due to the errors in GFF file, data can not be uploaded. Correct the file first!\n"; 
     die;}
