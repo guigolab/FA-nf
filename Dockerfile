@@ -5,9 +5,6 @@ MAINTAINER Toni Hermoso Pulido <toni.hermoso@crg.eu>
 
 RUN set -x ; apt-get update && apt-get -y upgrade
 
-# Place /scripts
-RUN mkdir -p /scripts
-
 # Specific of FA pipeline
 RUN apt-get install -y r-base sqlite 
 RUN apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
@@ -22,6 +19,9 @@ RUN cpanm IO::Socket::SSL LWP::Simple LWP::Protocol::https LWP::UserAgent
 # Clean cache
 RUN apt-get clean
 RUN set -x; rm -rf /var/lib/apt/lists/*
+
+# Place /scripts
+RUN mkdir -p /scripts
 
 ENV PATH /scripts:$PATH
 
