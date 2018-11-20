@@ -76,7 +76,10 @@ if(!defined $config{'dbEngine'}){$config{'dbEngine'} = 'mysql';}
 my $dbh;
 #connect to the DB
 if($config{'dbEngine'} eq 'mysql')
-{ $dbh= DBI->connect('mysql',$config{'dbname'},$config{'dbhost'},$config{'dbuser'},$config{'dbpass'},$config{'dbport'});}
+{ 
+$dbh = DBI->connect( "DBI:mysql:database=".$config{'dbname'}.";host=".$config{'dbhost'}.";port=".$config{'dbport'}, $config{'dbuser'}, $config{'dbpass'});
+
+}
 else
 {
   my $dbName = $config{'resultPath'}.$config{'dbname'}.'.db';
@@ -154,7 +157,7 @@ sub uploadCBSpredictionsFast
         {push(@setData, "$keyItem = \"$dataHash->{$protItem}{$keyItem}\"");}
       }
    my $setValuesString = join(',', @setData);
-   #print "$setValuesString\n";
+#   print STDERR "$setValuesString\n";
    $sth->execute(@setData);
   # $sth->commit;
 #   $sth->finish();
