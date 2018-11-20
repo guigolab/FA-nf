@@ -120,19 +120,31 @@ sub uploadCBSpredictionsFast
         $table = 'signalP';
         $tableId = 'signalP_id';
         @keys=('start', 'end', 'score');
-        $insertString = "INSERT INTO $table ($tableId, protein_id,".join(",",@keys).") VALUES(NULL,?,?,?,?)"; 
+								if ( $engine eq 'mysql' ) {
+									$insertString = "INSERT INTO $table (protein_id,".join(",",@keys).") VALUES(?,?,?,?)";
+								} else {
+									$insertString = "INSERT INTO $table ($tableId, protein_id,".join(",",@keys).") VALUES(NULL,?,?,?,?)";									
+								}
       }
      elsif($type eq 'c')
       {$table = 'chloroP';
        $tableId = 'chloroP_id';
        @keys=('start', 'end', 'score');
-       $insertString = "INSERT INTO $table ($tableId, protein_id,".join(",",@keys)." ) VALUES(NULL,?,?,?,?)"; 
+							if ( $engine eq 'mysql' ) {
+								$insertString = "INSERT INTO $table (protein_id,".join(",",@keys)." ) VALUES(?,?,?,?)";
+							} else {
+								$insertString = "INSERT INTO $table ($tableId, protein_id,".join(",",@keys)." ) VALUES(NULL,?,?,?,?)";
+							}
       }
   elsif($type eq 't')
       {$table = 'targetP';
        $tableId = 'targetP_id';
        @keys=('location','RC');
-       $insertString = "INSERT INTO $table ($tableId, protein_id,".join(",",@keys)." ) VALUES(NULL,?,?,?)"; 
+							if ( $engine eq 'mysql' ) {
+								$insertString = "INSERT INTO $table (protein_id,".join(",",@keys)." ) VALUES(?,?,?)";
+							} else {
+								$insertString = "INSERT INTO $table ($tableId, protein_id,".join(",",@keys)." ) VALUES(NULL,?,?,?)";
+							}
       }
   
  my $sth = $dbh->prepare($insertString);
