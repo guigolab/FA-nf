@@ -163,10 +163,7 @@ sub uploadCBSpredictionsFast
    
    foreach my $keyItem(@keys)
       {
-       if($engine eq 'SQLite')
-        {push(@setData, "\"$dataHash->{$protItem}{$keyItem}\"");}
-       else
-        {push(@setData, "$keyItem = \"$dataHash->{$protItem}{$keyItem}\"");}
+        push(@setData, "\"$dataHash->{$protItem}{$keyItem}\"");
       }
    my $setValuesString = join(',', @setData);
 #   print STDERR "$setValuesString\n";
@@ -232,3 +229,4 @@ sub parseCBSpredictionsData
 
  return %retData;
 }
+
