@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `domain` (
   `db_xref` TEXT NOT NULL DEFAULT '' ,
   `score` REAL NOT NULL DEFAULT '0' ,
   `evalue` REAL NOT NULL DEFAULT '0' ,
-  `ip_id` INTEGER ,
+  `ip_id` TEXT ,
   `ip_desc` TEXT,
   `go` TEXT,
   `protein_id` INTEGER  NOT NULL  );
