@@ -122,7 +122,8 @@ sub uploadCDsearchDataFast
         $uniqField ='accession';
         $fieldName = 'Accession';
 				@setValues=qw( Hit_type coordinateFrom Bitscore Superfamily Incomplete PSSM_ID coordinateTo E_Value Short_name);
-				$setValuesString=join(",", escapeArraySQL( \@setValues ));
+
+				$setValuesString=join(",", escapeArraySQL( @setValues ));
 
         $insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField, $setValuesString) VALUES(NULL,?,?,?,?,?,?,?,?,?,?,? )";
       }
@@ -132,7 +133,7 @@ sub uploadCDsearchDataFast
        $uniqField='title';
        $fieldName = 'Title';
 			 @setValues  =qw(Type mapped_size coordinates complete_size source_domain);
-			 $setValuesString=join(",", escapeArraySQL( \@setValues ));
+			 $setValuesString=join(",", escapeArraySQL( @setValues ));
 
        $insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField,$setValuesString ) VALUES(NULL,?,?,?,?,?,?,?)";
       }
@@ -185,6 +186,7 @@ sub uploadCDsearchDataFast
     # $blastHitId = $dbh->select_update_insert("blast_hit_id", $selectString, $updateString, $insertString, $update);
      #my $setString = join(',', @setData);
     # my $id= $dbh->insert_set($insertString);
+
      my $sth = $dbh->prepare($insertString);
      $sth->execute();
   $sth->finish();
@@ -256,9 +258,13 @@ sub assignQuery {
 # TODO: Move to library because it may be useful for other cases
 sub escapeArraySQL {
 	
-		my $array = shift;
-		
-		my (@escaped) = map { $_=~s/"/\\"/g; } @{$array};
+		my @array = @_;
+		my @escaped;
+
+		foreach my $esc ( @array ) {
+			$esc=~s/"/\\"/g;
+			push( @escaped, $esc );
+		}
 		
 		return @escaped;
 
