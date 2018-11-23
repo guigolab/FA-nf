@@ -11,7 +11,7 @@ RUN apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-font
 
 # Perl packages
 RUN cpanm Bio::SearchIO Bio::SearchIO::blastxml Bio::SeqIO
-RUN cpanm Config::Simple Config::JSON DBI DBD::mysql DBD::SQLite Digest::SHA File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util String::Util
+RUN cpanm Config::Simple Config::JSON DBI DBD::mysql DBD::SQLite Digest::SHA File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util Scalar::Util String::Util
 
 RUN apt-get install -y libssl-dev
 
