@@ -50,6 +50,7 @@ use FunctionalAnnotation::uploadData;
 use DBI;
 use Data::Dumper;
 use Config::Simple;
+use Scalar::Util qw(looks_like_number);
 my $confFile = 'main_configuration.ini';
 
 my $USAGE = "perl load_phylome_data.pl [-idf idfile] [-type s]  [-conf configuration_file] [-h help] \n";
@@ -163,7 +164,7 @@ sub uploadCBSpredictionsFast
    
    foreach my $keyItem(@keys)
       {
-        push(@setData, "\"$dataHash->{$protItem}{$keyItem}\"");
+        push(@setData, processType( $dataHash->{$protItem}{$keyItem} ) );
       }
    my $setValuesString = join(',', @setData);
 #   print STDERR "$setValuesString\n";
@@ -175,6 +176,18 @@ sub uploadCBSpredictionsFast
  $sth->finish();
 }
 
+sub processType {
+
+	my $value = shift;
+
+	if ( looks_like_number( $value ) ) {
+
+		return $value;
+	} else {
+		return "\"".$value."\"";
+	}
+
+}
 
 
 sub parseCBSpredictionsData
