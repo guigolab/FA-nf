@@ -27,6 +27,7 @@ use FindBin qw($RealBin);
 use lib "$RealBin/lib";
 use Data::Dumper;
 use FunctionalAnnotation::DB;
+use Scalar::Util qw( looks_like_number );
 
 use Digest::SHA qw(sha1_hex);
 #use Bio::SeqIO;
@@ -541,7 +542,8 @@ sub uploadInterProResults
       $domain{'rel_start'} = $start;
       $domain{'rel_end'} = $end;
       $domain{'sequence'} = substr ($sequence, $start - 1, ($end - $start + 1));
-      $domain{'evalue'} = $evalue;
+      # TODO: Ensure this applies for more cases
+      $domain{'evalue'} = &handleValue( $evalue, "evalue" );
       $domain{'ip_id'} = $ip_id;
       $domain{'ip_desc'} = $ip_desc;
       $domain{'go'} = $go;
@@ -1216,6 +1218,29 @@ sub selectLastId {
 
 	}
 
+}
+
+sub handleValue {
+ 
+  my $value = shift;
+  my $context = shift;
+  
+  if ( $content eq 'evalue' ) {
+   
+   if ( looks_like_number( $value ) ) {
+    
+     return $value;
+    
+   } else {
+    
+    return undef;
+   }
+   
+   
+  } else {
+    return $value;
+  }
+ 
 }
 
 1;
