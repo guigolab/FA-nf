@@ -161,7 +161,6 @@ die(qq/
  #open ERROR,  '>>', $errFile  or die $!;
  #STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
  #STDERR->fdopen( \*ERROR,  'w' ) or die $!;
- print STDERR "Here!";
 
  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
  $year += 1900;
