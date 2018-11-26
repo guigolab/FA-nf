@@ -108,7 +108,7 @@ sub printSummaryInfo
 
 #annotated vs not annotated
  my $propAnnot;
- $sqlSelect = "select count(*) from protein where status==1 $condStat2";
+ $sqlSelect = "select count(*) from protein where status=1 $condStat2";
  $results =$dbh->select_from_table($sqlSelect);
  my $numberAnnotProteins = $results->[0]->{'count(*)'};
  if(defined $numberAnnotProteins && $numberAnnotProteins >0)
@@ -118,7 +118,7 @@ sub printSummaryInfo
  }
 
 #annotated vs not annotated in genes
- $sqlSelect = "select count(distinct gene_id) from protein where status==1 $condStat2";
+ $sqlSelect = "select count(distinct gene_id) from protein where status=1 $condStat2";
  $results =$dbh->select_from_table($sqlSelect);
  my $numberAnnotGenes = $results->[0]->{'count(distinct gene_id)'};
  if(defined $numberAnnotGenes && $numberAnnotGenes >0)
