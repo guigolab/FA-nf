@@ -157,6 +157,12 @@ sub uploadCBSpredictionsFast
   $sth2->execute();
   my $proteinId = $sth2->fetchrow()||'';
   $sth2->finish();
+		
+		if ( $proteinId eq '' ) {
+        next;
+								# No protein ID, let's skip
+  }
+		
   my $setString='';
   my @setData=();
   push(@setData,$proteinId);
