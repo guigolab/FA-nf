@@ -1225,7 +1225,7 @@ sub handleValue {
   my $value = shift;
   my $context = shift;
   
-  if ( $content eq 'evalue' ) {
+  if ( $context eq 'evalue' ) {
    
    if ( looks_like_number( $value ) ) {
     
