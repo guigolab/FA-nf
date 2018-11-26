@@ -163,7 +163,7 @@ sub uploadCDsearchDataFast
 		#and it should be exactly the order which is specified in insert string, otherwise script will insert nonsense data into DB without error
 
   #   my @keyList = keys %tmpHash;
-     my $append = "$uniqField = \"$tmpHash{$fieldName}\"";
+     my $append = "$uniqField = ".$dbh->quote( $tmpHash{$fieldName} );
 					
 					my $setString = assignQuery( \%tmpHash, \@setValues, $type, $engine, $append );
      
@@ -176,7 +176,7 @@ sub uploadCDsearchDataFast
      #die();
 
           if($engine eq 'SQLite')
-      {$insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField, $setValuesString) VALUES(NULL,\"$proteinId\",\"$tmpHash{$fieldName}\",$setString)"; }
+      {$insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField, $setValuesString) VALUES(NULL,\"$proteinId\",".$dbh->quote($tmpHash{$fieldName}).",$setString)"; }
      else
       {$insertString = "INSERT INTO $table SET protein_id=$proteinId,$setString ";}
 
