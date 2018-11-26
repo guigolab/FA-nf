@@ -463,6 +463,8 @@ process 'generateResultFiles'{
  """
 }
 
+if ( annotation && annotation != "" ){
+
 process 'generateGFF3File'{
  input:
   file config from config4perl
@@ -471,6 +473,8 @@ process 'generateGFF3File'{
  """
  get_gff3.pl -conf $config
  """
+}
+
 }
 
 /*
