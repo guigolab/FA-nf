@@ -58,6 +58,7 @@ my $dbPath = $config{'resultPath'};
 
 my $dbFileName = $dbPath.$dbName.'.db';
 my $sqlCommandFile = $RealBin.'/lib/SQL.schema.sql';
+my $sqliteCommandFile = $RealBin.'/lib/SQL.schema.sqlite.sql';
 
 if ( $config{'dbEngine'} eq 'SQLite' ) {
 
@@ -65,8 +66,8 @@ if ( $config{'dbEngine'} eq 'SQLite' ) {
  {  
  if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
  {  print "DB $dbName does not exists, will create it!\n";}
- 
-   my $systemCommand="sqlite3 $dbFileName < $sqlCommandFile";
+   
+   my $systemCommand="sqlite3 $dbFileName < $sqliteCommandFile";
    system($systemCommand)==0 or die("Error running system command: <$systemCommand>\n");
    
   }
