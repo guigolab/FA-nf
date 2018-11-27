@@ -1199,9 +1199,20 @@ sub constructStatment {
 
     foreach my $f (keys %params) {
         $stmt .= " , " if $stmt;
-        $stmt .= $f . " = \"".$params{$f}."\"";
+
+        my $val;
+
+        if ( ! $params{ $f } && ( $f eq 'evalue' ) ) {
+                $val = "NULL";
+        } else {
+                $val = "\"" . $params{$f} . "\"";
+        }
+
+        $stmt .= $f . " = " . $val;
     }
+    
     return $stmt;
+
 }
 
 sub selectLastId {
