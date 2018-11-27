@@ -477,7 +477,7 @@ process 'generateResultFiles'{
  """
 }
 
-if ( annotation && annotation != "" ){
+if ( annotation != null && annotation != "" ){
 
 process 'generateGFF3File'{
  input:
