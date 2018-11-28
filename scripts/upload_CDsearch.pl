@@ -122,7 +122,6 @@ sub uploadCDsearchDataFast
         $uniqField ='accession';
         $fieldName = 'Accession';
 				@setValues=qw( Hit_type coordinateFrom Bitscore Superfamily Incomplete PSSM_ID coordinateTo E_Value Short_name);
-
 				$setValuesString=join(",", escapeArraySQL( @setValues ));
 
         $insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField, $setValuesString) VALUES(NULL,?,?,?,?,?,?,?,?,?,?,? )";
@@ -166,7 +165,6 @@ sub uploadCDsearchDataFast
      my $append = "$uniqField = ".$dbh->quote( $tmpHash{$fieldName} );
 					
 					my $setString = assignQuery( \%tmpHash, \@setValues, $type, $engine, $append );
-     
 					# If problem, then empty
 					if ( $setString eq '' ) {
 						next;
@@ -176,20 +174,23 @@ sub uploadCDsearchDataFast
      #die();
 
           if($engine eq 'SQLite')
-      {$insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField, $setValuesString) VALUES(NULL,\"$proteinId\",".$dbh->quote($tmpHash{$fieldName}).",$setString)"; }
+
+      {$insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField, $setValuesString) VALUES(NULL,\"$proteinId\",".$dbh->quote( $tmpHash{$fieldName} ).",$setString)"; }
+
      else
       {$insertString = "INSERT INTO $table SET protein_id=$proteinId,$setString ";}
 
     # $selectString = "SELECT $tableId from $table where protein_id=$proteinId and $uniqField=\"$tmpHash{$fieldName}\"";
     # $updateString = "UPDATE $table SET $setString where protein_id=$proteinId and $uniqField=\"$tmpHash{$fieldName}\"";
-    print $insertString."\n";
     # $blastHitId = $dbh->select_update_insert("blast_hit_id", $selectString, $updateString, $insertString, $update);
      #my $setString = join(',', @setData);
     # my $id= $dbh->insert_set($insertString);
 
+		 print $insertString, "\n";
+
      my $sth = $dbh->prepare($insertString);
      $sth->execute();
-  $sth->finish();
+					$sth->finish();
  
      #$sth->execute(@setData);
      }#foreach result line - each domain or feature, do its uploading
