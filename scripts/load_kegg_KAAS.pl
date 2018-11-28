@@ -158,7 +158,7 @@ sub uploadKeggInformation
   my $kegg_group_sql_select = qq{ SELECT kegg_group_id FROM kegg_group WHERE db_id=\"$kegg_id\" };
   my $kegg_group_sql_update = qq{ UPDATE kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", kegg_release=\"$kegg_release\";};
   my $kegg_group_sql_insert = "";
-  if($config{'dbEngine'} eq 'SQLite')
+  if($dbEngine eq 'SQLite')
    { $kegg_group_sql_insert = qq{ INSERT INTO kegg_group(kegg_group_id, name,definition,pathway,module,class,db_links,db_id,kegg_release) VALUES (NULL,\"$hash->{'NAME'}\",\"$hash->{'DEFINITION'}\",\"$hash->{'PATHWAY'}\",\"$hash->{'MODULE'}\",\"$hash->{'CLASS'}\", \"$hash->{'DBLINKS'}\",\"$kegg_id\",\"$kegg_release\")}; }
   else
    { $kegg_group_sql_insert = qq{ INSERT INTO kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", kegg_release=\"$kegg_release\";};}
@@ -167,7 +167,7 @@ sub uploadKeggInformation
   #small patch for SQLite - the current insert function could not return id of the last inserted record...
   if(!defined $kegg_group_id)
     {
-      my $select = "SELECT last_insert_rowid() as id ";
+      my $select = &selectLastId( $dbEngine );
       my $results = $dbh->select_from_table($select);
       $kegg_group_id=$results->[0]->{'id'};
     }
@@ -219,7 +219,7 @@ sub uploadKeggInformation
         my $ortholog_id = $dbh->select_update_insert("ortholog_id", $ortholog_sql_select, $ortholog_sql_update, $ortholog_sql_insert, $do_update);
         #small patch for SQLite - the current insert function could not return id of the last inserted record...
         if(!defined $ortholog_id)
-          {  my $select = "SELECT last_insert_rowid() as id ";
+          {  my $select = &selectLastId( $dbEngine );
              my $results = $dbh->select_from_table($select);
              $ortholog_id=$results->[0]->{'id'};
           }
@@ -263,7 +263,7 @@ sub uploadKeggInformation
            my $sqlSelect = "SELECT go_term_id from go_term where go_acc like '$goId'";
            my $sqlUpdate ="";
            my $sqlInsert = "";
-           if($config{'dbEngine'} eq 'SQLite')
+           if($dbEngine eq 'SQLite')
             { $sqlInsert = "INSERT INTO go_term (go_term_id,go_acc) VALUES (NULL,\"$goId\")";}
            else
             { $sqlInsert = "INSERT INTO go_term SET go_acc =\"$goId\"";}
@@ -271,7 +271,7 @@ sub uploadKeggInformation
            #small patch for SQLite - the current insert function could not return id of the last inserted record...
            if(!defined $goTermId)
             {
-              my $select = "SELECT last_insert_rowid() as id ";
+              my $select = &selectLastId( $dbEngine );
               my $results = $dbh->select_from_table($select);
               $goTermId=$results->[0]->{'id'};
             }
@@ -422,7 +422,7 @@ sub organism_table {
     #small patch for SQLite - the current insert function could not return id of the last inserted record...
      if(!defined $organism_id)
        {
-        my $select = "SELECT last_insert_rowid() as id ";
+        my $select = &selectLastId( $engine );
         my $results = $dbh->select_from_table($select);
         #print Dumper($results);
         $organism_id=$results->[0]->{'id'};
@@ -434,3 +434,22 @@ sub organism_table {
 
     return %returnData;
 }
+
+sub selectLastId {
+
+        my $engine = shift;
+
+        if ( $engine eq 'mysql' ) {
+
+                return "SELECT last_insert_id() as id ";
+
+        } else {
+
+                return "SELECT last_insert_rowid() as id ";
+
+        }
+
+}
+
+
+

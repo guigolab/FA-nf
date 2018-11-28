@@ -47,7 +47,7 @@ use Bio::SeqIO;
 use Data::Dumper;
 use FunctionalAnnotation::DB;
 use FunctionalAnnotation::uploadData;
-use FunctionalAnnotation::sqlLiteDB;
+use FunctionalAnnotation::sqlDB;
 use Config::Simple;
 use DBI;
 
@@ -84,7 +84,9 @@ if(!defined $config{'dbEngine'}){$config{'dbEngine'} = 'mysql';}
 my $dbh;
 #connect to the DB
 if($config{'dbEngine'} eq 'mysql')
-{ $dbh= DBI->connect('mysql',$config{'dbname'},$config{'dbhost'},$config{'dbuser'},$config{'dbpass'},$config{'dbport'});}
+{
+	$dbh = DBI->connect( "DBI:mysql:database=".$config{'dbname'}.";host=".$config{'dbhost'}.";port=".$config{'dbport'}, $config{'dbuser'}, $config{'dbpass'});
+}
 else
 {
   my $dbName = $config{'resultPath'}.$config{'dbname'}.'.db';
@@ -172,7 +174,9 @@ sub uploadCDsearchDataFast
      #die();
 
           if($engine eq 'SQLite')
+
       {$insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField, $setValuesString) VALUES(NULL,\"$proteinId\",".$dbh->quote( $tmpHash{$fieldName} ).",$setString)"; }
+
      else
       {$insertString = "INSERT INTO $table SET protein_id=$proteinId,$setString ";}
 
@@ -181,7 +185,9 @@ sub uploadCDsearchDataFast
     # $blastHitId = $dbh->select_update_insert("blast_hit_id", $selectString, $updateString, $insertString, $update);
      #my $setString = join(',', @setData);
     # my $id= $dbh->insert_set($insertString);
-					print $insertString, "\n";
+
+		 print $insertString, "\n";
+
      my $sth = $dbh->prepare($insertString);
      $sth->execute();
 					$sth->finish();
@@ -253,14 +259,14 @@ sub assignQuery {
 # TODO: Move to library because it may be useful for other cases
 sub escapeArraySQL {
 	
-	my @array = @_;
-	my @escaped;
+		my @array = @_;
+		my @escaped;
 
-	foreach my $esc ( @array ) {
-									$esc=~s/"/\\"/g;
-									push( @escaped, $esc );
-	}
-	
-	return @escaped;
+		foreach my $esc ( @array ) {
+			$esc=~s/"/\\"/g;
+			push( @escaped, $esc );
+		}
+		
+		return @escaped;
 
 }

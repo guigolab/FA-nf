@@ -65,6 +65,11 @@ dbFileName = params.resultPath+params.dbname+'.db'
 //println(dbFileName)
 dbFile = file(dbFileName)
 boolean exists = dbFile.exists();
+boolean mysql = false
+
+if(params.dbEngine=="mysql") {
+ mysql = true
+}
 
 //println(exists)
 
@@ -207,10 +212,19 @@ process initDB {
  script:
  command = "mkdir -p $params.resultPath\n"
  command += "grep -vP '[{}]' $config_file | sed 's/\\s\\=\\s/:/gi' > config\n"
- if (!exists) {
-     command += "fa_main.v1.pl init -conf config"
+ 
+ if ( mysql ) {
+  // Add dbhost to config
+  command += "DBHOST=\"dbhost:'`cat $params.dbhostfile`'\"; echo \"\$(cat config)\n \$DBHOST\" > config ;\n"
+  command += "fa_main.v1.pl init -conf config"
+ } else {
+
+        if (!exists) {
+                command += "fa_main.v1.pl init -conf config"
+        }
  }
  command
+
 }
 
 process 'definition_upload'{
@@ -463,7 +477,7 @@ process 'generateResultFiles'{
  """
 }
 
-if ( annotation && annotation != "" ){
+if ( annotation != null && annotation != "" ){
 
 process 'generateGFF3File'{
  input:

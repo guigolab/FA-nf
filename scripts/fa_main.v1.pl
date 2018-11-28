@@ -47,7 +47,7 @@ use Getopt::Long;
 use Data::Dumper;
 use Config::Simple;
 use FunctionalAnnotation::DB;
-use FunctionalAnnotation::sqlLiteDB;
+use FunctionalAnnotation::sqlDB;
 use FunctionalAnnotation::uploadData;
 use FunctionalAnnotation::getResults;
 use IO::Handle;
@@ -157,10 +157,10 @@ die(qq/
  my %config = $cfg->vars();
  my $logFile =$config{'resultPath'}.$config{'stdoutLog'};
  my $errFile =$config{'resultPath'}.$config{'stderrLog'};
- open OUTPUT, '>>', $logFile or die $!;
- open ERROR,  '>>', $errFile  or die $!;
- STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
- STDERR->fdopen( \*ERROR,  'w' ) or die $!;
+ #open OUTPUT, '>>', $logFile or die $!;
+ #open ERROR,  '>>', $errFile  or die $!;
+ #STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
+ #STDERR->fdopen( \*ERROR,  'w' ) or die $!;
 
  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
  $year += 1900;
@@ -173,7 +173,7 @@ if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
  print "Check DB presence...\n"; 
 }
  
- &createSQLliteDB($confFile);
+ &createSQLDB($confFile);
 
 if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
 {

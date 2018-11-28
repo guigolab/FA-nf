@@ -50,6 +50,7 @@ use FunctionalAnnotation::uploadData;
 use DBI;
 use Data::Dumper;
 use Config::Simple;
+use Scalar::Util qw(looks_like_number);
 my $confFile = 'main_configuration.ini';
 
 my $USAGE = "perl load_phylome_data.pl [-idf idfile] [-type s]  [-conf configuration_file] [-h help] \n";
@@ -76,7 +77,10 @@ if(!defined $config{'dbEngine'}){$config{'dbEngine'} = 'mysql';}
 my $dbh;
 #connect to the DB
 if($config{'dbEngine'} eq 'mysql')
-{ $dbh= DBI->connect('mysql',$config{'dbname'},$config{'dbhost'},$config{'dbuser'},$config{'dbpass'},$config{'dbport'});}
+{ 
+$dbh = DBI->connect( "DBI:mysql:database=".$config{'dbname'}.";host=".$config{'dbhost'}.";port=".$config{'dbport'}, $config{'dbuser'}, $config{'dbpass'});
+
+}
 else
 {
   my $dbName = $config{'resultPath'}.$config{'dbname'}.'.db';
@@ -117,19 +121,31 @@ sub uploadCBSpredictionsFast
         $table = 'signalP';
         $tableId = 'signalP_id';
         @keys=('start', 'end', 'score');
-        $insertString = "INSERT INTO $table ($tableId, protein_id,".join(",",@keys).") VALUES(NULL,?,?,?,?)"; 
+								if ( $engine eq 'mysql' ) {
+									$insertString = "INSERT INTO $table (protein_id,".join(",",@keys).") VALUES(?,?,?,?)";
+								} else {
+									$insertString = "INSERT INTO $table ($tableId, protein_id,".join(",",@keys).") VALUES(NULL,?,?,?,?)";									
+								}
       }
      elsif($type eq 'c')
       {$table = 'chloroP';
        $tableId = 'chloroP_id';
        @keys=('start', 'end', 'score');
-       $insertString = "INSERT INTO $table ($tableId, protein_id,".join(",",@keys)." ) VALUES(NULL,?,?,?,?)"; 
+							if ( $engine eq 'mysql' ) {
+								$insertString = "INSERT INTO $table (protein_id,".join(",",@keys)." ) VALUES(?,?,?,?)";
+							} else {
+								$insertString = "INSERT INTO $table ($tableId, protein_id,".join(",",@keys)." ) VALUES(NULL,?,?,?,?)";
+							}
       }
   elsif($type eq 't')
       {$table = 'targetP';
        $tableId = 'targetP_id';
        @keys=('location','RC');
-       $insertString = "INSERT INTO $table ($tableId, protein_id,".join(",",@keys)." ) VALUES(NULL,?,?,?)"; 
+							if ( $engine eq 'mysql' ) {
+								$insertString = "INSERT INTO $table (protein_id,".join(",",@keys)." ) VALUES(?,?,?)";
+							} else {
+								$insertString = "INSERT INTO $table ($tableId, protein_id,".join(",",@keys)." ) VALUES(NULL,?,?,?)";
+							}
       }
   
  my $sth = $dbh->prepare($insertString);
@@ -141,6 +157,12 @@ sub uploadCBSpredictionsFast
   $sth2->execute();
   my $proteinId = $sth2->fetchrow()||'';
   $sth2->finish();
+		
+		if ( $proteinId eq '' ) {
+        next;
+								# No protein ID, let's skip
+  }
+		
   my $setString='';
   my @setData=();
   push(@setData,$proteinId);
@@ -148,13 +170,10 @@ sub uploadCBSpredictionsFast
    
    foreach my $keyItem(@keys)
       {
-       if($engine eq 'SQLite')
-        {push(@setData, "\"$dataHash->{$protItem}{$keyItem}\"");}
-       else
-        {push(@setData, "$keyItem = \"$dataHash->{$protItem}{$keyItem}\"");}
+        push(@setData, processType( $dataHash->{$protItem}{$keyItem} ) );
       }
    my $setValuesString = join(',', @setData);
-   #print "$setValuesString\n";
+#   print STDERR "$setValuesString\n";
    $sth->execute(@setData);
   # $sth->commit;
 #   $sth->finish();
@@ -163,6 +182,18 @@ sub uploadCBSpredictionsFast
  $sth->finish();
 }
 
+sub processType {
+
+	my $value = shift;
+
+	if ( looks_like_number( $value ) ) {
+
+		return $value;
+	} else {
+		return "\"".$value."\"";
+	}
+
+}
 
 
 sub parseCBSpredictionsData
@@ -217,3 +248,4 @@ sub parseCBSpredictionsData
 
  return %retData;
 }
+
