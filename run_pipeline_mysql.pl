@@ -19,10 +19,10 @@ my $mysqllog = $ENV{'HOME'}."/mysqllog";
 GetOptions(
     "conf=s"=>\$confFile,
     "help|h" => \$show_help,
-    "nextflow" => \$nextflow,
-    "mysqldata" => \$mysqldata,
-    "mysqllog" => \$mysqllog,
-    "mysqlimg" => \$mysqlimg
+    "nextflow=s" => \$nextflow,
+    "mysqldata=s" => \$mysqldata,
+    "mysqllog=s" => \$mysqllog,
+    "mysqlimg=s" => \$mysqlimg
 );
 
 if(!defined $confFile || !defined $mysqlimg || $show_help) 
@@ -64,6 +64,10 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
         # Run MySQL qsub process. TODO: Allow more flexibility here
         system( "qsub run.mysql.qsub.sh $mysqlimg $mysqldata $mysqllog/CNF $mysqllog/IP $mysqllog/PROCESS ".$config{"dbuser"}." ".$config{"dbpass"}." ".$config{"dbport"});
         # Run nextflow
+        # TODO: To reconsider way of checking
+        while ( ! -d "$mysqldata/db" ) {
+		sleep( 5 );
+	}
         system( "$nextflow run pipeline.nf --config $confFile" );
         
     } else {
