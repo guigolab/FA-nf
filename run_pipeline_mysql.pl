@@ -74,7 +74,7 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
         $extra = $extra. " -e $mysqllog/ERR -o $mysqllog/OUT ";
         
         # Run MySQL qsub process. TODO: Allow more flexibility here
-        system( "qsub $extra run.mysql.qsub.sh $mysqlimg $mysqldata $mysqllog/CNF $mysqllog/DBHOST $mysqllog/PROCESS ".$config{"dbuser"}." ".$config{"dbpass"}." ".$config{"dbport"});
+        system( "qsub $extra run.mysql.qsub.sh ".$config{"mysqlimg"}." $mysqldata $mysqllog/CNF $mysqllog/DBHOST $mysqllog/PROCESS ".$config{"dbuser"}." ".$config{"dbpass"}." ".$config{"dbport"});
         # Run nextflow
         # TODO: To reconsider way of checking
         while ( ! -d "$mysqldata/db" ) {
