@@ -59,5 +59,11 @@ Used software is encapsulated in 4 containers:
 
     docker run -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/test:/output --privileged -t --rm singularityware/docker2singularity fa-nf:latest
 
+## Running in MySQL mode
+
+We offer a convenience wrapper script for running the pipeline in MySQL mode in SGE-compatible clusters
+
+    nohup perl run_pipeline_mysql.pl -conf ./main_configuration.config  &> log.mysql &
+
 
 
