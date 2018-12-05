@@ -16,13 +16,14 @@ my $nextflow = "nextflow";
 my $mysqldata = $ENV{'HOME'}."/mysqldata";
 my $mysqllog = $ENV{'HOME'}."/mysqllog";
 
+# extra params for cluster queue
+my $extra = "-j y -l virtual_free=2G,h_rt=172800 -N MYSQL_container -m be -cwd -V -q long-sl7";
+
 GetOptions(
     "conf=s"=>\$confFile,
     "help|h" => \$show_help,
     "nextflow=s" => \$nextflow,
-    "mysqldata=s" => \$mysqldata,
-    "mysqllog=s" => \$mysqllog,
-    "mysqlimg=s" => \$mysqlimg
+    "extra=s" => \$extra
 );
 
 if(!defined $confFile || !defined $mysqlimg || $show_help) 
@@ -33,11 +34,8 @@ die(qq/
        -h || help 		 : This message
        -conf    		 : Configuration file; by default 'main_configuration.ini' in the current folder
        -nextflow         : Nextflow path
-
+       -extra            : Extra parameters to be passed to the cluster queue
 \n/)};
-
-if ( ! -d $mysqldata ) { make_path( $mysqldata ); }
-if ( ! -d $mysqllog ) { make_path( $mysqllog ); }
 
 my $tmpconf = tmpnam();
 # As it is used in the pipeline, consider if migrating to Perl function
@@ -54,15 +52,29 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
     
     # Check all MySQL params are there
     
-    if ( $config{"dbuser"} && $config{"dbpass"} && $config{"dbport"} ) {
+    if ( $config{"dbuser"} && $config{"dbpass"} && $config{"dbport"} && $config{"mysqlimg"} ) {
+        
+               
+        if ( $config{"mysqllog"} ) {
+            $mysqllog = $config{"mysqllog"};
+        }
+        
+        if ( $config{"mysqldata"} ) {
+            $mysqldata = $config{"mysqldata"};
+        }    
+        
+        if ( ! -d $mysqldata ) { make_path( $mysqldata ); }
+        if ( ! -d $mysqllog ) { make_path( $mysqllog ); }
         
         # Generate files
         # Mysqlconf
         my $cnfcontent = "[mysqld]\nbind-address=0.0.0.0\nport=".$config{"dbport"}."\n";
         open( CNF, ">$mysqllog/CNF" ); print CNF $cnfcontent; close( CNF );
         
+        $extra = $extra. " -e $mysqllog/ERR -o $mysqllog/OUT ";
+        
         # Run MySQL qsub process. TODO: Allow more flexibility here
-        system( "qsub run.mysql.qsub.sh $mysqlimg $mysqldata $mysqllog/CNF $mysqllog/IP $mysqllog/PROCESS ".$config{"dbuser"}." ".$config{"dbpass"}." ".$config{"dbport"});
+        system( "qsub $extra run.mysql.qsub.sh $mysqlimg $mysqldata $mysqllog/CNF $mysqllog/DBHOST $mysqllog/PROCESS ".$config{"dbuser"}." ".$config{"dbpass"}." ".$config{"dbport"});
         # Run nextflow
         # TODO: To reconsider way of checking
         while ( ! -d "$mysqldata/db" ) {

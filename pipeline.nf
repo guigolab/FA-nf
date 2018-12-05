@@ -215,7 +215,7 @@ process initDB {
  
  if ( mysql ) {
   // Add dbhost to config
-  command += "DBHOST=\"dbhost:'`cat $params.dbhostfile`'\"; echo \"\$(cat config)\n \$DBHOST\" > config ;\n"
+  command += "DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat config)\n \$DBHOST\" > config ;\n"
   command += "fa_main.v1.pl init -conf config"
  } else {
 
