@@ -26,7 +26,7 @@ GetOptions(
     "extra=s" => \$extra
 );
 
-if(!defined $confFile || !defined $mysqlimg || $show_help) 
+if( !defined $confFile || $show_help) 
 {
 die(qq/
  Usage:   run_pipeline_mysql.pl [options]
