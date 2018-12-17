@@ -10,8 +10,11 @@ use File::Path qw(make_path);
 
 # Wrapper for running the pipeline in MySQL mode - Use with nohup and ideally save log
 
-my ($confFile,$show_help,$mysqlimg);
+my ($confFile,$show_help);
 my $nextflow = "nextflow";
+
+my $resume = 0;
+my $mysqlonly = 0;
 
 my $mysqldata = $ENV{'HOME'}."/mysqldata";
 my $mysqllog = $ENV{'HOME'}."/mysqllog";
@@ -23,8 +26,15 @@ GetOptions(
     "conf=s"=>\$confFile,
     "help|h" => \$show_help,
     "nextflow=s" => \$nextflow,
-    "extra=s" => \$extra
+    "extra=s" => \$extra,
+    "resume|r" => \$resume,
+    "mysqlonly|m" => \$mysqlonly
 );
+
+my $resumeStr = "";
+if ( $resume ) {
+    $resumeStr = "-resume";
+}
 
 if( !defined $confFile || $show_help) 
 {
@@ -35,6 +45,8 @@ die(qq/
        -conf    		 : Configuration file; by default 'main_configuration.ini' in the current folder
        -nextflow         : Nextflow path
        -extra            : Extra parameters to be passed to the cluster queue
+       -resume           : Resume the pipeline (it passes -resume argument to nextflow)
+       -mysqlonly            : Lauch only MySQL server (as far as running in MySQL mode)
 \n/)};
 
 my $tmpconf = tmpnam();
@@ -78,10 +90,12 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
         # Run nextflow
         # TODO: To reconsider way of checking
         while ( ! -d "$mysqldata/db" ) {
-		sleep( 5 );
-	}
-        system( "$nextflow run pipeline.nf --config $confFile" );
+            sleep( 5 );
+        }
         
+        if ( ! $mysqlonly ) {
+            system( "$nextflow run pipeline.nf $resumeStr --config $confFile" );
+        }
     } else {
         
         exit 1;
@@ -91,6 +105,6 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
 
     # Else, SQLite mode
     # Run Nextflow pipeline
-    system( "$nextflow run pipeline.nf --config $confFile" );
+    system( "$nextflow run pipeline.nf $resumeStr --config $confFile" );
 
 }

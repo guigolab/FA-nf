@@ -1,5 +1,5 @@
-* Add resume option for MySQL launch
-* Add run MySQL only option
+* In reports, put select distincts again tables
+* Think about ID InterproScan
 * Allow dynamic configuration for MySQL launch (where different IPs may be involved after resuming)
 * Put in Ontology_term= in GFF a source (e. g. KEGG)
 * Allow different GFF parsing (e. g., from transcriptome projects)
