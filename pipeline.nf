@@ -215,8 +215,8 @@ process initDB {
  
  if ( mysql ) {
   // Add dbhost to config
-  command += "DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat config)\n \$DBHOST\" > config ;\n"
-  command += "fa_main.v1.pl init -conf config"
+  command += "DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat config)\n \$DBHOST\" > configIn ;\n"
+  command += "fa_main.v1.pl init -conf configIn"
  } else {
 
         if (!exists) {
@@ -239,8 +239,13 @@ process 'definition_upload'{
  output:
  file 'def_done' into definition_passed
 
-
  """
+ 
+  if ( $mysql ) {
+   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+   $config = configIn
+  }
+ 
   cat *.def > allDef
   upload_go_definitions.pl -i allDef -conf $config -mode def -param 'blast_def' > def_done
  """
@@ -384,6 +389,12 @@ process 'interpro_upload'{
  file('upload_interpro') into upload_interpro
  
  """
+ 
+  if ( $mysql ) {
+   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+   $config = configIn
+  }
+ 
   cat *.ipscan > allInterpro
   run_interpro.pl -mode upload -i allInterpro -conf $config > upload_interpro
 
@@ -404,6 +415,12 @@ process 'CDsearch_hit_upload'{
  file('upload_hit') into upload_hit
  
  """
+ 
+ if ( $mysql ) {
+  DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+  $config = configIn
+ }
+ 
  cat *.cdsearch_hit > allCDsearchHit
  upload_CDsearch.pl -i allCDsearchHit -type h -conf $config > upload_hit
  """
@@ -422,6 +439,12 @@ process 'CDsearch_feat_upload'{
  file('upload_feat') into upload_feat
 
  """
+ 
+ if ( $mysql ) {
+  DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+  $config = configIn
+ }
+ 
  cat *.cdsearch_feat > allCDsearchFeat
  upload_CDsearch.pl -i allCDsearchFeat -type f -conf $config > upload_feat
  """
@@ -440,6 +463,12 @@ process 'blast_annotator_upload'{
   file('upload_blast') into upload_blast
 
  """
+ 
+  if ( $mysql ) {
+   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+   $config = configIn
+  }
+ 
   cat *.blast > allBlast
   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file
   upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'blast_annotator' > upload_blast
@@ -462,6 +491,12 @@ process 'kegg_upload'{
  file('done') into last_step
 
  """
+ 
+ if ( $mysql ) {
+  DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+  $config = configIn
+ }
+
  load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf $config > done
  """
 }
@@ -473,6 +508,12 @@ process 'generateResultFiles'{
   file obofile from obofile
 
   """
+  
+  if ( $mysql ) {
+   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+   $config = configIn
+  }
+  
   get_results.pl -conf $config -obo $obofile
  """
 }
@@ -485,6 +526,12 @@ process 'generateGFF3File'{
   file all_done from last_step
 
  """
+ 
+ if ( $mysql ) {
+  DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+  $config = configIn
+ }
+ 
  get_gff3.pl -conf $config
  """
 }
