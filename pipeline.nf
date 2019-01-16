@@ -243,7 +243,7 @@ process 'definition_upload'{
  
   if ( $mysql ) {
    DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-   $config = configIn
+   $config=configIn
   }
  
   cat *.def > allDef
@@ -351,6 +351,12 @@ process 'signalP_upload'{
  file('upload_signalp') into upload_signalp
 
  """
+ 
+  if ( $mysql ) {
+   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+   $config=configIn
+  }
+  
   cat *.out_signal > allSignal
   load_CBSpredictions.signalP.pl -i allSignal -conf $config -type s > upload_signalp
  """
@@ -370,6 +376,11 @@ process 'targetP_upload'{
  file('upload_targetp') into upload_targetp
 
  """
+  if ( $mysql ) {
+   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+   $config=configIn
+  }
+  
   cat *.out_target > allTarget
   load_CBSpredictions.signalP.pl -i allTarget -conf $config -type t > upload_targetp
  """
@@ -392,7 +403,7 @@ process 'interpro_upload'{
  
   if ( $mysql ) {
    DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-   $config = configIn
+   $config=configIn
   }
  
   cat *.ipscan > allInterpro
@@ -418,7 +429,7 @@ process 'CDsearch_hit_upload'{
  
  if ( $mysql ) {
   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-  $config = configIn
+  $config=configIn
  }
  
  cat *.cdsearch_hit > allCDsearchHit
@@ -442,7 +453,7 @@ process 'CDsearch_feat_upload'{
  
  if ( $mysql ) {
   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-  $config = configIn
+  $config=configIn
  }
  
  cat *.cdsearch_feat > allCDsearchFeat
@@ -466,7 +477,7 @@ process 'blast_annotator_upload'{
  
   if ( $mysql ) {
    DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-   $config = configIn
+   $config=configIn
   }
  
   cat *.blast > allBlast
@@ -494,7 +505,7 @@ process 'kegg_upload'{
  
  if ( $mysql ) {
   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-  $config = configIn
+  $config=configIn
  }
 
  load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf $config > done
@@ -511,7 +522,7 @@ process 'generateResultFiles'{
   
   if ( $mysql ) {
    DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-   $config = configIn
+   $config=configIn
   }
   
   get_results.pl -conf $config -obo $obofile
@@ -529,7 +540,7 @@ process 'generateGFF3File'{
  
  if ( $mysql ) {
   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-  $config = configIn
+  $config=configIn
  }
  
  get_gff3.pl -conf $config
