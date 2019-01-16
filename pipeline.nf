@@ -1,13 +1,13 @@
 #!/usr/bin/env nextflow
 
 /*
- * Copyright (c) 2017-2018, Centre for Genomic Regulation (CRG)
+ * Copyright (c) 2017-2019, Centre for Genomic Regulation (CRG)
  *
  * Copyright (c) 2017, Anna Vlasova
  *
  * Copyright (c) 2017, Emilio Palumbo
  *
- * Copyright (c) 2018, Toni Hermoso Pulido
+ * Copyright (c) 2018-2019, Toni Hermoso Pulido
  * 
  * Functional Annotation Pipeline for protein annotation from non-model organisms
  * from Genome Annotation Team in Catalyña (GATC) implemented in Nextflow
