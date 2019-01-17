@@ -242,7 +242,7 @@ process 'definition_upload'{
 
  script:
   
-  command = checkMySQL( mysql, $params.mysqllog )
+  command = checkMySQL( mysql, params.mysqllog )
 
   command += " \
    cat *.def > allDef; \
@@ -571,9 +571,9 @@ def checkMySQL( mysql, mysqllog )  {
  if ( mysql ) {
    // Add dbhost to config
    command += "DBHOST=\"dbhost:'`cat ${mysqllog}/DBHOST`'\"; echo \"\$(cat config)\n \$DBHOST\" > configIn ;\n"
-   command += "$config=configIn ;"
+   command += "config=configIn ;"
  } else {
-   command += "$config=config ;"
+   command += "config=config ;"
  }
 
  return command
