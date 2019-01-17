@@ -241,20 +241,12 @@ process 'definition_upload'{
  file 'def_done' into definition_passed
 
  script:
- 
-  command = ""
- 
-  if ( mysql ) {
-   // Add dbhost to config
-   command += "DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat config)\n \$DBHOST\" > configIn ;\n"
-   command += "$config=configIn"
-  } else {
-   command += "$config=config"
-  }
- 
-  command += "
+  
+  command = checkMySQL( mysql, $params.mysqllog )
+
+  command += " \
    cat *.def > allDef; \
-   upload_go_definitions.pl -i allDef -conf $config -mode def -param 'blast_def' > def_done
+   upload_go_definitions.pl -i allDef -conf \$config -mode def -param 'blast_def' > def_done \
   "
  
   command
@@ -572,7 +564,21 @@ process 'generateReport'{
 */
 
 
+def checkMySQL( mysql, mysqllog )  {
 
+ command = ""
+
+ if ( mysql ) {
+   // Add dbhost to config
+   command += "DBHOST=\"dbhost:'`cat ${mysqllog}/DBHOST`'\"; echo \"\$(cat config)\n \$DBHOST\" > configIn ;\n"
+   command += "$config=configIn ;"
+ } else {
+   command += "$config=config ;"
+ }
+
+ return command
+
+}
 
 workflow.onComplete {
 
