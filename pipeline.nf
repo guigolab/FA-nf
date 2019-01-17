@@ -215,14 +215,15 @@ process initDB {
  
  if ( mysql ) {
   // Add dbhost to config
-  command += "DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat config)\n \$DBHOST\" > configIn ;\n"
+  command += "DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat config)\n \$DBHOST\" > configIn ;\n"
   command += "fa_main.v1.pl init -conf configIn"
  } else {
 
-        if (!exists) {
-                command += "fa_main.v1.pl init -conf config"
-        }
+   if (!exists) {
+     command += "fa_main.v1.pl init -conf config"
+   }
  }
+ 
  command
 
 }
@@ -239,16 +240,24 @@ process 'definition_upload'{
  output:
  file 'def_done' into definition_passed
 
- """
+ script:
  
-  if ( $mysql ) {
-   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-   $config=configIn
+  command = ""
+ 
+  if ( mysql ) {
+   // Add dbhost to config
+   command += "DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat config)\n \$DBHOST\" > configIn ;\n"
+   command += "$config=configIn"
+  } else {
+   command += "$config=config"
   }
  
-  cat *.def > allDef
-  upload_go_definitions.pl -i allDef -conf $config -mode def -param 'blast_def' > def_done
- """
+  command += "
+   cat *.def > allDef; \
+   upload_go_definitions.pl -i allDef -conf $config -mode def -param 'blast_def' > def_done
+  "
+ 
+  command
 
 }
 
@@ -353,7 +362,7 @@ process 'signalP_upload'{
  """
  
   if ( $mysql ) {
-   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+   DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
    $config=configIn
   }
   
@@ -377,7 +386,7 @@ process 'targetP_upload'{
 
  """
   if ( $mysql ) {
-   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+   DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
    $config=configIn
   }
   
@@ -402,7 +411,7 @@ process 'interpro_upload'{
  """
  
   if ( $mysql ) {
-   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+   DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
    $config=configIn
   }
  
@@ -428,7 +437,7 @@ process 'CDsearch_hit_upload'{
  """
  
  if ( $mysql ) {
-  DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+  DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
   $config=configIn
  }
  
@@ -452,7 +461,7 @@ process 'CDsearch_feat_upload'{
  """
  
  if ( $mysql ) {
-  DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+  DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
   $config=configIn
  }
  
@@ -476,7 +485,7 @@ process 'blast_annotator_upload'{
  """
  
   if ( $mysql ) {
-   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+   DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
    $config=configIn
   }
  
@@ -504,7 +513,7 @@ process 'kegg_upload'{
  """
  
  if ( $mysql ) {
-  DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+  DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
   $config=configIn
  }
 
@@ -521,7 +530,7 @@ process 'generateResultFiles'{
   """
   
   if ( $mysql ) {
-   DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+   DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
    $config=configIn
   }
   
@@ -539,7 +548,7 @@ process 'generateGFF3File'{
  """
  
  if ( $mysql ) {
-  DBHOST=\"dbhost:'`cat $params.mysqllog`'/DBHOST\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
+  DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
   $config=configIn
  }
  
