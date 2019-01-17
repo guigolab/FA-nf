@@ -225,7 +225,6 @@ process initDB {
  }
  
  command
-
 }
 
 process 'definition_upload'{
@@ -250,7 +249,6 @@ process 'definition_upload'{
   "
  
   command
-
 }
 
 process ipscn {
@@ -351,16 +349,17 @@ process 'signalP_upload'{
  output:
  file('upload_signalp') into upload_signalp
 
- """
+
+ script:
  
-  if ( $mysql ) {
-   DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-   $config=configIn
-  }
+  command = checkMySQL( mysql, params.mysqllog )
+ 
+  command += " \
+   cat *.out_signal > allSignal ; \
+   load_CBSpredictions.signalP.pl -i allSignal -conf \$config -type s > upload_signalp ; \
+  "
   
-  cat *.out_signal > allSignal
-  load_CBSpredictions.signalP.pl -i allSignal -conf $config -type s > upload_signalp
- """
+  command
 }
 
 
@@ -376,15 +375,16 @@ process 'targetP_upload'{
  output:
  file('upload_targetp') into upload_targetp
 
- """
-  if ( $mysql ) {
-   DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-   $config=configIn
-  }
+ script:
+ 
+  command = checkMySQL( mysql, params.mysqllog )
+
+  command += " \
+   cat *.out_target > allTarget ; \
+   load_CBSpredictions.signalP.pl -i allTarget -conf \$config -type t > upload_targetp ; \
+  "
   
-  cat *.out_target > allTarget
-  load_CBSpredictions.signalP.pl -i allTarget -conf $config -type t > upload_targetp
- """
+  command
 }
 
 
@@ -400,17 +400,17 @@ process 'interpro_upload'{
  output:
  file('upload_interpro') into upload_interpro
  
- """
  
-  if ( $mysql ) {
-   DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-   $config=configIn
-  }
- 
-  cat *.ipscan > allInterpro
-  run_interpro.pl -mode upload -i allInterpro -conf $config > upload_interpro
+ script:
 
- """
+  command = checkMySQL( mysql, params.mysqllog )
+
+  command += " \
+   cat *.ipscan > allInterpro ; \
+   run_interpro.pl -mode upload -i allInterpro -conf \$config > upload_interpro ; \
+  "
+  
+  command
 }
 
 
@@ -426,16 +426,16 @@ process 'CDsearch_hit_upload'{
  output:
  file('upload_hit') into upload_hit
  
- """
+ script:
  
- if ( $mysql ) {
-  DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-  $config=configIn
- }
- 
- cat *.cdsearch_hit > allCDsearchHit
- upload_CDsearch.pl -i allCDsearchHit -type h -conf $config > upload_hit
- """
+  command = checkMySQL( mysql, params.mysqllog )
+
+  command += " \
+   cat *.cdsearch_hit > allCDsearchHit ; \
+   upload_CDsearch.pl -i allCDsearchHit -type h -conf \$config > upload_hit ; \
+  "
+  
+  command
 }
 
 process 'CDsearch_feat_upload'{
@@ -450,16 +450,16 @@ process 'CDsearch_feat_upload'{
  output:
  file('upload_feat') into upload_feat
 
- """
+ script:
  
- if ( $mysql ) {
-  DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-  $config=configIn
- }
- 
- cat *.cdsearch_feat > allCDsearchFeat
- upload_CDsearch.pl -i allCDsearchFeat -type f -conf $config > upload_feat
- """
+  command = checkMySQL( mysql, params.mysqllog )
+  
+  command += " \
+   cat *.cdsearch_feat > allCDsearchFeat ; \
+   upload_CDsearch.pl -i allCDsearchFeat -type f -conf \$config > upload_feat ; \
+  "
+  
+  command
 }
 
 process 'blast_annotator_upload'{
@@ -474,18 +474,17 @@ process 'blast_annotator_upload'{
   output:
   file('upload_blast') into upload_blast
 
- """
+ script:
  
-  if ( $mysql ) {
-   DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-   $config=configIn
-  }
+  command = checkMySQL( mysql, params.mysqllog )
  
-  cat *.blast > allBlast
-  awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file
-  upload_go_definitions.pl -i two_column_file -conf $config -mode go -param 'blast_annotator' > upload_blast
- """
-
+  command += " \
+   cat *.blast > allBlast ; \
+   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file ; \
+   upload_go_definitions.pl -i two_column_file -conf \$config -mode go -param 'blast_annotator' > upload_blast ; \
+  "
+  
+  command
 }
 
 /** Last step **/
@@ -502,15 +501,16 @@ process 'kegg_upload'{
  output:
  file('done') into last_step
 
- """
- 
- if ( $mysql ) {
-  DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-  $config=configIn
- }
 
- load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf $config > done
- """
+ script:
+ 
+  command = checkMySQL( mysql, params.mysqllog )
+  
+  command += " \
+   load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf \$config > done ; \
+  "
+  
+  command
 }
 
 process 'generateResultFiles'{
@@ -519,15 +519,15 @@ process 'generateResultFiles'{
   file all_done from last_step
   file obofile from obofile
 
-  """
+ script:
+ 
+  command = checkMySQL( mysql, params.mysqllog )
   
-  if ( $mysql ) {
-   DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-   $config=configIn
-  }
+  command += " \
+   get_results.pl -conf \$config -obo $obofile ; \
+  "
   
-  get_results.pl -conf $config -obo $obofile
- """
+  command
 }
 
 if ( annotation != null && annotation != "" ){
@@ -537,15 +537,16 @@ process 'generateGFF3File'{
   file config from config4perl
   file all_done from last_step
 
- """
+
+ script:
  
- if ( $mysql ) {
-  DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat $config)\n \$DBHOST\" > configIn
-  $config=configIn
- }
- 
- get_gff3.pl -conf $config
- """
+  command = checkMySQL( mysql, params.mysqllog )
+  
+  command += " \
+   get_gff3.pl -conf \$config ; \
+  "
+  
+  command
 }
 
 }
