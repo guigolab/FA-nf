@@ -1,7 +1,6 @@
 * Check any potential problem with case in MySQL and SQLite
 * In reports, put select distincts again tables
 * Think about ID InterproScan
-* Put in Ontology_term= in GFF a source (e. g. KEGG)
+* Check better way to put source from ontology_terms
 * Allow different GFF parsing (e. g., from transcriptome projects)
-* Adapt to new version of KEGG - multiline (sub parse_kegg_record function) http://rest.kegg.jp/get/ko:K13137
-	* Check why orthologous are not there...
+* Check why orthologous are not there from KEGG
