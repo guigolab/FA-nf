@@ -505,8 +505,13 @@ sub uploadInterProResults
  # print "$select";
   $results = $dbh->select_from_table($select);
   my $countSeqs = $results->[0]{'count(*)'};
-  #if($countSeqs>0)
-  # {
+  
+  # Toniher 2019-01-19: Recover countSeqs
+  if($countSeqs>0)
+  {
+   next;
+  }
+  
   #  next if $updateFlag==0;
 
   #if updateFlag ==1
