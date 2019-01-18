@@ -584,6 +584,12 @@ def checkMySQL( mysql, mysqllog )  {
 workflow.onComplete {
 
  println ( workflow.success ? "\nDone! Check results in --> $params.resultPath\n" : "Oops .. something went wrong" )
+ 
+ if ( mysql ) {
+  
+   def procfile = new File( params.mysqllog+"/PROCESS" )
+   procfile.delete()
+ }
 
 }
 
