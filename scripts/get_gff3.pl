@@ -298,14 +298,22 @@ foreach my $idItem(@protIds)
     {$evalue = sprintf("%.1e", $evalue);}
    my $ipName =$result->{'ip_id'};
    my $domainName =$result->{'domain_name'};
-   my $description = $result->{'description'}.' '.$result->{'ip_desc'};
+   my $description = $result->{'description'};
+			
+			if ( $result->{'ip_desc'} ) {
+				if ( $description ) {
+						$description = $description. ". ". $result->{'ip_desc'};
+				} else {
+						$description = $result->{'ip_desc'};
+				}
+			}
 
   #updt 29/06/2017 -added ID and Parent records
    
    $idInterPro++;
 
     print OUTFILE "$protName\t$dbName\tprotein_match\t$domainStart\t$domainEnd\t$evalue\t$strand\t.\tName=$domainName;ID=InterProScan$idInterPro;";
-  if($description ne '')
+  if($description && $description ne '')
    {print OUTFILE "interpro_note=$description;\n"; }
   else
    {print OUTFILE "\n"; }
