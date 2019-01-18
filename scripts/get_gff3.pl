@@ -196,12 +196,16 @@ foreach my $idItem(@protIds)
 #ontology
   my @ontologyData=();
   #The intersection of this table is too big, since protein_go is huge. Thus I decided to make a two select, and then join results.
-  $selectString =  "select distinct go_term_id from protein_go where protein_id=$idItem";
+  $selectString =  "select distinct go_term_id, source from protein_go where protein_id=$idItem";
   $results =$dbh->select_from_table($selectString);
 #one protein could have more then one go_term_id
   my @goTermId=();
+		my @goSource=();
   foreach my $item(@{$results})
-  { push(@goTermId , $item->{'go_term_id'});}
+  {
+			push(@goTermId , $item->{'go_term_id'});
+			push(@goSource , $item->{'source'});
+		}
 
  if(scalar @goTermId >0)
   {
@@ -212,7 +216,20 @@ foreach my $idItem(@protIds)
     {push(@ontologyData, $item->{'go_acc'});}
    my $ontologyList = join(',', @ontologyData);
    if($ontologyList ne '')
-    {$descrField .= "Ontology_term=$ontologyList;";}
+    {
+					$descrField .= "Ontology_term=$ontologyList;";
+					
+					my @usources = do { my %seen; grep { !$seen{$_}++ } @goSource };
+					
+					my $usourcestr = join(',',@usources);
+					
+					if ($usourcestr ne ''){
+						
+						$descrField .= "Ontology_source=$usourcestr;";
+						
+					}
+					
+				}
   }
   
 #KEGG KO groups

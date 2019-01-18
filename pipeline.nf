@@ -10,7 +10,7 @@
  * Copyright (c) 2018-2019, Toni Hermoso Pulido
  * 
  * Functional Annotation Pipeline for protein annotation from non-model organisms
- * from Genome Annotation Team in Catalyña (GATC) implemented in Nextflow
+ * from Genome Annotation Team in Catalonia (GATC) implemented in Nextflow
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
