@@ -129,6 +129,10 @@ close FH;
 if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {print STDOUT "Number of unique KEGG groups:",scalar(keys %keggs),"\n";}
 #upload KEGG group information into DB - this will speed-up uploading process.. There are usually fewer groups then proteins assigned to them
 
+#print Dumper( \%keggs );
+#print Dumper( \%organisms );
+
+
 &uploadKeggInformation($dbh, \%keggs,\%organisms,$config{'dbEngine'});
 
 
@@ -190,6 +194,7 @@ sub uploadKeggInformation
 
     #add orthologus information from the list of species for proteins associated to this KO group
      my $gene_string=$hash->{'GENES'};
+					#print STDERR $proteinItem, "\t", $gene_string, "\n";
      #print "gene string: $gene_string\n";
      my @lines=split/\,/,$gene_string;
      my $is_cluster;
@@ -207,15 +212,20 @@ sub uploadKeggInformation
          #get organism_id from DB
          #my $organism_id= organism_table($lcode,$dbEngine,$dbh);
          my $organism_id= $codesOrg->{$lcode};
+
          #populate ortholog table
          #check if ortholog already exists (yes && do_update => update record; no => insert new ortholog)
          my $ortholog_sql_select = qq{ SELECT ortholog_id FROM ortholog WHERE name=\"$gene_id\" };
          my $ortholog_sql_update = qq{ UPDATE ortholog SET name=\"$gene_id\",organism_id=\"$organism_id\",db_id=\"$kegg_id\",db_name=\"KEGG\";};
          my $ortholog_sql_insert = "";
          if($dbEngine eq 'SQLite')
-          { $ortholog_sql_insert = qq{ INSERT INTO ortholog(ortholog_id,name,organism_id, db_id,db_name ) VALUES(NULL,\"$gene_id\",\"$organism_id\",\"$kegg_id\",\"KEGG\")};}
+          {
+											$ortholog_sql_insert = qq{ INSERT INTO ortholog(ortholog_id,name,organism_id, db_id,db_name ) VALUES(NULL,\"$gene_id\",\"$organism_id\",\"$kegg_id\",\"KEGG\")};
+										}
          else
-          { $ortholog_sql_insert = qq{ INSERT INTO ortholog SET name=\"$gene_id\",organism_id=\"$organism_id\",db_id=\"$kegg_id\",db_name=\"KEGG\";};}
+          {
+											$ortholog_sql_insert = qq{ INSERT INTO ortholog SET name=\"$gene_id\",organism_id=\"$organism_id\",db_id=\"$kegg_id\",db_name=\"KEGG\";};
+										}
         my $ortholog_id = $dbh->select_update_insert("ortholog_id", $ortholog_sql_select, $ortholog_sql_update, $ortholog_sql_insert, $do_update);
         #small patch for SQLite - the current insert function could not return id of the last inserted record...
         if(!defined $ortholog_id)
@@ -223,6 +233,7 @@ sub uploadKeggInformation
              my $results = $dbh->select_from_table($select);
              $ortholog_id=$results->[0]->{'id'};
           }
+							if(($loglevel eq 'debug' )||($loglevel eq 'info' )){ print "SQL: $ortholog_sql_insert --- $ortholog_id\n";}
        #populate protein_ortholog
        #check if protein_ortholog already exists in the table (yes && do_update => update record; no => insert new protein_ortholog)
        my $type;

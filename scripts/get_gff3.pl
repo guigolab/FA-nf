@@ -225,6 +225,7 @@ foreach my $idItem(@protIds)
 					
 					if ($usourcestr ne ''){
 						
+						# TODO: To consider better way to keep this
 						$descrField .= "Ontology_source=$usourcestr;";
 						
 					}
