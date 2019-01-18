@@ -575,7 +575,8 @@ sub uploadInterProResults
   $go =~s/^\s+//;
   $go =~s/\s+$//;
   my @goList=split(/\|/, $go);
-  push(@{$retGOData{$protKey}{'go'}}, @goList);
+  # Toniher. 2019-01-18. Changed key from go to annot, so it can be imported back
+  push(@{$retGOData{$protKey}{'annot'}}, @goList);
 
   }#foreach count key
 
