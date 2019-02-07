@@ -507,7 +507,7 @@ process 'kegg_upload'{
   command = checkMySQL( mysql, params.mysqllog )
   
   command += " \
-   load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf \$config > done ; \
+   load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf \$config > done 2>err; \
   "
   
   command
