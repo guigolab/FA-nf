@@ -203,14 +203,16 @@ while( my $result = $in->next_result ) {
     push(@str, $def);
  }
 
- my $bestDefinition = 'NA';
+ my $bestDefinition;
+ #my $bestDefinition = 'NA';
  #print Dumper(@str);
  if(defined $str[0])
  {
   #print $id."\n";
   $bestDefinition=&getBestDef(\@str);
+  print OUT $id."\t".$bestDefinition."\n";
+
  }
- print OUT $id."\t".$bestDefinition."\n";
 
  }
 close(OUT);

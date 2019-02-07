@@ -194,7 +194,7 @@ sub uploadKeggInformation
 
     #add orthologus information from the list of species for proteins associated to this KO group
      my $gene_string=$hash->{'GENES'};
-					#print STDERR $proteinItem, "\t", $gene_string, "\n";
+					print STDERR $proteinItem, "\t", $gene_string, "\n";
      #print "gene string: $gene_string\n";
      my @lines=split/\,/,$gene_string;
      my $is_cluster;
@@ -209,6 +209,7 @@ sub uploadKeggInformation
         my $lcode=lc($code);
         # next if ortholog is not in the list of species to analyze
          next if !$codesOrg->{$lcode};
+									print STDERR "Passed\n";
          #get organism_id from DB
          #my $organism_id= organism_table($lcode,$dbEngine,$dbh);
          my $organism_id= $codesOrg->{$lcode};
