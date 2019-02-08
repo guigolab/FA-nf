@@ -9,6 +9,8 @@ RUN set -x ; apt-get update && apt-get -y upgrade
 RUN apt-get install -y r-base sqlite mysql-client default-libmysqlclient-dev
 RUN apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
 
+RUN apt-get install -y libxml2-dev libexpat1-dev libdb-dev libgd-dev
+
 # Perl packages
 RUN cpanm Bio::SearchIO Bio::SearchIO::blastxml Bio::SeqIO
 RUN cpanm Config::Simple Config::JSON DBI DBD::mysql DBD::SQLite Digest::SHA File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util Scalar::Util String::Util

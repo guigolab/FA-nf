@@ -207,6 +207,8 @@ sub uploadKeggInformation
         $is_cluster=1 if scalar(@cluster)>1;
         $is_cluster=0 if scalar(@cluster)==1;
         my $lcode=lc($code);
+								print STDERR "* ", $lcode, "\n";
+								print STDERR "- ", Dumper( $codesOrg );
         # next if ortholog is not in the list of species to analyze
          next if !$codesOrg->{$lcode};
 									print STDERR "Passed\n";
@@ -217,7 +219,10 @@ sub uploadKeggInformation
          #populate ortholog table
          #check if ortholog already exists (yes && do_update => update record; no => insert new ortholog)
          my $ortholog_sql_select = qq{ SELECT ortholog_id FROM ortholog WHERE name=\"$gene_id\" };
+									print STDERR  $ortholog_sql_select, "\n";
          my $ortholog_sql_update = qq{ UPDATE ortholog SET name=\"$gene_id\",organism_id=\"$organism_id\",db_id=\"$kegg_id\",db_name=\"KEGG\";};
+									print STDERR  $ortholog_sql_update, "\n";
+
          my $ortholog_sql_insert = "";
          if($dbEngine eq 'SQLite')
           {
@@ -227,6 +232,7 @@ sub uploadKeggInformation
           {
 											$ortholog_sql_insert = qq{ INSERT INTO ortholog SET name=\"$gene_id\",organism_id=\"$organism_id\",db_id=\"$kegg_id\",db_name=\"KEGG\";};
 										}
+										print STDERR $ortholog_sql_insert, "\n";
         my $ortholog_id = $dbh->select_update_insert("ortholog_id", $ortholog_sql_select, $ortholog_sql_update, $ortholog_sql_insert, $do_update);
         #small patch for SQLite - the current insert function could not return id of the last inserted record...
         if(!defined $ortholog_id)
