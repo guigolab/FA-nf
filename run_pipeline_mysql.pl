@@ -94,6 +94,11 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
         }
         
         if ( ! $mysqlonly ) {
+            
+            while ( ! -f "$mysqllog/PROCESS" ) {
+                sleep( 5 );
+            }
+            
             system( "$nextflow run pipeline.nf $resumeStr --config $confFile" );
         }
     } else {
