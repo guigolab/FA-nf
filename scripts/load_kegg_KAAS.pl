@@ -130,10 +130,10 @@ if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {print STDOUT "Number of uni
 #upload KEGG group information into DB - this will speed-up uploading process.. There are usually fewer groups then proteins assigned to them
 
 #print Dumper( \%keggs );
-#print Dumper( \%organisms );
+print Dumper( \%organisms );
 
 
-&uploadKeggInformation($dbh, \%keggs,\%organisms,$config{'dbEngine'});
+#&uploadKeggInformation($dbh, \%keggs,\%organisms,$config{'dbEngine'});
 
 
 sub uploadKeggInformation
@@ -194,7 +194,7 @@ sub uploadKeggInformation
 
     #add orthologus information from the list of species for proteins associated to this KO group
      my $gene_string=$hash->{'GENES'};
-					print STDERR $proteinItem, "\t", $gene_string, "\n";
+					#print STDERR $proteinItem, "\t", $gene_string, "\n";
      #print "gene string: $gene_string\n";
      my @lines=split/\,/,$gene_string;
      my $is_cluster;

@@ -172,6 +172,9 @@ process convertBlast{
 if(params.gogourl != ""){
 
 process blast_annotator {
+
+ label 'blast-annotator'
+ 
  input:
  file blastXml  from blastXmlResults2.flatMap()
 
@@ -274,6 +277,8 @@ process ipscn {
 
 process 'cdSearchHit' {
 
+    label 'cdSearch'
+
     maxForks 1
 
     input:
@@ -288,6 +293,8 @@ process 'cdSearchHit' {
 }
 
 process 'cdSearchFeat' {
+
+    label 'cdSearch'
 
     maxForks 1
 
