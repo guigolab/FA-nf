@@ -173,7 +173,7 @@ if(params.gogourl != ""){
 
 process blast_annotator {
 
- label 'blast-annotator'
+ label 'blastannotator'
  
  input:
  file blastXml  from blastXmlResults2.flatMap()
