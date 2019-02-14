@@ -94,17 +94,25 @@ seqData= Channel
  .from(protein)
  .splitFasta(by: params.chunkSize)
 
+seqWebData= Channel
+ .from(protein)
+ .splitFasta(by: params.chunkWebSize)
+
 iscan_properties = file("/usr/local/interproscan/interproscan.properties")
 
 if(params.debug=="TRUE"||params.debug=="true")
 {
  println("Debugging.. only the first 2 chunks will be processed")
  (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6) = seqData.take(2).into(6)
+ (web_seq_file1, web_seq_file2) = seqWebData.take(2).into(2)
+
 }
 else
 {
  println("Process entire dataset")
 (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6) = seqData.into(6)
+(web_seq_file1, web_seq_file2) = seqWebData.into(2)
+
 }
 
 if(params.keggFile == "" ||  params.keggFile == null ) {
@@ -138,13 +146,15 @@ process blast{
 
  input:
  file seq from seq_file6
- file db_path
 
  output:
  file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
 
  """
-  blastp -db $db_path/$db_name -query $seq -num_threads 8 -evalue  0.00001 -out "blastXml${seq}" -outfmt 5
+  echo ${params.blastDB_path} > huis
+  echo ${db_path} >> huis
+  echo $params.blastDB_path >> huis
+  blastp -db ${db_path}/${db_name} -query $seq -num_threads 8 -evalue  0.00001 -out "blastXml${seq}" -outfmt 5
  """
 }
 
@@ -282,7 +292,7 @@ process 'cdSearchHit' {
     maxForks 1
 
     input:
-    file seq from seq_file2
+    file seq from web_seq_file1
 
     output:
     file 'out_hit' into cdSearch_hit_result
@@ -299,7 +309,7 @@ process 'cdSearchFeat' {
     maxForks 1
 
     input:
-    file seq from seq_file3
+    file seq from web_seq_file2
 
     output:
     file 'out_feat' into cdSearch_feat_result

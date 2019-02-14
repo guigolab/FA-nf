@@ -324,6 +324,7 @@ sub select_update_insert {
     my @res = @{$self->select_from_table($sqlselect)};
     my $res = $res[0];
     my $dbID = $res->{$table_column};
+
     if (defined $dbID) {
 	#if(($loglevel eq 'debug')){ print STDOUT "This $table_column already exists\n$sqlupdate => id: $dbID\n";}
 	if ($do_update && $sqlupdate) {
@@ -339,6 +340,7 @@ sub select_update_insert {
 	$dbID = $self->insert_set($sqlinsert);
 	$debug && print STDOUT "inserted id $dbID\n";
     }
+
     return $dbID;
 }
 

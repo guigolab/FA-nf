@@ -129,7 +129,7 @@ close FH;
 if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {print STDOUT "Number of unique KEGG groups:",scalar(keys %keggs),"\n";}
 #upload KEGG group information into DB - this will speed-up uploading process.. There are usually fewer groups then proteins assigned to them
 
-#print Dumper( \%keggs );
+print Dumper( \%keggs );
 print Dumper( \%organisms );
 
 
@@ -431,15 +431,18 @@ sub organism_table {
     else
     { $organism_sql_insert = qq{ INSERT INTO organism SET species=\"$scName\",name=\"$scName\",reign=\"\",taxonomy_id=\"$taxonId\",kegg_code=\"$code\";};}
 #    $do_update=0;
-    #print "$organism_sql_insert\n";
-    #print "$organism_sql_select\n";
-   #print "$organism_sql_update\n $do_update\n";
+    # print "1. $organism_sql_insert\n";
+    # print "2. $organism_sql_select\n";
+    # print "3. $organism_sql_update\n";
 
-    my $organism_id = $dbh->select_update_insert("organism_id", $organism_sql_select, $organism_sql_update, $organism_sql_insert, $do_update);
-
+    $organism_id = $dbh->select_update_insert("organism_id", $organism_sql_select, $organism_sql_update, $organism_sql_insert, $do_update);
+				
+				# print "4. ".$organism_id."\n";
+				
     #small patch for SQLite - the current insert function could not return id of the last inserted record...
-     if(!defined $organism_id)
+     if(!defined $organism_id && $engine eq "SQLite")
        {
+								
         my $select = &selectLastId( $engine );
         my $results = $dbh->select_from_table($select);
         #print Dumper($results);
@@ -447,7 +450,11 @@ sub organism_table {
        }
 
     }#if ! defined organism id
-    $returnData{$code}=$organism_id;
+				
+				if ( $organism_id ) {
+				
+					$returnData{$code}=$organism_id;
+				}
    }
 
     return %returnData;
