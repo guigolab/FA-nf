@@ -133,7 +133,7 @@ print Dumper( \%keggs );
 print Dumper( \%organisms );
 
 
-#&uploadKeggInformation($dbh, \%keggs,\%organisms,$config{'dbEngine'});
+&uploadKeggInformation($dbh, \%keggs,\%organisms,$config{'dbEngine'});
 
 
 sub uploadKeggInformation
