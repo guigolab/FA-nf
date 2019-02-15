@@ -17,7 +17,7 @@ RUN cpanm Config::Simple Config::JSON DBI DBD::mysql DBD::SQLite Digest::SHA Fil
 
 RUN apt-get install -y libssl-dev
 
-RUN cpanm IO::Socket::SSL LWP::Simple LWP::Protocol::https LWP::UserAgent
+RUN cpanm IO::Socket::SSL LWP::Simple LWP::Protocol::https LWP::UserAgent Text::Trim
 
 # Clean cache
 RUN apt-get clean

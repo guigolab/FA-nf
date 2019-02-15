@@ -50,6 +50,7 @@ use FunctionalAnnotation::DB;
 use FunctionalAnnotation::sqlDB;
 use FunctionalAnnotation::uploadData;
 use FunctionalAnnotation::getResults;
+use Text::Trim;
 use Data::Dumper;
 use Config::Simple;
 
@@ -219,7 +220,7 @@ foreach my $idItem(@protIds)
     {
 					$descrField .= "Ontology_term=$ontologyList;";
 					
-					my @usources = do { my %seen; grep { !$seen{$_}++ } @goSource };
+					my @usources = do { my %seen; grep { !$seen{ trim($_ ) }++ } @goSource };
 					
 					my $usourcestr = join(',',@usources);
 					
