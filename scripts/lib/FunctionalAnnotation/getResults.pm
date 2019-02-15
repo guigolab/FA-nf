@@ -336,7 +336,9 @@ sub makeAnnotatedVsNotAnnotatedPlot
   $results =$dbh->select_from_table($sqlSelect);
   foreach my $result (@{$results}) 
   {
-   print OUT "$result->{protein_id}\t$result->{'stable_id'}\t$result->{'length(sequence)'}\n"; 
+   if ( $result->{protein_id} && $result->{'stable_id'} && $result->{'length(sequence)'} ) {
+    print OUT "$result->{protein_id}\t$result->{'stable_id'}\t$result->{'length(sequence)'}\n";
+   }
   }
  close(OUT);
 }
