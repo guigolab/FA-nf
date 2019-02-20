@@ -66,4 +66,11 @@ We offer a convenience wrapper script for running the pipeline in MySQL mode in 
     nohup perl run_pipeline_mysql.pl -conf ./main_configuration.config  &> log.mysql &
 
 
+## Running only MySQL
+
+This is convenient for checking results database once analyses are finished. NO further analyses are run.
+
+	nohup perl run_pipeline_mysql.pl -mysqlonly -conf ./main_configuration.config &> log.mysql.only &
+
+
 
