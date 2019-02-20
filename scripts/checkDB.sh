@@ -1,4 +1,5 @@
-dbname=$1
+# Usage
+# bash checkDB.sh | mysql -utestuser -ppasswd -hmyip -Pport myDB
 
 echo "select count(*) from protein;"
 echo "select count(*) from gene;"

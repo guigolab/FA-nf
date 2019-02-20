@@ -111,7 +111,7 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
                 sleep( 5 );
             }
             
-            my $myip=`echo "$mysqllog/DBHOST"`;
+            my $myip=`cat "$mysqllog/DBHOST"`;
             print "DBHOST: ".$myip."\n";
             
         }
