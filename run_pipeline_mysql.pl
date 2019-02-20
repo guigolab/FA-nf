@@ -78,6 +78,11 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
         if ( ! -d $mysqldata ) { make_path( $mysqldata ); }
         if ( ! -d $mysqllog ) { make_path( $mysqllog ); }
         
+        # Avoid show IP of previous process
+        if ( -f "$mysqllog/DBHOST" ) {
+            unlink "$mysqllog/DBHOST";
+        }
+        
         # Generate files
         # Mysqlconf
         my $cnfcontent = "[mysqld]\nbind-address=0.0.0.0\nport=".$config{"dbport"}."\n";
@@ -100,6 +105,15 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
             }
             
             system( "$nextflow run pipeline.nf $resumeStr --config $confFile" );
+        } else {
+            
+            while ( ! -f "$mysqllog/DBHOST" ) {
+                sleep( 5 );
+            }
+            
+            my $myip=`echo "$mysqllog/DBHOST"`;
+            print "DBHOST: ".$myip."\n";
+            
         }
     } else {
         
