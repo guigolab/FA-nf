@@ -15,7 +15,8 @@ echo "select count(distinct protein_id) from domain;"
 
 
 echo "select count(*) from protein_go;"
-echo "select distinct source, count(*) from protein_go group by source;;"
+echo "select count(distinct(protein_id)) from protein_go;"
+echo "select distinct source, count(*) from protein_go group by source;"
 
 #echo "select  source, count(*) from protein_go group by source;;"
 #echo "select  source, count(*) from protein_go group by source;"|sqlite3 $dbname
@@ -35,9 +36,11 @@ echo "select status, count(*)  from protein group by status;"
 
 echo "select count(*) from protein where definition not like '' and definition is not null;"
 
-echo "select  count(*) from blast_hit;"
+echo "select count(*) from protein where definition like '' or definition is null;"
 
-echo "select  count(distinct protein_id) from blast_hit;"
+echo "select count(*) from blast_hit;"
+
+echo "select count(distinct protein_id) from blast_hit;"
 
 #cd hits
 echo "select  count(*) from cd_search_hit;"

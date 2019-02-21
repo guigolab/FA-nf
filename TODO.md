@@ -4,7 +4,9 @@
 * Check better way to put source from ontology_terms ( blast_annotator IPSCN )
 * Allow different GFF parsing (e. g., from transcriptome projects)
 * Check why CDSearch why starts later
-* Allow reports from KEGG orthologs
+* Allow reports from KEGG orthologs (number of potential orthologs from KEGG species)
+* Create definition table
+* blast_hit reconsider
 * Ensure KEGG version is respected and followed
 * Fix ko_definition = to ko_definition=
 * How to handle ';' in GFF descriptions
