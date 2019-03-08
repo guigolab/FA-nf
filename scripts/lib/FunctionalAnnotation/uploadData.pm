@@ -353,46 +353,47 @@ sub updateProteinDefinition
 {
  my ($annotData,$dbh,$update,$source, $engine,$keyType, $loglevel)=@_;
  my $debugSQL = 1;
- my ($selectString,$res,$proteinId,$oldDefinition,$shaData);
+ my ($selectString,$res,$proteinId);
  my @protList=();
  foreach my $protItem(keys %{$annotData})
   {
     #select protein_id from DB
     if($keyType eq 'protein_id')
-    {$selectString = "SELECT protein_id, sha1,definition from protein where protein_id = $protItem";}
+    {$selectString = "SELECT d.protein_id, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.protein_id = $protItem and d.source = $source";}
     else
-    {$selectString = "SELECT protein_id, sha1,definition from protein where stable_id like '$protItem'";}
+    {$selectString = "SELECT d.protein_id, p.sha1, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.stable_id like '$protItem' and d.source = $source";}
     $res = $dbh->select_from_table($selectString);
-    $proteinId=$res->[0]->{'protein_id'};
-    $shaData=$res->[0]->{'sha1'};
-    $oldDefinition =$res->[0]->{'definition'}||'';
-    if($oldDefinition=~/$source/)
-    {next;}
-    if($oldDefinition ne '')
-     {$oldDefinition.=';';}
-
-    if(!defined $proteinId)
-     {
-     if(($loglevel eq 'debug')||($loglevel eq 'info'))
-      {  print STDERR "There is no protein_id for $protItem, skipped!\n";}
-       next;
-     }
-     #update blast2go definition in protein table
-
-    # print Dumper(@{$annotData->{$protItem}{'definition'}});
-     my @tmpDefinition = &uniqueValues(\@{$annotData->{$protItem}{'annot'}});
-
-     if ( $#tmpDefinition >= 0 ) {
-     
-      my $definition = $oldDefinition.$source.':'.join(' ',@tmpDefinition);
+    
+    
+    if ( $#res < 0 ) {
  
-      $updateString = "UPDATE protein SET definition =\"$definition\" where protein_id='$proteinId';";
+      $definition = join( " ", @{$annotData->{$protItem}{'annot'}} ); #TODO: Check quoting here
+      
+      
+      if($keyType eq 'protein_id') {
+       $insertString = "INSERT INTO definition SET definition =\"$definition\", source =\"$source\" where protein_id='$protItem';";
+      } else {
+        $selectString = "SELECT p.protein_id from protein p where p.stable_id like '$protItem'";
+        $res = $dbh->select_from_table($selectString);
+        
+        if ( $#res >= 0 ){
+         $proteinId=$res->[0]->{'protein_id'};
+         $insertString = "INSERT INTO definition SET definition =\"$definition\", source =\"$source\" where protein_id='$proteinId';";
+
+        }
+      }
      if(($loglevel eq 'debug'))
-     { print "$updateString\n";}
-      $dbh->update_set($updateString);
+     { print "$insertString\n";}
+      $dbh->insert_set($insertString);
       
      }
-   }
+   } else {
+     
+      if(($loglevel eq 'debug')||($loglevel eq 'info'))
+      {  print STDERR "There is no protein_id for $protItem, skipped!\n";}
+       next;
+       
+    }
 
 return 1;
 }

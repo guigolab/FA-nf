@@ -264,12 +264,13 @@ sub uploadKeggInformation
        }#for each group of genes in multiply organisms
 
     #update definition field for proteins associated to this KO group
-     if($hash->{'DEFINITION'} ne '')
+     if($hash->{'DEFINITION'} && $hash->{'DEFINITION'} ne '')
      { push(@{$protDefinitionData{$protein_id}{'definition'}},$hash->{'DEFINITION'});}
-      $protein_definition .='KEGG:'.$hash->{'DEFINITION'}.';';
-      $sqlUpdate = "UPDATE protein set definition='$protein_definition' where protein_id=$protein_id";
+      # Toniher. This below is not necessary since it is sent to updateProteinDefinition
+						#$protein_definition .='KEGG:'.$hash->{'DEFINITION'}.';';
+      #$sqlUpdate = "UPDATE protein set definition='$protein_definition' where protein_id=$protein_id";
 #      print "SQL_CODE:$sqlUpdate\n" ;
-      $dbh->update_set($sqlUpdate);
+      #$dbh->update_set($sqlUpdate);
 
     #add GO terms info into go_term and protein_go table
     if(defined $hash->{'DBLINKS'})

@@ -23,7 +23,11 @@ CREATE TABLE IF NOT EXISTS `protein` (
   `sha1` TEXT,
   `status` INTEGER);
 
-
+CREATE TABLE IF NOT EXISTS `definition` (
+  `definition_id` INTEGER PRIMARY KEY AUTO_INCREMENT  ,
+  `protein_id` TEXT NOT NULL DEFAULT '' ,
+  `definition` TEXT,
+  `source` TEXT);
 
 CREATE TABLE IF NOT EXISTS `domain` (
   `domain_id` INTEGER PRIMARY KEY AUTOINCREMENT  ,
