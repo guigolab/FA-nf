@@ -6,4 +6,6 @@
 * Allow reports from KEGG orthologs (number of potential orthologs from KEGG species)
 * blast_hit reconsider
 * Ensure KEGG version is respected and followed
+* Ensure debugging is working OK
 * How to handle ';' in GFF descriptions
+* Show source in go_term listing

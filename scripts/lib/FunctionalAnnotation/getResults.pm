@@ -183,13 +183,14 @@ sub printDefinitionInfo
  print OUTPUT "#PROTEIN_NAME\tDEFINITION_SOURCE\tSOURCE\n";
  my @defArray=();
 
- my $sqlSelect = "select p.protein_id, p.stable_id, concat( d.source, \"; \" ) as src, concat( d.definition, \"; \" ) as def from protein p, definition d where d.protein_id=p.protein_id and d.definition is not null and d.definition not like '' $condStat group by p.protein_id order by p.protein_id";
+ my $sqlSelect = "select p.protein_id, p.stable_id, GROUP_CONCAT( d.source SEPARATOR \"; \" ) as src, GROUP_CONCAT( d.definition SEPARATOR \"; \" ) as def from protein p, definition d where d.protein_id=p.protein_id and d.definition is not null and d.definition not like '' $condStat group by p.protein_id order by p.protein_id";
  my $results =$dbh->select_from_table($sqlSelect);
  foreach my $result (@{$results})
   {
    my $stbId=$result->{'stable_id'};
    my $src=$result->{'src'};
    my $def=$result->{'def'};
+   $def=~s/\;$//;
    
    print OUTPUT "$stbId\t$src\t$def\n";
 

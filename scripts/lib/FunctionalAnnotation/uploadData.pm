@@ -362,6 +362,7 @@ sub updateProteinDefinition
     {$selectString = "SELECT d.protein_id, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.protein_id = $protItem and d.source = '$source'";}
     else
     {$selectString = "SELECT d.protein_id, p.sha1, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.stable_id like '$protItem' and d.source = '$source'";}
+    #print STDERR $selectString, "\n";
     $res = $dbh->select_from_table($selectString);
  
     if ( $#res < 0 ) {
@@ -371,7 +372,7 @@ sub updateProteinDefinition
       
       my $insertString;
       if($keyType eq 'protein_id') {
-       $insertString = "INSERT INTO definition SET definition =\"$definition\", source =\"$source\" where protein_id='$protItem';";
+       $insertString = "INSERT INTO definition SET definition =\"$definition\", source =\"$source\", protein_id='$protItem';";
       } else {
         $selectString = "SELECT p.protein_id from protein p where p.stable_id like '$protItem';";
         $res = $dbh->select_from_table($selectString);
@@ -490,7 +491,7 @@ sub uploadInterProResults
  # print "$select";
   $results = $dbh->select_from_table($select);
   my $countSeqs = $results->[0]{'count(*)'};
-  
+
   # Toniher 2019-01-19: Recover countSeqs
   if($countSeqs>0)
   {
@@ -564,6 +565,7 @@ sub uploadInterProResults
 #insert go information into go_term table and then into protein_go
   $go =~s/^\s+//;
   $go =~s/\s+$//;
+
   my @goList=split(/\|/, $go);
   # Toniher. 2019-01-18. Changed key from go to annot, so it can be imported back
   push(@{$retGOData{$protKey}{'annot'}}, @goList);
