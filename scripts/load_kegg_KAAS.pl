@@ -129,8 +129,8 @@ close FH;
 if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {print STDOUT "Number of unique KEGG groups:",scalar(keys %keggs),"\n";}
 #upload KEGG group information into DB - this will speed-up uploading process.. There are usually fewer groups then proteins assigned to them
 
-print Dumper( \%keggs );
-print Dumper( \%organisms );
+#print Dumper( \%keggs );
+#print Dumper( \%organisms );
 
 
 &uploadKeggInformation($dbh, \%keggs,\%organisms,$config{'dbEngine'});
@@ -207,11 +207,11 @@ sub uploadKeggInformation
         $is_cluster=1 if scalar(@cluster)>1;
         $is_cluster=0 if scalar(@cluster)==1;
         my $lcode=lc($code);
-								print STDERR "* ", $lcode, "\n";
-								print STDERR "- ", Dumper( $codesOrg );
+								#print STDERR "* ", $lcode, "\n";
+								#print STDERR "- ", Dumper( $codesOrg );
         # next if ortholog is not in the list of species to analyze
          next if !$codesOrg->{$lcode};
-									print STDERR "Passed\n";
+									#print STDERR "Passed\n";
          #get organism_id from DB
          #my $organism_id= organism_table($lcode,$dbEngine,$dbh);
          my $organism_id= $codesOrg->{$lcode};
@@ -219,9 +219,9 @@ sub uploadKeggInformation
          #populate ortholog table
          #check if ortholog already exists (yes && do_update => update record; no => insert new ortholog)
          my $ortholog_sql_select = qq{ SELECT ortholog_id FROM ortholog WHERE name=\"$gene_id\" };
-									print STDERR  $ortholog_sql_select, "\n";
+									# print STDERR  $ortholog_sql_select, "\n";
          my $ortholog_sql_update = qq{ UPDATE ortholog SET name=\"$gene_id\",organism_id=\"$organism_id\",db_id=\"$kegg_id\",db_name=\"KEGG\";};
-									print STDERR  $ortholog_sql_update, "\n";
+									# print STDERR  $ortholog_sql_update, "\n";
 
          my $ortholog_sql_insert = "";
          if($dbEngine eq 'SQLite')
@@ -232,7 +232,7 @@ sub uploadKeggInformation
           {
 											$ortholog_sql_insert = qq{ INSERT INTO ortholog SET name=\"$gene_id\",organism_id=\"$organism_id\",db_id=\"$kegg_id\",db_name=\"KEGG\";};
 										}
-										print STDERR $ortholog_sql_insert, "\n";
+										# print STDERR $ortholog_sql_insert, "\n";
         my $ortholog_id = $dbh->select_update_insert("ortholog_id", $ortholog_sql_select, $ortholog_sql_update, $ortholog_sql_insert, $do_update);
         #small patch for SQLite - the current insert function could not return id of the last inserted record...
         if(!defined $ortholog_id)
@@ -260,16 +260,17 @@ sub uploadKeggInformation
           { $prot_ortholog_sql_insert = qq{ INSERT INTO protein_ortholog (protein_ortholog_id, protein_id,ortholog_id,type,kegg_group_id) VALUES(NULL,\"$protein_id\",\"$ortholog_id\",\"$type\",\"$kegg_group_id\");};}
         else
          { $prot_ortholog_sql_insert = qq{ INSERT INTO protein_ortholog SET protein_id=\"$protein_id\",ortholog_id=\"$ortholog_id\",type=\"$type\",kegg_group_id=\"$kegg_group_id\";};}
-         my $protein_ortholog_id = $dbh->select_update_insert("protein_ortholog_id", $prot_ortholog_sql_select, $prot_ortholog_sql_update, $prot_ortholog_sql_insert, $do_update);
+									my $protein_ortholog_id = $dbh->select_update_insert("protein_ortholog_id", $prot_ortholog_sql_select, $prot_ortholog_sql_update, $prot_ortholog_sql_insert, $do_update);
        }#for each group of genes in multiply organisms
 
     #update definition field for proteins associated to this KO group
-     if($hash->{'DEFINITION'} ne '')
-     { push(@{$protDefinitionData{$protein_id}{'definition'}},$hash->{'DEFINITION'});}
-      $protein_definition .='KEGG:'.$hash->{'DEFINITION'}.';';
-      $sqlUpdate = "UPDATE protein set definition='$protein_definition' where protein_id=$protein_id";
+     if($hash->{'DEFINITION'} && $hash->{'DEFINITION'} ne '')
+     { push(@{$protDefinitionData{$protein_id}{'annot'}},$hash->{'DEFINITION'});}
+      # Toniher. This below is not necessary since it is sent to updateProteinDefinition
+						#$protein_definition .='KEGG:'.$hash->{'DEFINITION'}.';';
+      #$sqlUpdate = "UPDATE protein set definition='$protein_definition' where protein_id=$protein_id";
 #      print "SQL_CODE:$sqlUpdate\n" ;
-      $dbh->update_set($sqlUpdate);
+      #$dbh->update_set($sqlUpdate);
 
     #add GO terms info into go_term and protein_go table
     if(defined $hash->{'DBLINKS'})
@@ -294,25 +295,15 @@ sub uploadKeggInformation
               $goTermId=$results->[0]->{'id'};
             }
            #select protein_go_id if there is one, and add 'KEGG' to the source field
-           $sqlSelect = "SELECT protein_go_id, source FROM protein_go where protein_id = $protein_id and go_term_id=$goTermId";
+           $sqlSelect = "SELECT protein_go_id, source FROM protein_go where protein_id = $protein_id and go_term_id=$goTermId and source='KEGG'";
            my $result =$dbh->select_from_table($sqlSelect);
-           my($proteinGoId, $source);
-           if(defined $result->[0]->{'protein_go_id'})
-            {
-             $proteinGoId = $result->[0]->{'protein_go_id'};
-             $source = $result->[0]->{'source'};
-             if($source !~/KEGG/)
-             {$source .= " KEGG";}
-             $sqlUpdate = "UPDATE protein_go SET source = \"$source\" where protein_go_id=$proteinGoId";
-             $dbh->update_set($sqlUpdate);
-            }
-           else
+											if ( $#$result < 0 )
             {
             if($config{'dbEngine'} eq 'SQLite')
             { $sqlInsert = "INSERT INTO protein_go (protein_go_id,source, protein_id, go_term_id) VALUES (NULL,'KEGG',$protein_id,$goTermId)";}
            else
-            {  $sqlInsert = "INSERT INTO protein_go SET source='KEGG ', protein_id=$protein_id, go_term_id = $goTermId";}
-             $dbh->insert_set($sqlInsert);
+            {  $sqlInsert = "INSERT INTO protein_go SET source='KEGG', protein_id=$protein_id, go_term_id = $goTermId";}
+													$dbh->insert_set($sqlInsert);
             }
           }#if there was a GO records
          }#if defined dbLinks
@@ -321,6 +312,7 @@ sub uploadKeggInformation
  }#foreach kegg KO item
 
  #update protein definition for KEGG source
+		#print STDERR "Definition\n";
   #print STDERR Dumper( \%protDefinitionData );
   &updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
 

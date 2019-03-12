@@ -28,7 +28,7 @@ use lib "$RealBin/lib";
 use Data::Dumper;
 use FunctionalAnnotation::DB;
 use Scalar::Util qw( looks_like_number );
-
+use Text::Trim;
 use Digest::SHA qw(sha1_hex);
 #use Bio::SeqIO;
 #use Bio::SearchIO;
@@ -353,46 +353,46 @@ sub updateProteinDefinition
 {
  my ($annotData,$dbh,$update,$source, $engine,$keyType, $loglevel)=@_;
  my $debugSQL = 1;
- my ($selectString,$res,$proteinId,$oldDefinition,$shaData);
+ my ($selectString,$res,$proteinId);
  my @protList=();
- foreach my $protItem(keys %{$annotData})
-  {
+  
+ foreach my $protItem(keys %{$annotData}) {
     #select protein_id from DB
     if($keyType eq 'protein_id')
-    {$selectString = "SELECT protein_id, sha1,definition from protein where protein_id = $protItem";}
+    {$selectString = "SELECT d.protein_id, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.protein_id = $protItem and d.source = '$source'";}
     else
-    {$selectString = "SELECT protein_id, sha1,definition from protein where stable_id like '$protItem'";}
+    {$selectString = "SELECT d.protein_id, p.sha1, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.stable_id like '$protItem' and d.source = '$source'";}
+    #print STDERR $selectString, "\n";
     $res = $dbh->select_from_table($selectString);
-    $proteinId=$res->[0]->{'protein_id'};
-    $shaData=$res->[0]->{'sha1'};
-    $oldDefinition =$res->[0]->{'definition'}||'';
-    if($oldDefinition=~/$source/)
-    {next;}
-    if($oldDefinition ne '')
-     {$oldDefinition.=';';}
-
-    if(!defined $proteinId)
-     {
-     if(($loglevel eq 'debug')||($loglevel eq 'info'))
+ 
+    if ( $#res < 0 ) {
+ 
+      $definition = trim( join( " ", @{$annotData->{$protItem}{'annot'}} ) ); #TODO: Check quoting here
+      $definition=~s/\s{2,}/ /g;
+      
+      my $insertString;
+      if($keyType eq 'protein_id') {
+       $insertString = "INSERT INTO definition SET definition =\"$definition\", source =\"$source\", protein_id='$protItem';";
+      } else {
+        $selectString = "SELECT p.protein_id from protein p where p.stable_id like '$protItem';";
+        $res = $dbh->select_from_table($selectString);
+        if ( $#$res >= 0 ){
+         $proteinId=$res->[0]->{'protein_id'};
+         $insertString = "INSERT INTO definition SET definition =\"$definition\", source =\"$source\", protein_id='$proteinId';";
+        }
+      }
+     if(($loglevel eq 'debug'))
+     { print "$insertString\n";}
+      $dbh->insert_set($insertString);
+      
+   } else {
+     
+      if(($loglevel eq 'debug')||($loglevel eq 'info'))
       {  print STDERR "There is no protein_id for $protItem, skipped!\n";}
        next;
-     }
-     #update blast2go definition in protein table
-
-    # print Dumper(@{$annotData->{$protItem}{'definition'}});
-     my @tmpDefinition = &uniqueValues(\@{$annotData->{$protItem}{'annot'}});
-
-     if ( $#tmpDefinition >= 0 ) {
-     
-      my $definition = $oldDefinition.$source.':'.join(' ',@tmpDefinition);
- 
-      $updateString = "UPDATE protein SET definition =\"$definition\" where protein_id='$proteinId';";
-     if(($loglevel eq 'debug'))
-     { print "$updateString\n";}
-      $dbh->update_set($updateString);
-      
-     }
-   }
+       
+    }
+ }
 
 return 1;
 }
@@ -450,24 +450,10 @@ sub uploadGoAnnotation
 
        #print "$selectString\n$insertString\n";
       #insert protein_go record
-       $selectString = "SELECT protein_go_id, source FROM protein_go where go_term_id=$goId and protein_id=$proteinId";
+       $selectString = "SELECT protein_go_id, source FROM protein_go where go_term_id=$goId and protein_id=$proteinId and source=\"$source\"";
        #print "$selectString\n";
        $res = $dbh->select_from_table($selectString);
-       $proteinGoId=$res->[0]->{'protein_go_id'}||'';
-       $sourceInDB = $res->[0]->{'source'}||'';
-       if($proteinGoId ne '')
-       {
-       #check source
-       # print "SOURCE: $source\n";
-        if($sourceInDB!~/$source/)
-         {
-          my $insertSource =$source.' '.$sourceInDB;
-          $updateString = "UPDATE protein_go SET source = \"$insertSource\" where go_term_id=$goId and protein_id=$proteinId";
-          #print "$updateString\n";
-          $dbh->update_set($updateString);
-         }
-       }
-       else
+       if ( $#res < 0 )
        {
         if($engine eq 'SQLite')
       {$insertString =  "INSERT INTO protein_go(protein_go_id,go_term_id,protein_id,source) VALUES(NULL,\"$goId\",\"$proteinId\", \"$source\")";}
@@ -505,7 +491,7 @@ sub uploadInterProResults
  # print "$select";
   $results = $dbh->select_from_table($select);
   my $countSeqs = $results->[0]{'count(*)'};
-  
+
   # Toniher 2019-01-19: Recover countSeqs
   if($countSeqs>0)
   {
@@ -579,6 +565,7 @@ sub uploadInterProResults
 #insert go information into go_term table and then into protein_go
   $go =~s/^\s+//;
   $go =~s/\s+$//;
+
   my @goList=split(/\|/, $go);
   # Toniher. 2019-01-18. Changed key from go to annot, so it can be imported back
   push(@{$retGOData{$protKey}{'annot'}}, @goList);
