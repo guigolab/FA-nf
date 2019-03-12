@@ -1,9 +1,10 @@
 # FA-nf
 
 A pipeline for functional annotation of proteins from non-model organisms implemented in Nextflow engine.
+
 The pipeline uses a set of well characterised software to assign functional information to the proteins of interests, i.e. domains, GO terms annotation, putative name and some other features.
 
-The software used in this pipline is a free software for academic users. For the software from the Center for Biological Sequence(CBS), i.e. signalP, the license agreement should be obtained.
+The software used in this pipeline is free software for academic users. For the software from the Center for Biological Sequence(CBS), i.e. signalP, a suitable license agreement should be obtained.
 
 ## Requirements
 
@@ -44,6 +45,28 @@ The annotation step can be launched by using the following command:
 #### `-resume`
 This Nextflow build-in parameter allow to re-execute processes that has changed or crashed during the pipeline run. Only processes that not finished will be executed.
 More information can be found in the [Nextflow documentation](https://www.nextflow.io/docs/latest/getstarted.html#modify-and-resume)
+
+## Pipeline steps
+
+* **blast**: it perfoms BLAST search against defined database from input files
+* **ipscn**: it performs InterProScan analyses from input files
+* **signalP**: it performs signalP analyses from input files
+* **targetP**: it performs targetP analyses from input files
+* **blast_annotator**: 
+* **blastDef**
+* **cdSearchHit**
+* **cdSearchFeat**
+* **initDB**
+* **definition_upload**
+* **signalP_upload**
+* **targetP_upload**
+* **CDSearch_hit_upload**
+* **CDSearch_feat_upload**
+* **blast_annotator_upload**
+* **kegg_upload**
+* **generateResultFiles**
+* **generateGFF3File**
+
 
 ## Associated containers
 
