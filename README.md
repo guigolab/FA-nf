@@ -37,6 +37,7 @@ The annotation step can be launched by using the following command:
 ./nextflow run -bg pipeline.nf --config configuration_file.config &> logfile 
 ```
 
+![Pipeline flow chart](./flowchart.png "Pipeline flow chart")
 
 ## Pipeline parameters
 
