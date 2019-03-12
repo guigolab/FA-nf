@@ -177,24 +177,21 @@ sub printDefinitionInfo
   foreach my $item(@{$protIdList})
   {$item = "'$item'";}
   my $idString = join(',', @{$protIdList});
-  $condStat = "and stable_id in ($idString)";
+  $condStat = "and p.stable_id in ($idString)";
  }
  open(OUTPUT, ">$file")||die("Can't open $file for writing $!\n");
- print OUTPUT "#PROTEIN_NAME\tDEFINITION_SOURCE\tDEFINITION\n";
+ print OUTPUT "#PROTEIN_NAME\tDEFINITION_SOURCE\tSOURCE\n";
  my @defArray=();
- my $stbId;
 
- my $sqlSelect = "select protein_id, stable_id, definition from protein where definition is not null and definition not like '' $condStat";
+ my $sqlSelect = "select p.protein_id, p.stable_id, concat( d.source, \"; \" ) as src, concat( d.definition, \"; \" ) as def from protein p, definition d where d.protein_id=p.protein_id and d.definition is not null and d.definition not like '' $condStat group by p.protein_id order by p.protein_id";
  my $results =$dbh->select_from_table($sqlSelect);
  foreach my $result (@{$results})
   {
-   @defArray=split(";",$result->{'definition'});
-   $stbId=$result->{'stable_id'};
-   foreach my $item (@defArray)
-   {
-    if($item=~/^(\S+?)\:(.+)$/)
-     { print OUTPUT "$stbId\t".uc( $1 )."\t$2\n";}
-   }
+   my $stbId=$result->{'stable_id'};
+   my $src=$result->{'src'};
+   my $def=$result->{'def'};
+   
+   print OUTPUT "$stbId\t$src\t$def\n";
 
   } 
  

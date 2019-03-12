@@ -28,7 +28,7 @@ use lib "$RealBin/lib";
 use Data::Dumper;
 use FunctionalAnnotation::DB;
 use Scalar::Util qw( looks_like_number );
-
+use Text::Trim;
 use Digest::SHA qw(sha1_hex);
 #use Bio::SeqIO;
 #use Bio::SearchIO;
@@ -355,38 +355,35 @@ sub updateProteinDefinition
  my $debugSQL = 1;
  my ($selectString,$res,$proteinId);
  my @protList=();
- foreach my $protItem(keys %{$annotData})
-  {
+  
+ foreach my $protItem(keys %{$annotData}) {
     #select protein_id from DB
     if($keyType eq 'protein_id')
-    {$selectString = "SELECT d.protein_id, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.protein_id = $protItem and d.source = $source";}
+    {$selectString = "SELECT d.protein_id, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.protein_id = $protItem and d.source = '$source'";}
     else
-    {$selectString = "SELECT d.protein_id, p.sha1, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.stable_id like '$protItem' and d.source = $source";}
+    {$selectString = "SELECT d.protein_id, p.sha1, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.stable_id like '$protItem' and d.source = '$source'";}
     $res = $dbh->select_from_table($selectString);
-    
-    
+ 
     if ( $#res < 0 ) {
  
-      $definition = join( " ", @{$annotData->{$protItem}{'annot'}} ); #TODO: Check quoting here
+      $definition = trim( join( " ", @{$annotData->{$protItem}{'annot'}} ) ); #TODO: Check quoting here
+      $definition=~s/\s{2,}/ /g;
       
-      
+      my $insertString;
       if($keyType eq 'protein_id') {
        $insertString = "INSERT INTO definition SET definition =\"$definition\", source =\"$source\" where protein_id='$protItem';";
       } else {
-        $selectString = "SELECT p.protein_id from protein p where p.stable_id like '$protItem'";
+        $selectString = "SELECT p.protein_id from protein p where p.stable_id like '$protItem';";
         $res = $dbh->select_from_table($selectString);
-        
-        if ( $#res >= 0 ){
+        if ( $#$res >= 0 ){
          $proteinId=$res->[0]->{'protein_id'};
-         $insertString = "INSERT INTO definition SET definition =\"$definition\", source =\"$source\" where protein_id='$proteinId';";
-
+         $insertString = "INSERT INTO definition SET definition =\"$definition\", source =\"$source\", protein_id='$proteinId';";
         }
       }
      if(($loglevel eq 'debug'))
      { print "$insertString\n";}
       $dbh->insert_set($insertString);
       
-     }
    } else {
      
       if(($loglevel eq 'debug')||($loglevel eq 'info'))
@@ -394,6 +391,7 @@ sub updateProteinDefinition
        next;
        
     }
+ }
 
 return 1;
 }
@@ -451,24 +449,10 @@ sub uploadGoAnnotation
 
        #print "$selectString\n$insertString\n";
       #insert protein_go record
-       $selectString = "SELECT protein_go_id, source FROM protein_go where go_term_id=$goId and protein_id=$proteinId";
+       $selectString = "SELECT protein_go_id, source FROM protein_go where go_term_id=$goId and protein_id=$proteinId and source=\"$source\"";
        #print "$selectString\n";
        $res = $dbh->select_from_table($selectString);
-       $proteinGoId=$res->[0]->{'protein_go_id'}||'';
-       $sourceInDB = $res->[0]->{'source'}||'';
-       if($proteinGoId ne '')
-       {
-       #check source
-       # print "SOURCE: $source\n";
-        if($sourceInDB!~/$source/)
-         {
-          my $insertSource =$source.' '.$sourceInDB;
-          $updateString = "UPDATE protein_go SET source = \"$insertSource\" where go_term_id=$goId and protein_id=$proteinId";
-          #print "$updateString\n";
-          $dbh->update_set($updateString);
-         }
-       }
-       else
+       if ( $#res < 0 )
        {
         if($engine eq 'SQLite')
       {$insertString =  "INSERT INTO protein_go(protein_go_id,go_term_id,protein_id,source) VALUES(NULL,\"$goId\",\"$proteinId\", \"$source\")";}

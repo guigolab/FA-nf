@@ -250,7 +250,7 @@ foreach my $idItem(@protIds)
    my $koDefinition = $results->[0]->{'definition'};
    my $koPathway = $results->[0]->{'pathway'};
    if((defined $koGroup) && ($koGroup ne ''))
-    {$descrField .= "ko_group=$koGroup;ko_definition =$koDefinition;ko_pathway=$koPathway;";}
+    {$descrField .= "ko_group=$koGroup;ko_definition=$koDefinition;ko_pathway=$koPathway;";}
   }
  
   print OUTFILE "##sequence-region $protName $start $stop\n";

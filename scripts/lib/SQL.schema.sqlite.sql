@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS `protein` (
   `cds_strand` TEXT ,
   `domain_checked` INTEGER NOT NULL DEFAULT '0' ,
   `gene_id` INTEGER NOT NULL ,
-  `definition` TEXT,
   `sha1` TEXT,
   `status` INTEGER);
 
