@@ -181,7 +181,7 @@ sub uploadKeggInformation
   foreach my $proteinItem(@proteinList)
   {
     #select protein_id infor (because items are stable_ids in protein table)
-     my $protein_sql_select= qq{ SELECT protein_id,definition FROM protein WHERE stable_id=\"$proteinItem\"};
+     my $protein_sql_select= qq{ SELECT d.protein_id,d.definition d FROM definition d, protein p WHERE p.protein_id=d.protein_id and p.stable_id=\"$proteinItem\"};
      my $res = $dbh->select_from_table($protein_sql_select);
 					
 					# If no content, next. Cases of partial tests.

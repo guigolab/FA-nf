@@ -130,7 +130,7 @@ sub printSummaryInfo
  print OUTPUT '#' x40 ."\n". "Annotated features, proteins\n". '#' x40 ."\n";
  
 #Proteins with definition
- $sqlSelect = "select count(distinct protein_id) from protein where (definition is not null or definition not like '') $condStat2";
+ $sqlSelect = "select count(distinct protein_id) from definition where (definition is not null or definition not like '') $condStat2";
  $results =$dbh->select_from_table($sqlSelect);
   $resultNumber = $results->[0]->{'count(distinct protein_id)'};
  if(defined $resultNumber && $resultNumber >0)

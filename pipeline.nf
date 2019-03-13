@@ -55,12 +55,15 @@ if (params.help) {
 * Parse the input parameters
 */
 
-// specie-specific parameters
+// species-specific parameters
 protein = file(params.proteinFile)
 annotation = file(params.gffFile)
 config_file = file(params.config)
 
 dbFileName = params.resultPath+params.dbname+'.db'
+
+evalue = 0.00001 // Default evalue for BLAST
+
 
 //println(dbFileName)
 dbFile = file(dbFileName)
@@ -100,15 +103,13 @@ seqWebData= Channel
 
 iscan_properties = file("/usr/local/interproscan/interproscan.properties")
 
-if(params.debug=="TRUE"||params.debug=="true")
-{
+if(params.debug=="TRUE"||params.debug=="true") {
  println("Debugging.. only the first 2 chunks will be processed")
  (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6) = seqData.take(2).into(6)
  (web_seq_file1, web_seq_file2) = seqWebData.take(2).into(2)
 
 }
-else
-{
+else {
  println("Process entire dataset")
 (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6) = seqData.into(6)
 (web_seq_file1, web_seq_file2) = seqWebData.into(2)
@@ -126,6 +127,12 @@ keggfile=file(params.keggFile)
 if(params.oboFile == "" ||  params.oboFile == null ) {
 
  println "Please download OBO File from http://www.geneontology.org/ontology/gene_ontology.obo"
+ 
+}
+
+if(params.evalue != "" ||  params.evalue != null ) {
+
+ evalue = params.evalue
  
 }
 

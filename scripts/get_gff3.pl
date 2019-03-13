@@ -157,7 +157,7 @@ foreach my $idItem(@protIds)
  {
 
   my $descrField='';
-  $selectString =  "select stable_id,definition,cds_strand,cds_start, cds_end, length(sequence), gene_id,seq_id from protein where protein_id = $idItem";
+  $selectString =  "select p.stable_id, d.definition, p.cds_strand, p.cds_start, p.cds_end, length(p.sequence), p.gene_id, p.seq_id from protein p, definition d where p.protein_id=d.protein_id and p.protein_id = $idItem";
   $results =$dbh->select_from_table($selectString);
   my $definition= $results->[0]->{'definition'}||'';
   my $protName =$results->[0]->{'stable_id'};
