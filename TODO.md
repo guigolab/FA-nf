@@ -9,3 +9,4 @@
 * Ensure debugging is working OK
 * How to handle ';' in GFF descriptions
 * Show source in go_term listing
+* Put BLAST evalue as parameter
