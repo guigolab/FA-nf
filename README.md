@@ -52,20 +52,20 @@ More information can be found in the [Nextflow documentation](https://www.nextfl
 * **ipscn**: it performs InterProScan analyses from input files
 * **signalP**: it performs signalP analyses from input files
 * **targetP**: it performs targetP analyses from input files
-* **blast_annotator**: 
-* **blastDef**
-* **cdSearchHit**
-* **cdSearchFeat**
-* **initDB**
-* **definition_upload**
-* **signalP_upload**
-* **targetP_upload**
-* **CDSearch_hit_upload**
-* **CDSearch_feat_upload**
-* **blast_annotator_upload**
-* **kegg_upload**
-* **generateResultFiles**
-* **generateGFF3File**
+* **blast_annotator**: it retrieves GO terms from BLAST hits
+* **blastDef**: it suggest a definition to input entries based on BLAST hits
+* **cdSearchHit**: it performs a NCBI CDSearch Hit query
+* **cdSearchFeat**: it performs a NCBI CDSearch Feature query
+* **initDB**: it initialitzes the Database used for gathering data from different analyses and later generating the reports
+* **definition_upload**: it uploads definitions derived from BLAST into the DB
+* **signalP_upload**: it uploads signalP analyses into the DB
+* **targetP_upload**: it uploads targetP analyses into the DB
+* **CDSearch_hit_upload**: : it uploads NCBI CDSearch Hit analyses into the DB
+* **CDSearch_feat_upload**: it uploads NCBI CDSearch Feature analyses into the DB
+* **blast_annotator_upload**: it uploads GO terms from BLAST hits into the DB
+* **kegg_upload**: it retrieves and uploads KEGG data into the DB 
+* **generateResultFiles**: it generates report files
+* **generateGFF3File**: if GFF provided as input, it provides a modified GFF with additional information
 
 
 ## Associated containers
