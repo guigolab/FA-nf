@@ -9,7 +9,6 @@
 * Ensure debugging is working OK
 * How to handle ';' in GFF descriptions
 * Show source in go_term listing
-* Put BLAST evalue as parameter
 * Add PANNZER in analysis
 * Venn Diagram of results
 * Allow more flexibility for input parameters batch
