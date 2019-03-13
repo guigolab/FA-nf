@@ -85,8 +85,15 @@ for(my $i=0; $i<scalar (@data); $i++)
    $probableFlag=1;
    $key=~s/Putative|Predicted|probable|uncharacterized|hypothetical//i;
   }
-   $key=~s/protein//;
-
+   $key=~s/\sprotein\s/ /i; # Only protein as word removed
+   
+   # Cleaning some UniProt codes as well: https://www.uniprot.org/news/2008/07/22/release
+   $key=~s/RecName\://g;
+   $key=~s/AltName\://g;   
+   $key=~s/SubName\://g;   
+   $key=~s/Full\=//g;   
+   $key=~s/Short\=//g;   
+   
    $key=~s/^[:;,.]+//i;
    $key=~s/^\s+//i;
    $key=~s/\s+$//i;
@@ -96,7 +103,7 @@ for(my $i=0; $i<scalar (@data); $i++)
   #split each sentences into words using spaces, commas and other punctuation characters as separators
    $key=~s/[,.!?:;]+/ /gi;
 
-   #print "$key\n";
+   #print STDERR "$key\n";
    if($key !~/^uncharacterized/){
    my @tmp=split(/\s/,$key);
    #sequence of words is very important, so I dont need to shaffle them, just take combinations 'one-by-one'
