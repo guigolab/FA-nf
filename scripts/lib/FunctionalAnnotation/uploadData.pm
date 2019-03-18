@@ -685,7 +685,7 @@ if(($loglevel eq 'debug')){   print "SQL_CODE:$updateString\n";}
 
  #then lets go through all tables and update status to 1 in case if protein had a record in selected table_name
  #definition blast2go and kegg
-  $updateString = "UPDATE protein set status = 1 where definition is not null and definition not like ''";
+  $updateString = "UPDATE protein, definition set protein.status = 1 where definition.definition is not null and definition.definition not like '' and protein.protein_id=definition.protein_id";
  if(($loglevel eq 'debug')){  print "SQL_CODE:$updateString\n" ;}
   $dbh->update_set($updateString);
 #blast hits, interpro domains and keggs

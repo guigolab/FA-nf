@@ -8,7 +8,6 @@
 * Ensure KEGG version is respected and followed
 * Ensure debugging is working OK
 * How to handle ';' in GFF descriptions
-* Show source in go_term listing
 * Add PANNZER in analysis
 * Venn Diagram of results
 * Allow more flexibility for input parameters batch
