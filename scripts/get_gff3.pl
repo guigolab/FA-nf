@@ -157,8 +157,8 @@ foreach my $idItem(@protIds)
  {
 
   my $descrField='';
-  $selectString =  "select p.stable_id, d.definition, p.cds_strand, p.cds_start, p.cds_end, length(p.sequence), p.gene_id, p.seq_id from protein p, definition d where p.protein_id=d.protein_id and p.protein_id = $idItem";
-  $results =$dbh->select_from_table($selectString);
+  $selectString =  "select p.stable_id, group_concat( d.definition SEPARATOR \"@@\" ) as definition, p.cds_strand, p.cds_start, p.cds_end, length(p.sequence), p.gene_id, p.seq_id from protein p, definition d where p.protein_id=d.protein_id and p.protein_id = $idItem group by p.protein_id";
+		$results =$dbh->select_from_table($selectString);
   my $definition= $results->[0]->{'definition'}||'';
   my $protName =$results->[0]->{'stable_id'};
   my $strand  =  $results->[0]->{'cds_strand'}||'+';
@@ -177,8 +177,13 @@ foreach my $idItem(@protIds)
   #blast2go
   if($definition ne '')
    {
-    $definition=~s/\;/\,/;
-    $descrField .="Definition=$definition;";
+    my (@defparts) = split(/@@/, $definition);
+				my @descfields;
+				foreach my $def ( @defparts ) {
+					$def = escapeGFF( $def );
+					push( @descfields, $def );
+				}
+				$descrField .="Definition=".join( ",", @descfields).";";
    }
 
  #Xref record
@@ -250,7 +255,7 @@ foreach my $idItem(@protIds)
    my $koDefinition = $results->[0]->{'definition'};
    my $koPathway = $results->[0]->{'pathway'};
    if((defined $koGroup) && ($koGroup ne ''))
-    {$descrField .= "ko_group=$koGroup;ko_definition=$koDefinition;ko_pathway=$koPathway;";}
+    {$descrField .= "ko_group=$koGroup;ko_definition=".escapeGFF($koDefinition).";ko_pathway=$koPathway;";}
   }
  
   print OUTFILE "##sequence-region $protName $start $stop\n";
@@ -385,4 +390,17 @@ foreach my $idItem(@protIds)
 
  } #foreach protein item
 close(OUTFILE);
+}
+
+sub escapeGFF {
+	# Ref: https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
+	
+	my $string = shift;
+	
+	$string=~s/\;/%3B/g;
+	$string=~s/\=/%3D/g;
+	$string=~s/\&/%26/g;
+	$string=~s/\,/%2C/g;
+
+	return $string;
 }
