@@ -77,10 +77,10 @@ As a example, in our case we are using a [web API](https://github.com/toniher/go
 
 Used software is encapsulated in 4 containers:
 
-* [NCBI Blast](https://github.com/biocorecrg/ncbi-blast_docker)
+* [NCBI Blast](https://hub.docker.com/r/ncbi/blast)
 * [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker)
 * [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker)
-* Environment for annotation scripts
+* [Environment for annotation scripts](https://hub.docker.com/r/toniher/fa-nf)
 
 ## Building container
 
