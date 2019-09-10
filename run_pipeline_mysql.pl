@@ -102,7 +102,7 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
         }
         
         # Run MySQL qsub process. TODO: Allow more flexibility here
-        system( "$extra run.mysql.qsub.sh ".$config{"mysqlimg"}." $mysqldata $mysqllog/CNF $mysqllog/DBHOST $mysqllog/PROCESS ".$config{"dbuser"}." ".$config{"dbpass"}." ".$config{"dbport"}. " & ");
+        system( "$extra run.mysql.qsub.sh ".$config{"mysqlimg"}." $mysqldata $mysqllog/CNF $mysqllog/DBHOST $mysqllog/PROCESS ".$config{"dbuser"}." ".$config{"dbpass"}." ".$config{"dbport"}. " & " );
    
         # Run nextflow
         # TODO: To reconsider way of checking

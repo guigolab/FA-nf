@@ -1,10 +1,10 @@
 # FA-nf
 
-A pipeline for functional annotation of proteins from non-model organisms implemented in Nextflow engine.
+A pipeline for **functional annotation** of proteins from non-model organisms implemented in Nextflow engine.
 
 The pipeline uses a set of well characterised software to assign functional information to the proteins of interests, i.e. domains, GO terms annotation, putative name and some other features.
 
-The software used in this pipeline is free software for academic users. For the software from the Center for Biological Sequence(CBS), i.e. signalP, a suitable license agreement should be obtained.
+The software used in this pipeline is free software for academic users. For the software from the Center for Biological Sequence (CBS), i.e. signalP, a suitable license agreement should be obtained.
 
 ## Requirements
 
@@ -75,22 +75,26 @@ As a example, in our case we are using a [web API](https://github.com/toniher/go
 
 ## Associated containers
 
-Used software is encapsulated in 4 containers:
+We recommend installing either [Docker](https://www.docker.com/) of [Singularity](https://sylabs.io/singularity/) (the latter preferred).
+
+The software used all along this pipeline is encapsulated in, at least, 4 containers:
+
+Whenever possible, we try to provide necessary images in a public repository (e.g. Docker hub). However, for some software that includes privative components, we suggest to build the container image by yourself.
 
 * [NCBI Blast](https://hub.docker.com/r/ncbi/blast)
-* [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker)
-* [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker)
+* [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build this)
+* [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build this)
 * [Environment for annotation scripts](https://hub.docker.com/r/toniher/fa-nf)
 
-## Building container
+## How to build a container
 
     docker build -t fa-nf .
 
-    docker run -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/test:/output --privileged -t --rm singularityware/docker2singularity fa-nf:latest
+    sudo singularity build fa-nf.sif docker-daemon://fa-nf:latest
 
 ## Running in MySQL mode
 
-We offer a convenience wrapper script for running the pipeline in MySQL mode in SGE-compatible clusters
+We offer a convenience wrapper script for running the pipeline in MySQL mode either in SGE-compatible clusters or in local. 
 
     nohup perl run_pipeline_mysql.pl -conf ./main_configuration.config  &> log.mysql &
 
@@ -101,5 +105,9 @@ This is convenient for checking results database once analyses are finished. NO 
 
 	nohup perl run_pipeline_mysql.pl -mysqlonly -conf ./main_configuration.config &> log.mysql.only &
 
+
+for further options or details, run:
+
+    perl run_pipeline_mysql.pl -h
 
 
