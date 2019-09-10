@@ -17,8 +17,6 @@ mkdir -p $MYSQLDIR
 mkdir -p $MYSQLDIR/db
 mkdir -p $MYSQLDIR/socket
 
-#sudo /usr/local/bin/singularity build mariadb.simg Singularity.mysql
-
 # Create DB
 singularity exec -B $MYSQLDIR/db:/var/lib/mysql -B $MYSQLCNF:/etc/mysql/conf.d/custom.cnf $MYSQLIMG mysql_install_db
 
@@ -28,7 +26,7 @@ hostname -I | perl -lne 'if ( $_=~/^(\S+)\s/ ) { $_=~/^(\S+)\s/ ; print $1; }' >
 # mysql.ip will be dbhost
 # dbuser, dbpass and dbport from config
 
-singularity instance.start -B $MYSQLDIR/db:/var/lib/mysql -B $MYSQLCNF:/etc/mysql/conf.d/custom.cnf -B $MYSQLDIR/socket:/run/mysqld $MYSQLIMG mysql
+singularity instance start -B $MYSQLDIR/db:/var/lib/mysql -B $MYSQLCNF:/etc/mysql/conf.d/custom.cnf -B $MYSQLDIR/socket:/run/mysqld $MYSQLIMG mysql
 
 sleep 15
 

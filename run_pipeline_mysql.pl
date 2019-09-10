@@ -15,6 +15,7 @@ my $nextflow = "nextflow";
 
 my $resume = 0;
 my $mysqlonly = 0;
+my $engine = "sge";
 
 my $mysqldata = $ENV{'HOME'}."/mysqldata";
 my $mysqllog = $ENV{'HOME'}."/mysqllog";
@@ -28,7 +29,8 @@ GetOptions(
     "nextflow=s" => \$nextflow,
     "extra=s" => \$extra,
     "resume|r" => \$resume,
-    "mysqlonly|m" => \$mysqlonly
+    "mysqlonly|m" => \$mysqlonly,
+    "engine=s" => \$engine
 );
 
 my $resumeStr = "";
@@ -46,7 +48,8 @@ die(qq/
        -nextflow         : Nextflow path
        -extra            : Extra parameters to be passed to the cluster queue
        -resume           : Resume the pipeline (it passes -resume argument to nextflow)
-       -mysqlonly            : Lauch only MySQL server (as far as running in MySQL mode)
+       -mysqlonly        : Lauch only MySQL server (as far as running in MySQL mode)
+       -engine           : Engine to be used (so far 'sge' by default, otherwise local)
 \n/)};
 
 my $tmpconf = tmpnam();
@@ -87,11 +90,20 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
         # Mysqlconf
         my $cnfcontent = "[mysqld]\nbind-address=0.0.0.0\nport=".$config{"dbport"}."\n";
         open( CNF, ">$mysqllog/CNF" ); print CNF $cnfcontent; close( CNF );
-        
+                
         $extra = $extra. " -e $mysqllog/ERR -o $mysqllog/OUT ";
         
+        if ( $engine eq 'sge' ) {
+            $extra = "qsub ". $extra;
+        } elsif ( $engine eq 'local' ) {
+            $extra = "bash";
+        } else {
+            die( "Not supported engine!" );
+        }
+        
         # Run MySQL qsub process. TODO: Allow more flexibility here
-        system( "qsub $extra run.mysql.qsub.sh ".$config{"mysqlimg"}." $mysqldata $mysqllog/CNF $mysqllog/DBHOST $mysqllog/PROCESS ".$config{"dbuser"}." ".$config{"dbpass"}." ".$config{"dbport"});
+        system( "$extra run.mysql.qsub.sh ".$config{"mysqlimg"}." $mysqldata $mysqllog/CNF $mysqllog/DBHOST $mysqllog/PROCESS ".$config{"dbuser"}." ".$config{"dbpass"}." ".$config{"dbport"}. " & ");
+   
         # Run nextflow
         # TODO: To reconsider way of checking
         while ( ! -d "$mysqldata/db" ) {
@@ -103,7 +115,7 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
             while ( ! -f "$mysqllog/PROCESS" ) {
                 sleep( 5 );
             }
-            
+           	print( "Run NEXTFLOW\n") ; 
             system( "$nextflow run pipeline.nf $resumeStr --config $confFile" );
         } else {
             
@@ -124,6 +136,7 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
 
     # Else, SQLite mode
     # Run Nextflow pipeline
+    print( "Run NEXTFLOW\n") ; 
     system( "$nextflow run pipeline.nf $resumeStr --config $confFile" );
 
 }
