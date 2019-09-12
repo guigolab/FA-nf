@@ -44,6 +44,6 @@ do
 	sleep 10;
 done;
 
-singularity instance.stop mysql
+singularity instance stop mysql
 exit 0
 
