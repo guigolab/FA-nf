@@ -158,9 +158,6 @@ process blast{
  file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
 
  """
-  echo ${params.blastDB_path} > huis
-  echo ${db_path} >> huis
-  echo $params.blastDB_path >> huis
   blastp -db ${db_path}/${db_name} -query $seq -num_threads 8 -evalue  0.00001 -out "blastXml${seq}" -outfmt 5
  """
 }
