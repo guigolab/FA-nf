@@ -116,7 +116,7 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
                 sleep( 5 );
             }
            	print( "Run NEXTFLOW\n") ; 
-            system( "$nextflow run pipeline.nf $resumeStr --config $confFile" );
+            system( "$nextflow run -bg pipeline.nf $resumeStr --config $confFile" );
         } else {
             
             while ( ! -f "$mysqllog/DBHOST" ) {
@@ -137,6 +137,6 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
     # Else, SQLite mode
     # Run Nextflow pipeline
     print( "Run NEXTFLOW\n") ; 
-    system( "$nextflow run pipeline.nf $resumeStr --config $confFile" );
+    system( "$nextflow run -bg pipeline.nf $resumeStr --config $confFile" );
 
 }

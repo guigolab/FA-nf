@@ -588,7 +588,7 @@ process 'generateReport'{
 }
 */
 
-
+// Check MySQL IP
 def checkMySQL( mysql, mysqllog )  {
 
  command = ""
@@ -605,6 +605,7 @@ def checkMySQL( mysql, mysqllog )  {
 
 }
 
+// On finising
 workflow.onComplete {
 
  println ( workflow.success ? "\nDone! Check results in --> $params.resultPath\n" : "Oops .. something went wrong" )
@@ -617,6 +618,17 @@ workflow.onComplete {
 
 }
 
+workflow.onError {
+
+ println( "Something went wrong" )
+ 
+ if ( mysql ) {
+  
+   def procfile = new File( params.mysqllog+"/PROCESS" )
+   procfile.delete()
+ }
+ 
+}
 
 signalP_result2
  .collectFile(name: file(params.resultPath + "signalP.res.tsv"))
