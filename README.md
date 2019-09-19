@@ -84,7 +84,7 @@ Whenever possible, we try to provide necessary images in a public repository (e.
 * [NCBI Blast](https://hub.docker.com/r/ncbi/blast)
 * [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build this)
 * [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build this)
-* [Environment for annotation scripts](https://hub.docker.com/r/toniher/fa-nf)
+* [Environment for annotation scripts](https://hub.docker.com/r/guigolab/fa-nf)
 
 ## How to build a container
 

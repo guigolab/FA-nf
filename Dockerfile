@@ -12,8 +12,11 @@ RUN apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-font
 RUN apt-get install -y libxml2-dev libexpat1-dev libdb-dev libgd-dev
 
 # Perl packages
-RUN cpanm Bio::SearchIO Bio::SearchIO::blastxml Bio::SeqIO
 RUN cpanm Config::Simple Config::JSON DBI DBD::mysql DBD::SQLite Digest::SHA File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util Scalar::Util String::Util
+
+ARG BIOPERL_VERSION=1.7.5
+RUN cpanm install CDRAUG/BioPerl-${BIOPERL_VERSION}.tar.gz
+RUN cpanm Bio::SearchIO::blastxml
 
 RUN apt-get install -y libssl-dev
 
