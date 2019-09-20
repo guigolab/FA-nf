@@ -238,7 +238,7 @@ if ( gffread ) {
     
    """
     # get annot file
-    gffread -O `perl -lae 'if ($_=~/gffFile\s*\=\s*[\x27|\"](\S+)[\x27|\"]/) { print $1 }' $config_file` > annot.gff
+    gffread -O `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { print \$1 }' $config_file` -o annot.gff
    """
  
  }
@@ -271,7 +271,7 @@ process initDB {
  }
  
  if ( gffread ) {
-  command += "-gff $gff_file"
+  command += " -gff $gff_file"
  }
  
  command
