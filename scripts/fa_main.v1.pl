@@ -114,7 +114,7 @@ EOF
 
 sub loadDataToDB
 {
- my ($updateFlag, $newVersion, $listIds,$confFile,$comment,$show_help);
+ my ($updateFlag, $newVersion, $listIds,$confFile,$comment,$show_help,$o_annt_file,$o_fasta_file);
 
  ($updateFlag, $newVersion) =(0,0);
 
@@ -124,6 +124,8 @@ sub loadDataToDB
            "new_version=s" =>\$newVersion,
            "conf=s"=>\$confFile,
            "comm=s"=>\$comment,
+           "gff=s"=>\$o_annt_file,
+           "fasta=s"=>\$o_fasta_file,	
            "help|h" => \$show_help
            );
 
@@ -189,6 +191,15 @@ if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
  if(defined $comment)
   {$commandString .="-comm $comment ";}
  
+ 	# Override if specified explicitly
+	if (defined $o_annt_file ) {
+		$commandString .="-gff $o_annt_file ";
+	}
+	
+	if (defined $o_fasta_file ) {
+		$commandString .="-fasta $o_fasta_file ";
+ }
+ 
  if($newVersion =='1')
   { 
 ##4/12/2013 I did not check this option for the moment!!
@@ -198,7 +209,7 @@ if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
   }
  else
  {
-  $commandString = "perl  $RealBin/import_data.pl ".$commandString;
+  $commandString = "perl $RealBin/import_data.pl ".$commandString;
  }
  
 if($config{'loglevel'} eq 'debug')

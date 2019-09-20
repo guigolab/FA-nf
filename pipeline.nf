@@ -69,9 +69,15 @@ evalue = 0.00001 // Default evalue for BLAST
 dbFile = file(dbFileName)
 boolean exists = dbFile.exists();
 boolean mysql = false
+gffread = false
+
 
 if(params.dbEngine=="mysql") {
  mysql = true
+}
+
+if ( params.gffread != null && ( params.gffread=="TRUE" || params.gffread=="true" ) ) {
+ gffread = true
 }
 
 //println(exists)
@@ -86,7 +92,7 @@ log.info "------------------"
 log.info "Protein sequence file        : ${params.proteinFile}"
 log.info "Annotation file              : ${params.gffFile}"
 log.info "BLAST results file           : ${params.blastFile}"
-log.info "Specie name                  : ${params.specie_name}"
+log.info "Species name                  : ${params.specie_name}"
 log.info "KEGG species                 : ${params.kegg_species}"
 log.info "FA database 		       : $dbFileName"
 
@@ -218,10 +224,33 @@ process blastDef {
  """
 }
 
+if ( gffread ) {
+
+ process cleanGFF {
+ 
+  label 'gffread'
+  
+  input:
+   file config_file
+  
+  output:
+   file 'annot.gff' into gff_file
+    
+   """
+    # get annot file
+    gffread -O `perl -lae 'if ($_=~/gffFile\s*\=\s*[\x27|\"](\S+)[\x27|\"]/) { print $1 }' $config_file` > annot.gff
+   """
+ 
+ }
+
+
+}
+
 process initDB {
 
  input:
   file config_file
+  file gff_file
 
  output:
   file 'config'  into config4perl
@@ -239,6 +268,10 @@ process initDB {
    if (!exists) {
      command += "fa_main.v1.pl init -conf config"
    }
+ }
+ 
+ if ( gffread ) {
+  command += "-gff $gff_file"
  }
  
  command

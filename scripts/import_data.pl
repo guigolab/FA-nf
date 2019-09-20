@@ -51,7 +51,7 @@ my $confFile = 'main_configuration.ini';
 
 
 my $usage = "perl import_data.pl [-l listfile] [-u update] [-h help] [-conf configuration_file] [-comm comment_string]\n";
-my ($annt_file, $show_help,$fasta_file, $list_file, $do_update,$comment);
+my ( $annt_file, $show_help,$fasta_file, $list_file, $do_update, $comment, $o_annt_file, $o_fasta_file );
 
 &GetOptions(
     'l=s'	=>\$list_file,
@@ -59,6 +59,8 @@ my ($annt_file, $show_help,$fasta_file, $list_file, $do_update,$comment);
     'help|h'        => \$show_help,
     'comm=s'=>\$comment,
     'conf=s'=>\$confFile,
+				'gff=s'=>\$o_annt_file,
+				'fasta=s'=>\$o_fasta_file,				
 	   )
   or pod2usage(-verbose=>2);
 pod2usage(-verbose=>2) if $show_help;
@@ -78,6 +80,15 @@ my $debugSQL = $config{'debugSQL'};
 #check whether protein fa and annotation gff3 files exists
  $annt_file = $config{'gffFile'};
  $fasta_file = $config{'proteinFile'};
+	
+	# Override if specified explicitly
+	if ( defined $o_annt_file ) {
+		$annt_file = $o_annt_file;
+	}
+	
+	if ( defined $o_fasta_file ) {
+		$fasta_file = $o_fasta_file;
+	}
 
 if(!-e $fasta_file)
  {die "The protein fasta file does not exists! There is nothing to work with!\n";}
