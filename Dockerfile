@@ -28,8 +28,8 @@ RUN apt-get install -y git
 ARG GCLIB_VERSION=v0.11.2
 ARG GFFREAD_VERSION=v0.11.4
 
-RUN git clone https://github.com/gpertea/gclib; git checkout ${GCLIB_VERSION}
-RUN git clone https://github.com/gpertea/gffread; git checkout ${GFFREAD_VERSION}
+RUN git clone https://github.com/gpertea/gclib; cd gclib && git checkout ${GCLIB_VERSION}
+RUN git clone https://github.com/gpertea/gffread; cd gffread && git checkout ${GFFREAD_VERSION}
 RUN cd gffread; make release; mv gffread /usr/local/bin
 RUN rm -rf gclib; rm -rf gffread
 
