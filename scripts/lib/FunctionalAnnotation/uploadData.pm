@@ -203,7 +203,13 @@ open FH,"$inFile";
       $c_prot_id='';
      }
 
-    $gene_name=$1 if $elms[$ids_ix]=~/ID=(\w+)/;
+    # Toniher: Handling IDs more in detail since no always only words. Notice TransDecoder output
+    my (@sids) = split( /\;/, $elms[$ids_ix] );
+    
+    if ( $#sids >= 0 && $sids[0]=~/ID\=(\S+)\s*$/ ) {
+     $gene_name=$1;
+    }
+
  #patch for pc2127 isolate, p.cucumerina project - gene name contains . symbol in the name
   #if( $elms[$ids_ix]=~/ID=(PCUC.+)$/)
   #  {$gene_name=$1;}
@@ -259,20 +265,35 @@ open FH,"$inFile";
 # I need to check with CDs, if the prot_id is already present - just skip it.
 #14/09/2016 - new Francisco's annotation contains mRNA field in combination with Name attribute
   elsif (($elms[$type_ix] eq 'transcript' )||($elms[$type_ix] eq 'mRNA' )||(($elms[$type_ix] eq 'CDS') && ( !$c_prot_id || $c_prot_id eq ''))) {
+   
    my $prot_id='';
-   $prot_id=$1 if $elms[$ids_ix]=~/Target=(\w+)/;
-#update 18/11/2015
-#In some annotation versions, provided by Tyler he added 'product' instead of Target... Parent is also exists, but it refer to the transcripts, not proteins
-if($prot_id eq '')
-      {   $prot_id=$1 if $elms[$ids_ix]=~/product\=([^;]+)/;}
+   
+   # Toniher: allowing more flexibility for parsing
+   my (@sids) = split( /\;/, $elms[$ids_ix] );
+   if ( $#sids >= 0 ) {
+   
+   # Let's browse
+   foreach my $sid ( @sids ) {
+   
+     # Priority one
+     $prot_id=$1 if $sid=~/Target=(\S+)/;
+  #update 18/11/2015
+  #In some annotation versions, provided by Tyler he added 'product' instead of Target... Parent is also exists, but it refer to the transcripts, not proteins
+  if($prot_id eq '')
+        {   $prot_id=$1 if $sid=~/product\=([^;]+)/;}
+  
+  if($prot_id eq '')
+        {   $prot_id=$1 if $sid=~/Name\=([^;]+)/;}
+  
+  #In some annotation versions, provided by Tyler, Target field is absent and only present Parent transcript id.
+   if($prot_id eq '')
+        {   $prot_id=$1 if $sid=~/Parent\=([^;]+)/;}
 
-if($prot_id eq '')
-      {   $prot_id=$1 if $elms[$ids_ix]=~/Name\=([^;]+)/;}
-
-#In some annotation versions, provided by Tyler, Target field is absent and only present Parent transcript id.
- if($prot_id eq '')
-      {   $prot_id=$1 if $elms[$ids_ix]=~/Parent\=([^;]+)/;}
-
+      
+   }
+      
+   }
+      
 
      if (!$c_prot_id || $c_prot_id eq '') {
 	    $c_prot_id=$prot_id;
