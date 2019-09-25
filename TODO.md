@@ -1,6 +1,5 @@
 * Check any potential problem with case in MySQL and SQLite
 * In reports, put select distincts again tables
-* Allow different GFF parsing (e. g., from transcriptome projects)
 * Check why CDSearch why starts later
 * Allow reports from KEGG orthologs (number of potential orthologs from KEGG species)
 * blast_hit reconsider
