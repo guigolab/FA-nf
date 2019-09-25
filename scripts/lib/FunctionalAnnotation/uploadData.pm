@@ -176,6 +176,7 @@ sub uploadGFFData
 if(! defined $engine){$engine = 'mysql';}
 #idxs in file
 my $contig_ix=0;
+my $annot_ix=1;
 my $type_ix=2;
 my $start_ix=3;
 my $end_ix=4;
@@ -264,9 +265,13 @@ open FH,"$inFile";
 #14/09/2016 - Tyler's annotation contains both - transcript field and CDs, so there is a clear confusion - protein information is uploading twice.
 # I need to check with CDs, if the prot_id is already present - just skip it.
 #14/09/2016 - new Francisco's annotation contains mRNA field in combination with Name attribute
+
+ # TODO: All this stuff below should be better rationalized for different cases
+
   elsif (($elms[$type_ix] eq 'transcript' )||($elms[$type_ix] eq 'mRNA' )||(($elms[$type_ix] eq 'CDS') && ( !$c_prot_id || $c_prot_id eq ''))) {
    
    my $prot_id='';
+   
    
    # Toniher: allowing more flexibility for parsing
    my (@sids) = split( /\;/, $elms[$ids_ix] );
@@ -275,19 +280,24 @@ open FH,"$inFile";
    # Let's browse
    foreach my $sid ( @sids ) {
    
-     # Priority one
-     $prot_id=$1 if $sid=~/Target=(\S+)/;
-  #update 18/11/2015
-  #In some annotation versions, provided by Tyler he added 'product' instead of Target... Parent is also exists, but it refer to the transcripts, not proteins
-  if($prot_id eq '')
-        {   $prot_id=$1 if $sid=~/product\=([^;]+)/;}
-  
-  if($prot_id eq '')
-        {   $prot_id=$1 if $sid=~/Name\=([^;]+)/;}
-  
-  #In some annotation versions, provided by Tyler, Target field is absent and only present Parent transcript id.
+    # TransDecoder. Added by Toniher
+    if($prot_id eq '' && $elms[$annot_ix] eq 'transdecoder')
+     { $prot_id=$1 if $sid=~/ID=(\S+)/; }
+    
+    # Priority one
+    if($prot_id eq '')
+      { $prot_id=$1 if $sid=~/Target=(\S+)/; }
+   #update 18/11/2015
+   #In some annotation versions, provided by Tyler he added 'product' instead of Target... Parent is also exists, but it refer to the transcripts, not proteins
    if($prot_id eq '')
-        {   $prot_id=$1 if $sid=~/Parent\=([^;]+)/;}
+         {   $prot_id=$1 if $sid=~/product\=(\S+)/;}
+   
+   if($prot_id eq '')
+         {   $prot_id=$1 if $sid=~/Name\=(\S+)/;}
+   
+   #In some annotation versions, provided by Tyler, Target field is absent and only present Parent transcript id.
+    if($prot_id eq '')
+         {   $prot_id=$1 if $sid=~/Parent\=(\S+)/;}
 
       
    }
