@@ -224,6 +224,8 @@ process blastDef {
  """
 }
 
+// TODO: Need to simplify this step
+
 if ( gffread ) {
 
  process cleanGFF {
@@ -244,6 +246,24 @@ if ( gffread ) {
  }
 
 
+} else {
+
+ process copyGFF {
+
+  label 'gffread'
+  
+  input:
+   file config_file
+  
+  output:
+   file 'annot.gff' into gff_file
+    
+   """
+    # get annot file
+    cp `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { print \$1 }' $config_file` annot.gff
+   """
+
+ }
 }
 
 process initDB {
