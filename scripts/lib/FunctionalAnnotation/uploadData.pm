@@ -272,38 +272,46 @@ open FH,"$inFile";
    
    my $prot_id='';
    
-   
    # Toniher: allowing more flexibility for parsing
-   my (@sids) = split( /\;/, $elms[$ids_ix] );
-   if ( $#sids >= 0 ) {
-   
-   # Let's browse
-   foreach my $sid ( @sids ) {
-   
-    # TransDecoder. Added by Toniher
-    if($prot_id eq '' && $elms[$annot_ix] eq 'transdecoder')
-     { $prot_id=$1 if $sid=~/ID=(\S+)/; }
+   my $sid = $elms[$ids_ix];
+   if ( $sid ne '' ) {
     
-    # Priority one
-    if($prot_id eq '')
-      { $prot_id=$1 if $sid=~/Target=(\S+)/; }
-   #update 18/11/2015
-   #In some annotation versions, provided by Tyler he added 'product' instead of Target... Parent is also exists, but it refer to the transcripts, not proteins
-   if($prot_id eq '')
-         {   $prot_id=$1 if $sid=~/product\=(\S+)/;}
-   
-   if($prot_id eq '')
-         {   $prot_id=$1 if $sid=~/Name\=(\S+)/;}
-   
-   #In some annotation versions, provided by Tyler, Target field is absent and only present Parent transcript id.
-    if($prot_id eq '')
-         {   $prot_id=$1 if $sid=~/Parent\=(\S+)/;}
+     # TransDecoder. Added by Toniher
+     if($prot_id eq '' && $elms[$annot_ix] eq 'transdecoder') {
+      #if(($loglevel eq 'debug')) { print "TRANSID\n"; }
+      $prot_id=$1 if $sid=~/ID=([^\;]+)/;
+      }
+     
+     # Priority one
+     if($prot_id eq '') {
+      #if(($loglevel eq 'debug')) { print "TARGET\n"; }
+      $prot_id=$1 if $sid=~/Target=([^\;]+)/;
+      }
+     
+    #update 18/11/2015
+    #In some annotation versions, provided by Tyler he added 'product' instead of Target... Parent is also exists, but it refer to the transcripts, not proteins
+    if($prot_id eq '') {
+     #if(($loglevel eq 'debug')) { print "PRODUCT\n"; }
+     $prot_id=$1 if $sid=~/product\=([^\;]+)/;
+     }
+    
+    if($prot_id eq '') {
+     #if(($loglevel eq 'debug')) { print "NAME\n"; }
+     $prot_id=$1 if $sid=~/Name\=([^\;]+)/;
+     }
+    
+    #In some annotation versions, provided by Tyler, Target field is absent and only present Parent transcript id.
+     if($prot_id eq '') {
+      #if(($loglevel eq 'debug')) { print "PARENT\n"; }
+      $prot_id=$1 if $sid=~/Parent\=([^\;]+)/;
+      }
 
-      
    }
-      
-   }
-      
+
+     if(($loglevel eq 'debug')) {
+      #print "PROTNE: ". Dumper( \@elms );
+      print "PROTNE: $c_prot_id vs $prot_id\n";
+    }
 
      if (!$c_prot_id || $c_prot_id eq '') {
 	    $c_prot_id=$prot_id;
@@ -318,6 +326,7 @@ open FH,"$inFile";
              {$start = $elms[$start_ix];}
 	    next;
 	} elsif ($c_prot_id ne $prot_id) {
+
 	    &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh,$engine,$loglevel);
 	    $c_prot_id=$prot_id;
 	    $c_strand=$elms[$strand_ix];
