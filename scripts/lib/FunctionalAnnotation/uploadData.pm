@@ -349,7 +349,9 @@ close FH;
 sub insertProtein
 {
  my($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh, $engine,$loglevel) =@_;
-
+ 
+ if ( ! $c_prot_id || $c_prot_id eq '' ) { return; }
+ 
  if(!defined $engine){$engine = 'mysql';}
 
  my $numberElements = scalar keys %{$idList}||'';
