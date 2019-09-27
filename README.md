@@ -1,5 +1,7 @@
 # FA-nf
 
+[![DOI](https://zenodo.org/badge/209515370.svg)](https://zenodo.org/badge/latestdoi/209515370)
+
 A pipeline for **functional annotation** of proteins from non-model organisms implemented in Nextflow engine.
 
 The pipeline uses a set of well characterised software to assign functional information to the proteins of interests, i.e. domains, GO terms annotation, putative name and some other features.
