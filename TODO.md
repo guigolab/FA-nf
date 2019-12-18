@@ -1,3 +1,5 @@
+* Ensure creation of results directory
+* Migrate MySQL check system to Nextflow-only version
 * Check any potential problem with case in MySQL and SQLite
 * In reports, put select distincts again tables
 * Check why CDSearch why starts later
