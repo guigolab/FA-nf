@@ -13,3 +13,4 @@
 * Consider other programs for BLAST process or similar annotation processes: e.g. [GHOSTZ](http://www.bi.cs.titech.ac.jp/ghostz/) and [Argot2.5](http://www.medcomp.medicina.unipd.it/Argot2-5/)
 * Optimize KEGG API process
 * Include some testing and CI
+* Add option to detect if possible contamination from BLAST (inspiration from MEGAN)
