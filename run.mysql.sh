@@ -13,6 +13,9 @@ MYSQLUSR=$6
 MYSQLPWD=$7
 MYSQLPORT=$8
 
+# Create instance random name for avoiding clashes
+INSTANCE=mysql_$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1)
+
 mkdir -p $MYSQLDIR
 mkdir -p $MYSQLDIR/db
 mkdir -p $MYSQLDIR/socket
@@ -26,11 +29,11 @@ hostname -I | perl -lne 'if ( $_=~/^(\S+)\s/ ) { $_=~/^(\S+)\s/ ; print $1; }' >
 # mysql.ip will be dbhost
 # dbuser, dbpass and dbport from config
 
-singularity instance start -B $MYSQLDIR/db:/var/lib/mysql -B $MYSQLCNF:/etc/mysql/conf.d/custom.cnf -B $MYSQLDIR/socket:/run/mysqld $MYSQLIMG mysql
+singularity instance start -B $MYSQLDIR/db:/var/lib/mysql -B $MYSQLCNF:/etc/mysql/conf.d/custom.cnf -B $MYSQLDIR/socket:/run/mysqld $MYSQLIMG $INSTANCE
 
 sleep 15
 
-singularity exec instance://mysql mysql -uroot -h127.0.0.1 -P$MYSQLPORT -e "GRANT ALL PRIVILEGES on *.* TO '$MYSQLUSR'@'%' identified by '$MYSQLPWD' ;"
+singularity exec instance://$INSTANCE mysql -uroot -h127.0.0.1 -P$MYSQLPORT -e "GRANT ALL PRIVILEGES on *.* TO '$MYSQLUSR'@'%' identified by '$MYSQLPWD' ;"
 
 # Create $PROCESSFILE here
 date > $PROCESSFILE

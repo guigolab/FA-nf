@@ -84,7 +84,18 @@ if ( params.gffstats != null && ( params.gffstats=="TRUE" || params.gffstats=="t
  gffstats = true
 }
 
-//println(exists)
+// Handling MySQL in a cleaner way
+dbhost = null
+
+// Getting contents of file
+if ( mysql ) {
+ dbhost = "127.0.0.1" // Default value. Localhost
+ 
+ if ( new File(  params.mysqllog+"/DBHOST" ).exists() ) {
+  dbhost = new File(  params.mysqllog+"/DBHOST" ).text.trim()
+ }
+}
+
 
 // print log info
 
@@ -286,7 +297,7 @@ if ( gffstats ) {
     
    """
     # Generate Stats
-    agat_sp_statistics.pl --gff $gff_file > $gff_file.stats.txt
+    agat_sp_statistics.pl --gff $gff_file > ${gff_file}.stats.txt
    """
  
  }
@@ -309,7 +320,7 @@ process initDB {
  
  if ( mysql ) {
   // Add dbhost to config
-  command += "DBHOST=\"dbhost:'`cat $params.mysqllog/DBHOST`'\"; echo \"\$(cat config)\n \$DBHOST\" > configIn ;\n"
+  command += "echo \"\$(cat config)\n dbhost:${dbhost}\" > configIn ;\n"
   command += "fa_main.v1.pl init -conf configIn"
  } else {
 
@@ -319,7 +330,7 @@ process initDB {
  }
  
  if ( gffclean ) {
-  command += " -gff $gff_file"
+  command += " -gff ${gff_file}"
  }
  
  command
