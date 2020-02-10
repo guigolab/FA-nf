@@ -76,8 +76,12 @@ if(params.dbEngine=="mysql") {
  mysql = true
 }
 
-if ( params.gffread != null && ( params.gffread=="TRUE" || params.gffread=="true" ) ) {
- gffread = true
+if ( params.gffclean != null && ( params.gffclean=="TRUE" || params.gffclean=="true" ) ) {
+ gffclean = true
+}
+
+if ( params.gffstats != null && ( params.gffstats=="TRUE" || params.gffstats=="true" ) ) {
+ gffstats = true
 }
 
 //println(exists)
@@ -314,7 +318,7 @@ process initDB {
    }
  }
  
- if ( gffread ) {
+ if ( gffclean ) {
   command += " -gff $gff_file"
  }
  
