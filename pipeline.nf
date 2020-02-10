@@ -7,7 +7,7 @@
  *
  * Copyright (c) 2017, Emilio Palumbo
  *
- * Copyright (c) 2018-2019, Toni Hermoso Pulido
+ * Copyright (c) 2018-2020, Toni Hermoso Pulido
  * 
  * Functional Annotation Pipeline for protein annotation from non-model organisms
  * from Genome Annotation Team in Catalonia (GATC) implemented in Nextflow
@@ -69,8 +69,8 @@ evalue = 0.00001 // Default evalue for BLAST
 dbFile = file(dbFileName)
 boolean exists = dbFile.exists();
 boolean mysql = false
-gffread = false
-
+gffclean = false
+gffstats = false
 
 if(params.dbEngine=="mysql") {
  mysql = true
@@ -226,11 +226,11 @@ process blastDef {
 
 // TODO: Need to simplify this step
 
-if ( gffread ) {
+if ( gffclean ) {
 
  process cleanGFF {
  
-  label 'gffread'
+  label 'gffcheck'
   
   input:
    file config_file
@@ -240,7 +240,7 @@ if ( gffread ) {
     
    """
     # get annot file
-    gffread -F -O `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { print \$1 }' $config_file` -o annot.gff
+    agat_sp_gxf_to_gff3.pl --gff `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { print \$1 }' $config_file` -o annot.gff
    """
  
  }
@@ -250,7 +250,7 @@ if ( gffread ) {
 
  process copyGFF {
 
-  label 'gffread'
+  label 'gffcheck'
   
   input:
    file config_file
@@ -264,6 +264,30 @@ if ( gffread ) {
    """
 
  }
+}
+
+if ( gffstats ) {
+
+ process statsGFF {
+ 
+  publishDir $params.resultPath, mode: 'copy'
+  
+  label 'gffcheck'
+  
+  input:
+   file gff_file
+  
+  output:
+   file '*.txt' into gff_stats
+    
+   """
+    # Generate Stats
+    agat_sp_statistics.pl --gff $gff_file > $gff_file.stats.txt
+   """
+ 
+ }
+
+
 }
 
 process initDB {
