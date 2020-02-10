@@ -274,7 +274,7 @@ if ( gffstats ) {
 
  process statsGFF {
  
-  publishDir $params.resultPath, mode: 'copy'
+  publishDir params.resultPath, mode: 'copy'
   
   label 'gffcheck'
   
