@@ -12,9 +12,10 @@ PROCESSFILE=$5
 MYSQLUSR=$6
 MYSQLPWD=$7
 MYSQLPORT=$8
+RANDOM=$9
 
 # Create instance random name for avoiding clashes
-INSTANCE="mysql"$(cat /dev/urandom | tr -dc 'a-z' | fold -w 8 | head -n 1)
+INSTANCE=mysql_${RANDOM}
 
 mkdir -p $MYSQLDIR
 mkdir -p $MYSQLDIR/db

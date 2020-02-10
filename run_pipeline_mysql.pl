@@ -20,6 +20,11 @@ my $engine = "sge";
 my $mysqldata = $ENV{'HOME'}."/mysqldata";
 my $mysqllog = $ENV{'HOME'}."/mysqllog";
 
+# Random
+my @rchars = ("A".."Z", "a".."z");
+my $random;
+$random .= @rchars[rand @rchars] for 1..8;
+
 # extra params for cluster queue
 my $extra = "-j y -l virtual_free=2G,h_rt=172800 -N MYSQL_container -m be -cwd -V -q long-sl7";
 
@@ -102,7 +107,7 @@ if ( $config{"dbEngine"} eq 'mysql' ) {
         }
         
         # Run MySQL qsub process. TODO: Allow more flexibility here
-        system( "$extra run.mysql.qsub.sh ".$config{"mysqlimg"}." $mysqldata $mysqllog/CNF $mysqllog/DBHOST $mysqllog/PROCESS ".$config{"dbuser"}." ".$config{"dbpass"}." ".$config{"dbport"}. " & " );
+        system( "$extra run.mysql.qsub.sh ".$config{"mysqlimg"}." $mysqldata $mysqllog/CNF $mysqllog/DBHOST $mysqllog/PROCESS ".$config{"dbuser"}." ".$config{"dbpass"}." ".$config{"dbport"}. " ". $random ." & " );
    
         # Run nextflow
         # TODO: To reconsider way of checking
