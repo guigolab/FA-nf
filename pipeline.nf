@@ -364,10 +364,6 @@ process ipscn {
 
     label 'ipscan'
 
-    maxRetries 3
-
-    errorStrategy 'retry'
-
     input:
     file seq from seq_file1
     file ("interproscan.properties") from file( iscan_properties )
