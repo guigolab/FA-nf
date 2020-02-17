@@ -126,13 +126,13 @@ iscan_properties = file("/usr/local/interproscan/interproscan.properties")
 
 if(params.debug=="TRUE"||params.debug=="true") {
  println("Debugging.. only the first 2 chunks will be processed")
- (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6) = seqData.take(2).into(6)
+ (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6, seq_file7) = seqData.take(2).into(7)
  (web_seq_file1, web_seq_file2) = seqWebData.take(2).into(2)
 
 }
 else {
  println("Process entire dataset")
-(seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6) = seqData.into(6)
+(seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6, seq_file7) = seqData.into(7)
 (web_seq_file1, web_seq_file2) = seqWebData.into(2)
 
 }
@@ -202,6 +202,26 @@ process convertBlast{
  """
 
 }
+}
+
+if (params.kolist != "" ||  params.kolist != null ){
+
+process kofamscan{
+
+ label 'kofamscan'
+ 
+ input:
+ file seq from seq_file7
+
+ output:
+ file "koala_${seq}" into (koalaResults)
+ 
+ """
+  exec_annotation --cpu ${cpus} -p ${params.koprofiles} -k ${params.kolist} $seq
+ """
+
+}
+
 }
 
 if(params.gogourl != ""){
@@ -594,6 +614,32 @@ process 'blast_annotator_upload'{
   "
   
   command
+}
+
+process 'koala_upload' {
+ 
+ maxForks 1
+ input:
+ 
+  file "koala_*.*" from koalaResults.collect()
+  file config from config4perl
+
+ output:
+  file('upload_koalad') into upload_koala
+  
+ 
+ script:
+ 
+  command = checkMySQL( mysql, params.mysqllog )
+
+   command += " \
+   #cat *.blast > allBlast ; \
+   #awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file ; \
+   #upload_go_definitions.pl -i two_column_file -conf \$config -mode go -param 'blast_annotator' > upload_blast ; \
+   "
+  
+  command
+  
 }
 
 /** Last step **/
