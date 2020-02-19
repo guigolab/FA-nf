@@ -137,14 +137,6 @@ else {
 
 }
 
-if(params.keggFile == "" ||  params.keggFile == null ) {
-
- println "Please run KEGG KO group annotation on the web server http://www.genome.jp/tools/kaas/"
- 
-}
-
-keggfile=file(params.keggFile)
-
 if(params.oboFile == "" ||  params.oboFile == null ) {
 
  println "Please download OBO File from http://www.geneontology.org/ontology/gene_ontology.obo"
@@ -214,7 +206,7 @@ process kofamscan{
  file seq from seq_file7
 
  output:
- file "koala_${seq}" into (koalaResults)
+ file "koala_${seq}" into koalaResults
  
  """
   exec_annotation --cpu ${cpus} -p ${params.koprofiles} -k ${params.kolist} $seq
@@ -222,6 +214,37 @@ process kofamscan{
 
 }
 
+process kofam_parse {
+
+ input:
+ file 'koala_*' from koalaResults.collect()
+
+ output:
+ file allKoala into koala_parsed
+
+"""
+
+mkdir -p output
+processHmmscan2TSV.pl "koala_*" output
+cat output/koala_* > allKoala
+"""
+
+}
+
+// Replacing keggfile
+keggfile = koala_parsed
+
+} else {
+
+
+ if(params.keggFile == "" ||  params.keggFile == null ) {
+ 
+  println "Please run KEGG KO group annotation on the web server http://www.genome.jp/tools/kaas/"
+  
+ }
+
+ keggfile=file(params.keggFile)
+ 
 }
 
 if(params.gogourl != ""){
