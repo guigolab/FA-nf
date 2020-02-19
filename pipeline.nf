@@ -64,6 +64,11 @@ dbFileName = params.resultPath+params.dbname+'.db'
 
 evalue = 0.00001 // Default evalue for BLAST
 
+if(params.evalue != "" ||  params.evalue != null ) {
+
+ evalue = params.evalue
+ 
+}
 
 //println(dbFileName)
 dbFile = file(dbFileName)
@@ -140,13 +145,7 @@ else {
 if(params.oboFile == "" ||  params.oboFile == null ) {
 
  println "Please download OBO File from http://www.geneontology.org/ontology/gene_ontology.obo"
- 
-}
-
-if(params.evalue != "" ||  params.evalue != null ) {
-
- evalue = params.evalue
- 
+ // TODO: Download OBO file
 }
 
 obofile=file(params.oboFile)
