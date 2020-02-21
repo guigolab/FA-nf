@@ -638,32 +638,6 @@ process 'blast_annotator_upload'{
   command
 }
 
-process 'koala_upload' {
- 
- maxForks 1
- input:
- 
-  file "koala_*.*" from koalaResults.collect()
-  file config from config4perl
-
- output:
-  file('upload_koalad') into upload_koala
-  
- 
- script:
- 
-  command = checkMySQL( mysql, params.mysqllog )
-
-   command += " \
-   #cat *.blast > allBlast ; \
-   #awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file ; \
-   #upload_go_definitions.pl -i two_column_file -conf \$config -mode go -param 'blast_annotator' > upload_blast ; \
-   "
-  
-  command
-  
-}
-
 /** Last step **/
 
 process 'kegg_upload'{
