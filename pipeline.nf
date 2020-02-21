@@ -64,6 +64,11 @@ dbFileName = params.resultPath+params.dbname+'.db'
 
 evalue = 0.00001 // Default evalue for BLAST
 
+if(params.evalue != "" ||  params.evalue != null ) {
+
+ evalue = params.evalue
+ 
+}
 
 //println(dbFileName)
 dbFile = file(dbFileName)
@@ -126,35 +131,21 @@ iscan_properties = file("/usr/local/interproscan/interproscan.properties")
 
 if(params.debug=="TRUE"||params.debug=="true") {
  println("Debugging.. only the first 2 chunks will be processed")
- (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6) = seqData.take(2).into(6)
+ (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6, seq_file7) = seqData.take(2).into(7)
  (web_seq_file1, web_seq_file2) = seqWebData.take(2).into(2)
 
 }
 else {
  println("Process entire dataset")
-(seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6) = seqData.into(6)
+(seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6, seq_file7) = seqData.into(7)
 (web_seq_file1, web_seq_file2) = seqWebData.into(2)
 
 }
 
-if(params.keggFile == "" ||  params.keggFile == null ) {
-
- println "Please run KEGG KO group annotation on the web server http://www.genome.jp/tools/kaas/"
- 
-}
-
-keggfile=file(params.keggFile)
-
 if(params.oboFile == "" ||  params.oboFile == null ) {
 
  println "Please download OBO File from http://www.geneontology.org/ontology/gene_ontology.obo"
- 
-}
-
-if(params.evalue != "" ||  params.evalue != null ) {
-
- evalue = params.evalue
- 
+ // TODO: Download OBO file
 }
 
 obofile=file(params.oboFile)
@@ -202,6 +193,57 @@ process convertBlast{
  """
 
 }
+}
+
+if (params.kolist != "" ||  params.kolist != null ){
+
+process kofamscan{
+
+ label 'kofamscan'
+ 
+ input:
+ file seq from seq_file7
+
+ output:
+ file "koala_${seq}" into koalaResults
+ 
+ """
+  exec_annotation --cpu ${cpus} -p ${params.koprofiles} -k ${params.kolist} $seq
+ """
+
+}
+
+process kofam_parse {
+
+ input:
+ file 'koala_*' from koalaResults.collect()
+
+ output:
+ file allKoala into koala_parsed
+
+"""
+
+mkdir -p output
+processHmmscan2TSV.pl "koala_*" output
+cat output/koala_* > allKoala
+"""
+
+}
+
+// Replacing keggfile
+keggfile = koala_parsed
+
+} else {
+
+
+ if(params.keggFile == "" ||  params.keggFile == null ) {
+ 
+  println "Please run KEGG KO group annotation on the web server http://www.genome.jp/tools/kaas/"
+  
+ }
+
+ keggfile=file(params.keggFile)
+ 
 }
 
 if(params.gogourl != ""){
