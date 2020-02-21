@@ -208,7 +208,7 @@ process kofamscan{
  file "koala_${seq}" into koalaResults
  
  """
-  exec_annotation --cpu ${cpus} -p ${params.koprofiles} -k ${params.kolist} $seq
+  exec_annotation --cpu ${task.cpus} -p ${params.koprofiles} -k ${params.kolist} $seq
  """
 
 }
