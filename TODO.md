@@ -5,6 +5,7 @@
 * Visualization of results
     * Venn Diagrams
 
+---
 * In reports, put select distincts again tables
 * Check why CDSearch why starts later
 * Allow reports from KEGG orthologs (number of potential orthologs from KEGG species)
