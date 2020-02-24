@@ -21,7 +21,7 @@ foreach $file (@files) {
     
             my ($id, $ko) = $_=~ /\s*(\S+)\s+(K\d{5})/;
             
-            print FILEOUT "$id $ko\n";
+            print FILEOUT "$id\t$ko\n";
         }
         
         
