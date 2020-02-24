@@ -1,9 +1,9 @@
 * Include an example dataset
-** Include some testing and CI
+    * Include some testing and CI
 * Add PANNZER in analysis
 * Add PhylomeDB in analysis
 * Visualization of results
-** Venn Diagrams
+    * Venn Diagrams
 
 * In reports, put select distincts again tables
 * Check why CDSearch why starts later
