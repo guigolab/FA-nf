@@ -63,9 +63,9 @@ my $tmpconf = tmpnam();
 my $pwd = cwd;
 
 my $strFile="";
-open( TMPCONF, $tmpconf );
+open( CONF, $confFile );
 
-while ( <TMPCONF> ) {
+while ( <CONF> ) {
     
     if ( $_=~/\$\{baseDir\}/ ) {
         s/\$\{baseDir\}/$pwd/g;
@@ -79,14 +79,14 @@ while ( <TMPCONF> ) {
     $strFile = $strFile. $_;
 }
 
-close( TMPCONF );
+close( CONF );
 
 open( TMPCONF, ">$tmpconf" );
 print TMPCONF $strFile;
 close( TMPCONF );
 
 # As it is used in the pipeline, consider if migrating to Perl function
-system( "grep -vP '[{}]' $confFile | sed 's/\\s\\=\\s/:/gi' > $tmpconf" );
+system( "grep -vP '[{}]' $tmpconf | sed 's/\\s\\=\\s/:/gi' > $tmpconf" );
 
 # Parsing params.config (the same place as nexflow for sake of simplicity)
 my $cfg = new Config::Simple($tmpconf);
