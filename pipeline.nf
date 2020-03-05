@@ -297,7 +297,7 @@ if ( gffclean ) {
     
    """
     # get annot file
-    escaped=\$(echo $baseDir | sed 's/\//\\\//g')
+    escaped=\$(echo $baseDir | sed 's/\\//\\\\\//g')
     agat_sp_gxf_to_gff3.pl --gff `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$1=~s/\$baseDir/\$ENV{'escaped'}/g; print \$1 }' $config_file` -o annot.gff
    """
  
@@ -318,7 +318,7 @@ if ( gffclean ) {
     
    """
     # get annot file
-    escaped=\$(echo $baseDir | sed 's/\//\\\//g')
+    escaped=\$(echo $baseDir | sed 's/\\//\\\\\//g')
     cp `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$1=~s/\$baseDir/\$ENV{'escaped'}/g; print \$1 }' $config_file` annot.gff
    """
 
