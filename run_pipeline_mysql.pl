@@ -150,6 +150,9 @@ if ( lc( $config{"dbEngine"} ) eq 'mysql' ) {
             while ( ! -f "$mysqllog/PROCESS" ) {
                 sleep( 5 );
             }
+            
+            my $myip=`cat "$mysqllog/DBHOST"`;
+            print "DBHOST: ".$myip."\n";
            	print( "Run NEXTFLOW\n") ; 
             system( "$nextflow run -bg pipeline.nf $resumeStr --config $confFile" );
         } else {
