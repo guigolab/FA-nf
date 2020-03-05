@@ -61,6 +61,31 @@ die(qq/
 my $tmpconf = tmpnam();
 # As it is used in the pipeline, consider if migrating to Perl function
 system( "grep -vP '[{}]' $confFile | sed 's/\\s\\=\\s/:/gi' > $tmpconf" );
+# Migrate Nextflow var
+my $pwd = cwd;
+
+my $strFile="";
+open( TMPCONF, $tmpconf );
+
+while ( <TMPCONF> ) {
+    
+    if ( $_=~/\$\{baseDir\}/ ) {
+        s/\$\{baseDir\}/$pwd/g;
+    }
+    
+    if ( $_=~/\$baseDir/ ) {
+    
+        s/\$baseDir/$pwd/g;
+    }
+    
+    $strFile = $strFile. $_;
+}
+
+close( TMPCONF );
+
+open( TMPCONF, ">$tmpconf" );
+print TMPCONF $strFile;
+close( TMPCONF );
 
 # Parsing params.config (the same place as nexflow for sake of simplicity)
 my $cfg = new Config::Simple($tmpconf);
@@ -68,23 +93,6 @@ my $cfg = new Config::Simple($tmpconf);
 my %config = $cfg->vars();
 print Dumper( \%config );
 
-# Fix Netxflow vars
-my $pwd = cwd;
-foreach my $confparam ( keys(%config) ) {
-    
-    if ( $config{$confparam}=~/\$\{baseDir\}/ ) {
-    
-        $config{$confparam}=~s/\$\{baseDir\}/$pwd/g;
-        
-    }
-    
-    if ( $config{$confparam}=~/\$baseDir/ ) {
-    
-        $config{$confparam}=~s/\$baseDir/$pwd/g;
-        
-    }  
-    
-}
 
 # If MySQL mode
 if ( lc( $config{"dbEngine"} ) eq 'mysql' ) {
