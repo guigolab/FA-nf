@@ -77,7 +77,7 @@ boolean mysql = false
 gffclean = false
 gffstats = false
 
-if(params.dbEngine=="mysql") {
+if(params.dbEngine.toLowerCase()=="mysql") {
  mysql = true
 }
 
@@ -298,7 +298,7 @@ if ( gffclean ) {
    """
     # get annot file
     export escaped=\$(echo '$baseDir')
-    export basedirvar=\$(echo '\\$\\{baseDir\\}')
+    export basedirvar=\$(echo '\\\$\\{baseDir\\}')
     agat_sp_gxf_to_gff3.pl --gff `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` -o annot.gff
    """
  
@@ -320,7 +320,7 @@ if ( gffclean ) {
    """
     # get annot file
     export escaped=\$(echo '$baseDir')
-    export basedirvar=\$(echo '\\$\\{baseDir\\}')
+    export basedirvar=\$(echo '\\\$\\{baseDir\\}')
     cp `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` annot.gff
    """
 

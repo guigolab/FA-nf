@@ -68,7 +68,7 @@ my %config = $cfg->vars();
 print Dumper( \%config );
 
 # If MySQL mode
-if ( $config{"dbEngine"} eq 'mysql' ) {
+if ( lc( $config{"dbEngine"} ) eq 'mysql' ) {
     
     # Check all MySQL params are there
     
