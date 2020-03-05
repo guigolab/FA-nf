@@ -96,10 +96,6 @@ dbhost = null
 if ( mysql ) {
  dbhost = "127.0.0.1" // Default value. Localhost
  
- if ( params.mysqllog ) {
-  params.mysqllog = params.mysqllog.replace("$baseDir", baseDir )
- }
- 
  if ( new File(  params.mysqllog+"/DBHOST" ).exists() ) {
   dbhost = new File(  params.mysqllog+"/DBHOST" ).text.trim()
  }
