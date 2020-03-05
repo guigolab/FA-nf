@@ -317,7 +317,7 @@ if ( gffclean ) {
     
    """
     # get annot file
-    cp `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { print \$1 }' $config_file` annot.gff
+    cp `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$1=~s/\$baseDir/$baseDir/g; print \$1 }' $config_file` annot.gff
    """
 
  }
