@@ -7,6 +7,7 @@ use Config::Simple;
 use Data::Dumper;
 use File::Temp qw/ :POSIX /;
 use File::Path qw(make_path);
+use Cwd qw(cwd);
 
 # Wrapper for running the pipeline in MySQL mode - Use with nohup and ideally save log
 
@@ -66,6 +67,24 @@ my $cfg = new Config::Simple($tmpconf);
 #put config parameters into %config                                             
 my %config = $cfg->vars();
 print Dumper( \%config );
+
+# Fix Netxflow vars
+my $pwd = cwd;
+foreach my $confparam ( keys(%config) ) {
+    
+    if ( $config{$confparam}=~/\$\{baseDir\}/ ) {
+    
+        $config{$confparam}=~s/\$\{baseDir\}/$pwd/g;
+        
+    }
+    
+    if ( $config{$confparam}=~/\$baseDir/ ) {
+    
+        $config{$confparam}=~s/\$baseDir/$pwd/g;
+        
+    }  
+    
+}
 
 # If MySQL mode
 if ( lc( $config{"dbEngine"} ) eq 'mysql' ) {
