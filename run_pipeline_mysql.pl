@@ -76,6 +76,16 @@ while ( <CONF> ) {
         s/\$baseDir/$pwd/g;
     }
     
+    if ($_=~/^\s*params\s*{\s*$/) {
+        next;
+    }
+    
+    if ($_=~/^\s*}\s*$/) {
+        next;
+    }   
+    
+    $_=~s/\s*\=\s*/:/g;
+    
     $strFile = $strFile. $_;
 }
 
@@ -85,13 +95,8 @@ open( TMPCONF, ">$tmpconf" );
 print TMPCONF $strFile;
 close( TMPCONF );
 
-my $tmpconf2 = tmpnam();
-
-# As it is used in the pipeline, consider if migrating to Perl function
-system( "grep -vP '[{}]' $tmpconf | sed 's/\\s\\=\\s/:/gi' > $tmpconf2" );
-
 # Parsing params.config (the same place as nexflow for sake of simplicity)
-my $cfg = new Config::Simple($tmpconf2);
+my $cfg = new Config::Simple($tmpconf);
 #put config parameters into %config                                             
 my %config = $cfg->vars();
 print Dumper( \%config );
