@@ -100,7 +100,7 @@ if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
 if(!defined $config{'dbEngine'}){$config{'dbEngine'} = 'mysql';}
 my $dbh;
 #connect to the DB
-if($config{'dbEngine'} eq 'mysql')
+if(lc( $config{'dbEngine'} ) eq 'mysql')
 { $dbh= FunctionalAnnotation::DB->new('mysql',$config{'dbname'},$config{'dbhost'},$config{'dbuser'},$config{'dbpass'},$config{'dbport'});}
 else
 {

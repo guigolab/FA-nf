@@ -83,7 +83,7 @@ my $update=0;
 if(!defined $config{'dbEngine'}){$config{'dbEngine'} = 'mysql';}
 my $dbh;
 #connect to the DB
-if($config{'dbEngine'} eq 'mysql')
+if(lc( $config{'dbEngine'} ) eq 'mysql')
 {
 	$dbh = DBI->connect( "DBI:mysql:database=".$config{'dbname'}.";host=".$config{'dbhost'}.";port=".$config{'dbport'}, $config{'dbuser'}, $config{'dbpass'});
 }
@@ -173,7 +173,7 @@ sub uploadCDsearchDataFast
      #$dbh->disconnect();
      #die();
 
-          if($engine eq 'SQLite')
+          if(lc( $engine ) eq 'sqlite')
 
       {$insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField, $setValuesString) VALUES(NULL,\"$proteinId\",".$dbh->quote( $tmpHash{$fieldName} ).",$setString)"; }
 
@@ -228,7 +228,7 @@ sub assignQuery {
 		foreach my $key ( @{$keys} ) {
 		
 			if ( $hash->{$key} ) {
-				if ( $engine  eq 'SQLite' ) {
+				if ( lc( $engine )  eq 'sqlite' ) {
 					
 					push( @setData, "\"$hash->{$key}\"" );
 					
@@ -245,7 +245,7 @@ sub assignQuery {
 		
 		if ( $#setData >= 0 ) {
 			
-			if ( $engine ne 'SQLite' ) {
+			if ( lc( $engine ) ne 'sqlite' ) {
 				push( @setData, $append );
 			}
 			

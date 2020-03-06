@@ -60,7 +60,7 @@ my $dbFileName = $dbPath.$dbName.'.db';
 my $sqlCommandFile = $RealBin.'/lib/SQL.schema.sql';
 my $sqliteCommandFile = $RealBin.'/lib/SQL.schema.sqlite.sql';
 
-if ( $config{'dbEngine'} eq 'SQLite' ) {
+if ( lc( $config{'dbEngine'} ) eq 'sqlite' ) {
 
  if(!-e $dbFileName)
  {  

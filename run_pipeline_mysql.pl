@@ -101,7 +101,6 @@ my $cfg = new Config::Simple($tmpconf);
 my %config = $cfg->vars();
 print Dumper( \%config );
 
-
 # If MySQL mode
 if ( lc( $config{"dbEngine"} ) eq 'mysql' ) {
     

@@ -92,7 +92,7 @@ my @kegg_codes = map { trim($_) } split /,/, $config{'kegg_species'};
 if(!defined $config{'dbEngine'}){$config{'dbEngine'} = 'mysql';}
 my $dbh;
 #connect to the DB
-if($config{'dbEngine'} eq 'mysql')
+if(lc( $config{'dbEngine'} ) eq 'mysql')
 { $dbh= FunctionalAnnotation::DB->new('mysql',$config{'dbname'},$config{'dbhost'},$config{'dbuser'},$config{'dbpass'},$config{'dbport'});}
 else
 {
@@ -162,7 +162,7 @@ sub uploadKeggInformation
   my $kegg_group_sql_select = qq{ SELECT kegg_group_id FROM kegg_group WHERE db_id=\"$kegg_id\" };
   my $kegg_group_sql_update = qq{ UPDATE kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", kegg_release=\"$kegg_release\";};
   my $kegg_group_sql_insert = "";
-  if($dbEngine eq 'SQLite')
+  if( lc( $dbEngine ) eq 'sqlite')
    { $kegg_group_sql_insert = qq{ INSERT INTO kegg_group(kegg_group_id, name,definition,pathway,module,class,db_links,db_id,kegg_release) VALUES (NULL,\"$hash->{'NAME'}\",\"$hash->{'DEFINITION'}\",\"$hash->{'PATHWAY'}\",\"$hash->{'MODULE'}\",\"$hash->{'CLASS'}\", \"$hash->{'DBLINKS'}\",\"$kegg_id\",\"$kegg_release\")}; }
   else
    { $kegg_group_sql_insert = qq{ INSERT INTO kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", kegg_release=\"$kegg_release\";};}
@@ -224,7 +224,7 @@ sub uploadKeggInformation
 									# print STDERR  $ortholog_sql_update, "\n";
 
          my $ortholog_sql_insert = "";
-         if($dbEngine eq 'SQLite')
+         if( lc( $dbEngine ) eq 'sqlite')
           {
 											$ortholog_sql_insert = qq{ INSERT INTO ortholog(ortholog_id,name,organism_id, db_id,db_name ) VALUES(NULL,\"$gene_id\",\"$organism_id\",\"$kegg_id\",\"KEGG\")};
 										}
@@ -256,7 +256,7 @@ sub uploadKeggInformation
         my $prot_ortholog_sql_select = qq{ SELECT protein_ortholog_id FROM protein_ortholog WHERE protein_id=\"$protein_id\" AND ortholog_id=\"$ortholog_id\" };
         my $prot_ortholog_sql_update = qq{ UPDATE protein_ortholog SET protein_id=\"$protein_id\",ortholog_id=\"$ortholog_id\",type=\"$type\",kegg_group_id=\"$kegg_group_id\";};
         my $prot_ortholog_sql_insert ="";
-        if($config{'dbEngine'} eq 'SQLite')
+        if( lc( $config{'dbEngine'} ) eq 'sqlite')
           { $prot_ortholog_sql_insert = qq{ INSERT INTO protein_ortholog (protein_ortholog_id, protein_id,ortholog_id,type,kegg_group_id) VALUES(NULL,\"$protein_id\",\"$ortholog_id\",\"$type\",\"$kegg_group_id\");};}
         else
          { $prot_ortholog_sql_insert = qq{ INSERT INTO protein_ortholog SET protein_id=\"$protein_id\",ortholog_id=\"$ortholog_id\",type=\"$type\",kegg_group_id=\"$kegg_group_id\";};}
@@ -282,7 +282,7 @@ sub uploadKeggInformation
            my $sqlSelect = "SELECT go_term_id from go_term where go_acc like '$goId'";
            my $sqlUpdate ="";
            my $sqlInsert = "";
-           if($dbEngine eq 'SQLite')
+           if( lc( $dbEngine ) eq 'sqlite')
             { $sqlInsert = "INSERT INTO go_term (go_term_id,go_acc) VALUES (NULL,\"$goId\")";}
            else
             { $sqlInsert = "INSERT INTO go_term SET go_acc =\"$goId\"";}
@@ -299,7 +299,7 @@ sub uploadKeggInformation
            my $result =$dbh->select_from_table($sqlSelect);
 											if ( $#$result < 0 )
             {
-            if($config{'dbEngine'} eq 'SQLite')
+            if( lc( $config{'dbEngine'} ) eq 'sqlite')
             { $sqlInsert = "INSERT INTO protein_go (protein_go_id,source, protein_id, go_term_id) VALUES (NULL,'KEGG',$protein_id,$goTermId)";}
            else
             {  $sqlInsert = "INSERT INTO protein_go SET source='KEGG', protein_id=$protein_id, go_term_id = $goTermId";}
@@ -418,7 +418,7 @@ sub organism_table {
     my $organism_sql_select = qq{ SELECT organism_id FROM organism WHERE taxonomy_id=\"$taxonId\" };
     my $organism_sql_update = qq{ UPDATE organism SET species=\"$scName\",name=\"$scName\",reign=\"\",taxonomy_id=\"$taxonId\",kegg_code=\"$code\";};
     my $organism_sql_insert ="";
-    if($engine eq 'SQLite')
+    if( lc( $engine ) eq 'sqlite')
     {$organism_sql_insert = qq{ INSERT INTO organism (organism_id,species,name, reign,taxonomy_id,kegg_code) VALUES(NULL,\"$scName\",\"$scName\",\"\",\"$taxonId\",\"$code\");};}
     else
     { $organism_sql_insert = qq{ INSERT INTO organism SET species=\"$scName\",name=\"$scName\",reign=\"\",taxonomy_id=\"$taxonId\",kegg_code=\"$code\";};}
@@ -432,7 +432,7 @@ sub organism_table {
 				# print "4. ".$organism_id."\n";
 				
     #small patch for SQLite - the current insert function could not return id of the last inserted record...
-     if(!defined $organism_id && $engine eq "SQLite")
+     if(!defined $organism_id && lc( $engine ) eq "sqlite")
        {
 								
         my $select = &selectLastId( $engine );

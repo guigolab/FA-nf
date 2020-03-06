@@ -136,7 +136,7 @@ sub uploadFastaData
 		# check if protein already exists (yes && do_update => update record; no => insert new protein)
 		my $protein_sql_select = qq{ SELECT protein_id FROM protein WHERE stable_id=\"$stable_id\" };
                 my ($protein_sql_update, $protein_sql_insert);
-                if($engine eq 'SQLite')
+                if( lc( $engine ) eq 'sqlite')
                    {
                     $protein_sql_update= qq{ UPDATE protein SET stable_id=\"$stable_id\",protein_name=\"$stable_id\",sequence=\"$seq\", sha1=\"$sha1\" $commString where stable_id=\"$stable_id\";};
 		    $protein_sql_insert = qq{ INSERT INTO protein (protein_id,stable_id, protein_name, sequence,sha1,gene_id) VALUES (NULL,\"$stable_id\",\"$stable_id\",\"$seq\",\"$sha1\",0);};
@@ -239,7 +239,7 @@ open FH,"$inFile";
      $gene_start=$elms[$start_ix];
      $gene_end=$elms[$end_ix];
      my $gene_sql_insert;
-    if($engine eq 'SQLite')
+    if( lc( $engine ) eq 'sqlite')
      {$gene_sql_insert = qq{ INSERT INTO gene(gene_id, gene_name,start,end,strand)  VALUES (NULL,\"$gene_name\", \"$gene_start\", \"$gene_end\", \"$gene_strand\");};}
     else
      { $gene_sql_insert = qq{ INSERT INTO gene SET gene_name=\"$gene_name\", start=\"$gene_start\", end=\"$gene_end\", strand=\"$gene_strand\";};}
@@ -374,7 +374,7 @@ sub insertProtein
       }
       # insert new protein
       my $protein_sql_insert;
-      if($engine eq 'SQLite')
+      if( lc( $engine ) eq 'sqlite')
       {
          $protein_sql_insert= qq{ INSERT INTO protein(protein_id, stable_id, seq_id, cds_start, cds_end, cds_strand,gene_id) VALUES (NULL,\"$c_prot_id\",\"$c_contig\",\"$start\",\"$end\",\"$c_strand\", \"$g_id\");};
       }
@@ -469,7 +469,7 @@ sub uploadGoAnnotation
     foreach my $goItem(@goList)
     {
       #select go_term_id: if this go is present then select id, otherwise upload it.
-      if($engine eq 'SQLite')
+      if( lc( $engine ) eq 'sqlite')
          {
           $insertString = qq{INSERT INTO go_term (go_term_id,go_acc) VALUES (NULL,\"$goItem\");};
          }
@@ -497,7 +497,7 @@ sub uploadGoAnnotation
        $res = $dbh->select_from_table($selectString);
        if ( $#res < 0 )
        {
-        if($engine eq 'SQLite')
+        if(lc( $engine ) eq 'sqlite')
       {$insertString =  "INSERT INTO protein_go(protein_go_id,go_term_id,protein_id,source) VALUES(NULL,\"$goId\",\"$proteinId\", \"$source\")";}
         else
         {$insertString = "INSERT INTO protein_go SET go_term_id=$goId, protein_id=$proteinId, source=\"$source\"";}
@@ -583,7 +583,7 @@ sub uploadInterProResults
 
 # insert domain
     my $domain_id;
-  if ($engine eq 'SQLite')
+  if ( lc( $engine ) eq 'sqlite')
    { $domain_id = &insert_set_sqlite($dbh, 'domain',\%domain);	}
   else
    {	my $st_domain = &constructStatment(\%domain);
@@ -654,7 +654,7 @@ sub uploadBlastResults
       {
        next if $keyItem eq 'hit_id';
        push(@setValues, $keyItem);
-       if($engine eq 'SQLite')
+       if(lc( $engine ) eq 'sqlite')
        {push(@setData, "\"$tmpHash{$keyItem}\"");}
        else
         {push(@setData, "$keyItem = \"$tmpHash{$keyItem}\"");}
@@ -662,7 +662,7 @@ sub uploadBlastResults
      $setString = join(', ', @setData);
      my $setValuesString = join(',', @setValues);
 
-     if($engine eq 'SQLite')
+     if( lc( $engine ) eq 'sqlite')
       {$insertString = "INSERT INTO blast_hit(blast_hit_id, protein_id, hit_id, $setValuesString) VALUES(NULL,\"$proteinId\", \"$tmpHash{'hit_id'}\",$setString)"; }
      else
       {$insertString = "INSERT INTO blast_hit SET protein_id=$proteinId, hit_id=\"$tmpHash{'hit_id'}\",$setString ";}
@@ -775,7 +775,7 @@ sub uploadCDsearchData
        next if ($keyItem eq 'Title' && $type eq 'f');
 
        push(@setValues, $keyItem);
-       if($engine eq 'SQLite')
+       if( lc( $engine ) eq 'sqlite')
         {push(@setData, "\"$tmpHash{$keyItem}\"");}
        else
         {push(@setData, "$keyItem = \"$tmpHash{$keyItem}\"");}
@@ -797,7 +797,7 @@ sub uploadCDsearchData
        $fieldName = 'Title';
       }
 
-     if($engine eq 'SQLite')
+     if(lc( $engine ) eq 'sqlite')
       {$insertString = "INSERT INTO $table ($tableId, protein_id, $uniqField, $setValuesString) VALUES(NULL,\"$proteinId\",\"$tmpHash{$fieldName}\",$setString)"; }
      else
       {$insertString = "INSERT INTO $table SET protein_id=$proteinId,$setString ";}

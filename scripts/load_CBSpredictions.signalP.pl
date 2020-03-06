@@ -76,7 +76,7 @@ my $debug = $config{'debug'};
 if(!defined $config{'dbEngine'}){$config{'dbEngine'} = 'mysql';}
 my $dbh;
 #connect to the DB
-if($config{'dbEngine'} eq 'mysql')
+if(lc( $config{'dbEngine'} ) eq 'mysql')
 { 
 $dbh = DBI->connect( "DBI:mysql:database=".$config{'dbname'}.";host=".$config{'dbhost'}.";port=".$config{'dbport'}, $config{'dbuser'}, $config{'dbpass'});
 
@@ -101,7 +101,7 @@ my %dataHash = &parseCBSpredictionsData($idfile,$type);
 &uploadCBSpredictionsFast($dbh, \%dataHash,$config{'dbEngine'}, $type);
 
 # Commit needed for SQLite
-if($config{'dbEngine'} eq 'SQLite')
+if(lc( $config{'dbEngine'} ) eq 'sqlite')
 {
 		$dbh->commit;
 }
