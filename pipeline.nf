@@ -362,7 +362,7 @@ process initDB {
 
  script:
  command = "mkdir -p $params.resultPath\n"
- command += "sed 's/^\s*params\s*{\s*$//gi' $config_file | sed 's/^\s*}\s*$//gi' | sed '/^\s*$/d' | sed 's/\\s\\=\\s/:/gi' > configt\n"
+ command += "sed 's/^\\s*params\\s*{\\s*$//gi' $config_file | sed 's/^\\s*}\\s*$//gi' | sed '/^\\s*$/d' | sed 's/\\s\\=\\s/:/gi' > configt\n"
  command += "export escaped=\$(echo '$baseDir')\n"
  command += "export basedirvar=\$(echo '\\\$\\{baseDir\\}')\n"
  command += "perl -lae '\$_=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print;' configt > config\n"
