@@ -60,8 +60,6 @@ protein = file(params.proteinFile)
 annotation = file(params.gffFile)
 config_file = file(params.config)
 
-dbFileName = params.resultPath+params.dbname+'.db'
-
 evalue = 0.00001 // Default evalue for BLAST
 
 if(params.evalue != "" ||  params.evalue != null ) {
@@ -70,9 +68,8 @@ if(params.evalue != "" ||  params.evalue != null ) {
  
 }
 
-//println(dbFileName)
-dbFile = file(dbFileName)
-boolean exists = dbFile.exists();
+dbFile = false
+boolean exists = false
 boolean mysql = false
 gffclean = false
 gffstats = false
@@ -99,6 +96,11 @@ if ( mysql ) {
  if ( new File(  params.mysqllog+"/DBHOST" ).exists() ) {
   dbhost = new File(  params.mysqllog+"/DBHOST" ).text.trim()
  }
+} else {
+ dbFileName = params.resultPath+params.dbname+'.db'
+ dbFile = file(dbFileName)
+ exists = dbFile.exists()
+
 }
 
 
@@ -114,8 +116,11 @@ log.info "Annotation file              : ${params.gffFile}"
 log.info "BLAST results file           : ${params.blastFile}"
 log.info "Species name                  : ${params.specie_name}"
 log.info "KEGG species                 : ${params.kegg_species}"
+if ( mysql ) {
+log.info "FA database 		       : ${params.dbname}"
+} else {
 log.info "FA database 		       : $dbFileName"
-
+}
 
 // split protein fasta file into chunks and then execute annotation for each chunk
 // chanels for: interpro, blast, signalP, targetP, cdsearch_hit, cdsearch_features
