@@ -363,7 +363,9 @@ process initDB {
  script:
  command = "mkdir -p $params.resultPath\n"
  command += "grep -vP '[{}]' $config_file | sed 's/\\s\\=\\s/:/gi' > configt\n"
- command += "export escaped=\$(echo '$baseDir'); export basedirvar=\$(echo '\\\$\\{baseDir\\}'); perl -lae '\$_=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print;' configt > config"  
+ command += "export escaped=\$(echo '$baseDir')"
+ command += "export basedirvar=\$(echo '\\\$\\{baseDir\\}')"
+ command += "perl -lae '\$_=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print;' configt > config"
  
  
  if ( mysql ) {
