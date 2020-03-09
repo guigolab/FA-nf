@@ -191,7 +191,7 @@ process convertBlast{
  file blastFile from blastInput
 
  output:
- file('*.xml') into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
+ file("*.xml") into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
 
  """
   hugeBlast2XML.pl -blast  $blastFile  -n 1000 -out blast.res
@@ -221,7 +221,7 @@ process kofamscan{
 process kofam_parse {
 
  input:
- file 'koala_*' from koalaResults.collect()
+ file "koala_*" from koalaResults.collect()
 
  output:
  file allKoala into koala_parsed
@@ -261,7 +261,7 @@ process blast_annotator {
  file blastXml from blastXmlResults2.flatMap()
 
  output:
- file 'blastAnnot' into blast_annotator_results
+ file "blastAnnot" into blast_annotator_results
 
 """
  blast-annotator.pl -in $blastXml -out blastAnnot --url  $params.gogourl -q --format blastxml
@@ -298,7 +298,7 @@ if ( gffclean ) {
    file config_file
   
   output:
-   file 'annot.gff' into gff_file
+   file "annot.gff" into gff_file
     
    """
     # get annot file
@@ -320,7 +320,7 @@ if ( gffclean ) {
    file config_file
   
   output:
-   file 'annot.gff' into gff_file
+   file "annot.gff" into gff_file
     
    """
     # get annot file
@@ -344,7 +344,7 @@ if ( gffstats ) {
    file gff_file
   
   output:
-   file '*.txt' into gff_stats
+   file "*.txt" into gff_stats
     
    """
     # Generate Stats
@@ -363,7 +363,7 @@ process initDB {
   file gff_file
 
  output:
-  file 'config'  into config4perl
+  file 'config' into config4perl
 
  script:
  command = "mkdir -p $params.resultPath\n"
@@ -424,7 +424,7 @@ process ipscn {
     file ("interproscan.properties") from file( iscan_properties )
 
     output:
-    file('${seq}.out_interpro') into (ipscn_result1, ipscn_result2)
+    file("${seq}.out_interpro") into (ipscn_result1, ipscn_result2)
 
     """
     sed 's/*//' $seq > tmp4ipscn
@@ -442,7 +442,7 @@ process 'cdSearchHit' {
     file seq from web_seq_file1
 
     output:
-    file '${seq}.out_hit' into cdSearch_hit_result
+    file "${seq}.out_hit" into cdSearch_hit_result
 
     """
     submitCDsearch.pl  -o ${seq}.out_hit -in $seq
@@ -459,7 +459,7 @@ process 'cdSearchFeat' {
     file seq from web_seq_file2
 
     output:
-    file '${seq}.out_feat' into cdSearch_feat_result
+    file "${seq}.out_feat" into cdSearch_feat_result
 
     """
     submitCDsearch.pl -t feats -o ${seq}.out_feat -in $seq
@@ -475,7 +475,7 @@ process 'signalP' {
     file seq from seq_file4
 
     output:
-    file('${seq}.out_signalp') into (signalP_result1, signalP_result2)
+    file("${seq}.out_signalp") into (signalP_result1, signalP_result2)
 
     """
     signalp  $seq > ${seq}.out_signalp
@@ -490,7 +490,7 @@ process 'targetP' {
     file seq from seq_file5
 
     output:
-    file('${seq}.out_targetp') into (targetP_result1, targetP_result2)
+    file("${seq}.out_targetp") into (targetP_result1, targetP_result2)
 
     """
     targetp -P -c  $seq > ${seq}.out_targetp
@@ -506,12 +506,12 @@ process 'signalP_upload'{
  maxForks 1
 
  input:
- file '*.out_signalp' from signalP_result1.collect()
+ file "*.out_signalp" from signalP_result1.collect()
  file config from config4perl
  file def_done from definition_passed
 
  output:
- file('upload_signalp') into upload_signalp
+ file("upload_signalp") into upload_signalp
 
 
  script:
@@ -532,12 +532,12 @@ process 'targetP_upload'{
  maxForks 1
 
  input:
- file '*.out_targetp' from targetP_result1.collect()
+ file "*.out_targetp" from targetP_result1.collect()
  file config from config4perl
  file upload_signalp from upload_signalp
 
  output:
- file('upload_targetp') into upload_targetp
+ file("upload_targetp") into upload_targetp
 
  script:
  
@@ -557,12 +557,12 @@ process 'interpro_upload'{
  maxForks 1
 
  input:
- file '*.out_interpro' from ipscn_result1.collect()
+ file "*.out_interpro" from ipscn_result1.collect()
  file config from config4perl
  file upload_targetp from upload_targetp
 
  output:
- file('upload_interpro') into upload_interpro
+ file("upload_interpro") into upload_interpro
  
  
  script:
@@ -583,12 +583,12 @@ process 'CDsearch_hit_upload'{
  maxForks 1
 
  input:
- file '*.out_hit' from cdSearch_hit_result.collect()
+ file "*.out_hit" from cdSearch_hit_result.collect()
  file config from config4perl
  file upload_interpro from upload_interpro
 
  output:
- file('upload_hit') into upload_hit
+ file("upload_hit") into upload_hit
  
  script:
  
@@ -607,12 +607,12 @@ process 'CDsearch_feat_upload'{
  maxForks 1
 
  input:
- file '*.out_feat' from cdSearch_feat_result.collect()
+ file "*.out_feat" from cdSearch_feat_result.collect()
  file config from config4perl
  file upload_hit from upload_hit
 
  output:
- file('upload_feat') into upload_feat
+ file("upload_feat") into upload_feat
 
  script:
  
@@ -636,7 +636,7 @@ process 'blast_annotator_upload'{
   file upload_feat from upload_feat
 
   output:
-  file('upload_blast') into upload_blast
+  file("upload_blast") into upload_blast
 
  script:
  
@@ -660,7 +660,7 @@ process 'kegg_upload'{
  input:
  file keggfile from keggfile
  file config from config4perl
- file('upload_blast') from upload_blast
+ file("upload_blast") from upload_blast
 
  output:
  file('done') into last_step
