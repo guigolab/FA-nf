@@ -194,7 +194,7 @@ process convertBlast{
  file("*.xml") into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
 
  """
-  hugeBlast2XML.pl -blast  $blastFile  -n 1000 -out blast.res
+  hugeBlast2XML.pl -blast $blastFile -n 1000 -out blast.res
  """
 
 }
@@ -424,11 +424,11 @@ process ipscn {
     file ("interproscan.properties") from file( iscan_properties )
 
     output:
-    file("${seq}.out_interpro") into (ipscn_result1, ipscn_result2)
+    file("out_interpro_${seq}") into (ipscn_result1, ipscn_result2)
 
     """
     sed 's/*//' $seq > tmp4ipscn
-    interproscan.sh -i tmp4ipscn --goterms --iprlookup --pathways -o ${seq}.out_interpro -f TSV -T ${params.ipscantmp}
+    interproscan.sh -i tmp4ipscn --goterms --iprlookup --pathways -o out_interpro_${seq} -f TSV -T ${params.ipscantmp}
     """
 }
 
@@ -442,10 +442,10 @@ process 'cdSearchHit' {
     file seq from web_seq_file1
 
     output:
-    file("${seq}.out_hit") into cdSearch_hit_result
+    file("out_hit_${seq}") into cdSearch_hit_result
 
     """
-    submitCDsearch.pl -o ${seq}.out_hit -in $seq
+    submitCDsearch.pl -o out_hit_${seq} -in $seq
     """
 }
 
@@ -459,10 +459,10 @@ process 'cdSearchFeat' {
     file seq from web_seq_file2
 
     output:
-    file("${seq}.out_feat") into cdSearch_feat_result
+    file("out_feat_${seq}") into cdSearch_feat_result
 
     """
-    submitCDsearch.pl -t feats -o ${seq}.out_feat -in $seq
+    submitCDsearch.pl -t feats -o out_feat_${seq} -in $seq
     """
 }
 
@@ -475,10 +475,10 @@ process 'signalP' {
     file seq from seq_file4
 
     output:
-    file("${seq}.out_signalp") into (signalP_result1, signalP_result2)
+    file("out_signalp_${seq}") into (signalP_result1, signalP_result2)
 
     """
-    signalp  $seq > ${seq}.out_signalp
+    signalp  $seq > out_signalp_${seq}
     """
 }
 
@@ -490,10 +490,10 @@ process 'targetP' {
     file seq from seq_file5
 
     output:
-    file("${seq}.out_targetp") into (targetP_result1, targetP_result2)
+    file("out_targetp_${seq}") into (targetP_result1, targetP_result2)
 
     """
-    targetp -P -c  $seq > ${seq}.out_targetp
+    targetp -P -c  $seq > out_targetp_${seq}
     """
 }
 
@@ -506,7 +506,7 @@ process 'signalP_upload'{
  maxForks 1
 
  input:
- file "*.out_signalp" from signalP_result1.collect()
+ file "out_signalp*" from signalP_result1.collect()
  file config from config4perl
  file def_done from definition_passed
 
@@ -519,7 +519,7 @@ process 'signalP_upload'{
   command = checkMySQL( mysql, params.mysqllog )
  
   command += " \
-   cat *.out_signalp > allSignal ; \
+   cat out_signalp* > allSignal ; \
    load_CBSpredictions.signalP.pl -i allSignal -conf \$config -type s > upload_signalp ; \
   "
   
@@ -532,7 +532,7 @@ process 'targetP_upload'{
  maxForks 1
 
  input:
- file "*.out_targetp" from targetP_result1.collect()
+ file "out_targetp*" from targetP_result1.collect()
  file config from config4perl
  file upload_signalp from upload_signalp
 
@@ -544,7 +544,7 @@ process 'targetP_upload'{
   command = checkMySQL( mysql, params.mysqllog )
 
   command += " \
-   cat *.out_targetp > allTarget ; \
+   cat out_targetp* > allTarget ; \
    load_CBSpredictions.signalP.pl -i allTarget -conf \$config -type t > upload_targetp ; \
   "
   
@@ -557,7 +557,7 @@ process 'interpro_upload'{
  maxForks 1
 
  input:
- file "*.out_interpro" from ipscn_result1.collect()
+ file "out_interpro*" from ipscn_result1.collect()
  file config from config4perl
  file upload_targetp from upload_targetp
 
@@ -570,7 +570,7 @@ process 'interpro_upload'{
   command = checkMySQL( mysql, params.mysqllog )
 
   command += " \
-   cat *.out_interpro > allInterpro ; \
+   cat out_interpro* > allInterpro ; \
    run_interpro.pl -mode upload -i allInterpro -conf \$config > upload_interpro ; \
   "
   
@@ -583,7 +583,7 @@ process 'CDsearch_hit_upload'{
  maxForks 1
 
  input:
- file "*.out_hit" from cdSearch_hit_result.collect()
+ file "out_hit*" from cdSearch_hit_result.collect()
  file config from config4perl
  file upload_interpro from upload_interpro
 
@@ -595,7 +595,7 @@ process 'CDsearch_hit_upload'{
   command = checkMySQL( mysql, params.mysqllog )
 
   command += " \
-   cat *.out_hit > allCDsearchHit ; \
+   cat out_hit* > allCDsearchHit ; \
    upload_CDsearch.pl -i allCDsearchHit -type h -conf \$config > upload_hit ; \
   "
   
@@ -607,7 +607,7 @@ process 'CDsearch_feat_upload'{
  maxForks 1
 
  input:
- file "*.out_feat" from cdSearch_feat_result.collect()
+ file "out_feat*" from cdSearch_feat_result.collect()
  file config from config4perl
  file upload_hit from upload_hit
 
@@ -619,7 +619,7 @@ process 'CDsearch_feat_upload'{
   command = checkMySQL( mysql, params.mysqllog )
   
   command += " \
-   cat *.out_feat > allCDsearchFeat ; \
+   cat out_feat* > allCDsearchFeat ; \
    upload_CDsearch.pl -i allCDsearchFeat -type f -conf \$config > upload_feat ; \
   "
   
@@ -631,7 +631,7 @@ process 'blast_annotator_upload'{
  maxForks 1
 
  input:
-  file "*.blast" from blast_annotator_results.collect()
+  file "blastAnnot*" from blast_annotator_results.collect()
   file config from config4perl
   file upload_feat from upload_feat
 
@@ -643,7 +643,7 @@ process 'blast_annotator_upload'{
   command = checkMySQL( mysql, params.mysqllog )
  
   command += " \
-   cat *.blast > allBlast ; \
+   cat blastAnnot* > allBlast ; \
    awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file ; \
    upload_go_definitions.pl -i two_column_file -conf \$config -mode go -param 'blast_annotator' > upload_blast ; \
   "
