@@ -261,7 +261,7 @@ process blast_annotator {
  file blastXml from blastXmlResults2.flatMap()
 
  output:
- file blastAnnot into blast_annotator_results
+ file 'blastAnnot' into blast_annotator_results
 
 """
  blast-annotator.pl -in $blastXml -out blastAnnot --url  $params.gogourl -q --format blastxml
