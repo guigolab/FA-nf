@@ -442,10 +442,10 @@ process 'cdSearchHit' {
     file seq from web_seq_file1
 
     output:
-    file "${seq}.out_hit" into cdSearch_hit_result
+    file("${seq}.out_hit") into cdSearch_hit_result
 
     """
-    submitCDsearch.pl  -o ${seq}.out_hit -in $seq
+    submitCDsearch.pl -o ${seq}.out_hit -in $seq
     """
 }
 
@@ -459,7 +459,7 @@ process 'cdSearchFeat' {
     file seq from web_seq_file2
 
     output:
-    file "${seq}.out_feat" into cdSearch_feat_result
+    file("${seq}.out_feat") into cdSearch_feat_result
 
     """
     submitCDsearch.pl -t feats -o ${seq}.out_feat -in $seq
