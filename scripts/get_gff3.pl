@@ -76,8 +76,8 @@ my %config = $cfg->vars();
 my $debug = $config{'debug'};
 my $update=0;
 
-my $logFile =$config{'resultPath'}.$config{'stdoutLog'};
- my $errFile =$config{'resultPath'}.$config{'stderrLog'};
+ my $logFile = $config{'stdoutLog'};
+ my $errFile = $config{'stderrLog'};
  open OUTPUT, '>>', $logFile or die $!;
  open ERROR,  '>>', $errFile  or die $!;
  STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;

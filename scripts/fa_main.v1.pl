@@ -157,8 +157,8 @@ die(qq/
  my $cfg = new Config::Simple($confFile);
  #put config parameters into %config                                             
  my %config = $cfg->vars();
- my $logFile =$config{'resultPath'}.$config{'stdoutLog'};
- my $errFile =$config{'resultPath'}.$config{'stderrLog'};
+ my $logFile = $config{'stdoutLog'};
+ my $errFile = $config{'stderrLog'};
  #open OUTPUT, '>>', $logFile or die $!;
  #open ERROR,  '>>', $errFile  or die $!;
  #STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
