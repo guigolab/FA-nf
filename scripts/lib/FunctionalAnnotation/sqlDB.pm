@@ -62,7 +62,8 @@ my $sqliteCommandFile = $RealBin.'/lib/SQL.schema.sqlite.sql';
 
 if ( lc( $config{'dbEngine'} ) eq 'sqlite' ) {
 
- if(!-e $dbFileName)
+ # If file does not exist or empty
+ if(!-e $dbFileName || -z $dbFileName )
  {  
  if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
  {  print "DB $dbName does not exists, will create it!\n";}
