@@ -99,7 +99,7 @@ if ( mysql ) {
 } else {
  dbFileName = params.resultPath+params.dbname+'.db'
  dbFile = file(dbFileName)
- if ( dbFile.exists() && dbFile.length() > 0 ) {
+ if ( dbFile.exists() && dbFile.size() > 0 ) {
   exists = true
  }
 }
