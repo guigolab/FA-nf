@@ -377,15 +377,19 @@ process initDB {
   // Add dbhost to config
   command += "echo \"\$(cat config)\n dbhost:${dbhost}\" > configIn ;\n"
   command += "fa_main.v1.pl init -conf configIn"
+  
+   if ( gffclean ) {
+    command += " -gff ${gff_file}"
+   }
  } else {
 
    if (!exists) {
      command += "fa_main.v1.pl init -conf config"
+     
+    if ( gffclean ) {
+     command += " -gff ${gff_file}"
+    }
    }
- }
- 
- if ( gffclean ) {
-  command += " -gff ${gff_file}"
  }
  
  command
