@@ -400,8 +400,7 @@ sub updateProteinDefinition
   
  foreach my $protItem(keys %{$annotData}) {
     #select protein_id from DB
-    if($keyType eq 'protein_id')
-    {$selectString = "SELECT d.protein_id, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.protein_id = $protItem and d.source = '$source'";}
+    if($keyType eq 'protein_id') {$selectString = "SELECT d.protein_id, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.protein_id = $protItem and d.source = '$source'";}
     else
     {$selectString = "SELECT d.protein_id, p.sha1, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.stable_id like '$protItem' and d.source = '$source'";}
     #print STDERR $selectString, "\n";
@@ -414,13 +413,26 @@ sub updateProteinDefinition
       
       my $insertString;
       if($keyType eq 'protein_id') {
-       $insertString = "INSERT INTO definition SET definition =\"$definition\", source =\"$source\", protein_id='$protItem';";
+       
+       if( lc( $engine ) eq 'sqlite') {
+         $insertString = "INSERT INTO definition ( definition_id, definition, source, protein_id ) values ( NULL, \"$definition\",  \"$source\", '$protItem' );";
+ 
+       } else {
+
+        $insertString = "INSERT INTO definition SET definition=\"$definition\", source =\"$source\", protein_id='$protItem';";
+       }
       } else {
         $selectString = "SELECT p.protein_id from protein p where p.stable_id like '$protItem';";
         $res = $dbh->select_from_table($selectString);
         if ( $#$res >= 0 ){
          $proteinId=$res->[0]->{'protein_id'};
-         $insertString = "INSERT INTO definition SET definition =\"$definition\", source =\"$source\", protein_id='$proteinId';";
+        if( lc( $engine ) eq 'sqlite') {
+          $insertString = "INSERT INTO definition ( definition_id, definition, source, protein_id ) values ( NULL, \"$definition\",  \"$source\", '$proteinId' );";
+  
+        } else {
+         $insertString = "INSERT INTO definition SET definition=\"$definition\", source =\"$source\", protein_id='$proteinId';";
+         
+        }
         }
       }
      if(($loglevel eq 'debug'))
