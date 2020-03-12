@@ -127,7 +127,7 @@ my $summaryFile = $outputFolder.'/'.'total_stats.txt';
 
 #print protein definition
 my $definitionFile = $outputFolder.'/'.'protein_definition.txt';
-&printDefinitionInfo(\@listIds, $dbh, $definitionFile);
+&printDefinitionInfo(\@listIds, $dbh, $definitionFile, lc( $config{'dbEngine'} ));
 
 
 #get GO terms info

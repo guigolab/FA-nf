@@ -44,7 +44,7 @@ sub getGOInformation
   my $idString = join(',', @{$protIdList});
   $condStat = "where protein_id in (select distinct protein_id from protein where stable_id in ($idString))";
  }
-  my $sqlSelect =  "SELECT protein_id, source FROM protein_go  where protein_id in (select distinct protein_id from protein where comment not like 'discarded%')  $condStat";
+  my $sqlSelect =  "SELECT protein_id, source FROM protein_go where protein_id in (select distinct protein_id from protein where comment not like 'discarded%')  $condStat";
   print $sqlSelect."\n";
   my $results =$dbh->select_from_table($sqlSelect);
   #print Dumper($results);
@@ -168,7 +168,7 @@ sub printSummaryInfo
 
 sub printDefinitionInfo
 {
- my ($listIds, $dbh, $file)=@_;
+ my ($listIds, $dbh, $file, $dbEngine)=@_;
 
  my $numberKeys =scalar @{$listIds};
  my $condStat='';
@@ -183,7 +183,15 @@ sub printDefinitionInfo
  print OUTPUT "#PROTEIN_NAME\tDEFINITION_SOURCE\tSOURCE\n";
  my @defArray=();
 
- my $sqlSelect = "select p.protein_id, p.stable_id, GROUP_CONCAT( d.source SEPARATOR \"; \" ) as src, GROUP_CONCAT( d.definition SEPARATOR \"; \" ) as def from protein p, definition d where d.protein_id=p.protein_id and d.definition is not null and d.definition not like '' $condStat group by p.protein_id order by p.protein_id";
+ my $sqlselect;
+ 
+ if ( $dbEngine eq 'mysql' ){
+  $sqlSelect = "select p.protein_id, p.stable_id, GROUP_CONCAT( d.source SEPARATOR \"; \" ) as src, GROUP_CONCAT( d.definition SEPARATOR \"; \" ) as def from protein p, definition d where d.protein_id=p.protein_id and d.definition is not null and d.definition not like '' $condStat group by p.protein_id order by p.protein_id";
+ } else {
+  $sqlSelect = "select p.protein_id, p.stable_id, GROUP_CONCAT( d.source, \"; \" ) as src, GROUP_CONCAT( d.definition, \"; \" ) as def from protein p, definition d where d.protein_id=p.protein_id and d.definition is not null and d.definition not like '' $condStat group by p.protein_id order by p.protein_id";
+ }
+ 
+ 
  my $results =$dbh->select_from_table($sqlSelect);
  foreach my $result (@{$results})
   {
@@ -267,7 +275,7 @@ sub printGoTerms
  open(OUTPUT, ">$fileName")||die("Can't opne $fileName for writing! $!\n");
  print OUTPUT "#GENE_NAME\tGO_ACC\tGO_SOURCE\n";
 
-  my $sqlSelect = "select gene_name, GROUP_CONCAT(go_acc) as GO_acc, GROUP_CONCAT( protein_go.source) as GO_source from gene,protein,protein_go,go_term where $condStat  protein.protein_id=protein_go.protein_id  and protein_go.go_term_id=go_term.go_term_id and protein.gene_id=gene.gene_id group by gene_name order by gene_name";  
+  my $sqlSelect = "select gene_name, GROUP_CONCAT(go_acc) as GO_acc, GROUP_CONCAT( protein_go.source ) as GO_source from gene,protein,protein_go,go_term where $condStat  protein.protein_id=protein_go.protein_id  and protein_go.go_term_id=go_term.go_term_id and protein.gene_id=gene.gene_id group by gene_name order by gene_name";  
  
   $results =$dbh->select_from_table($sqlSelect);
 
