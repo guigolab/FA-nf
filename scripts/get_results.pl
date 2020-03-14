@@ -141,4 +141,4 @@ my $goFile2=$outputFolder .'/'.'go_terms_byGene.txt';
 my $plotFile = $outputFolder .'/'.'annotatedVsnot.png';
 my $tmpFolder = $config{'resultPath'};
 system("mkdir $tmpFolder") if (!-d $tmpFolder);
-&makeAnnotatedVsNotAnnotatedPlot(\@listIds, $plotFile, $dbh,$tmpFolder,$RealBin,$config{'specie_name'});
+&makeAnnotatedVsNotAnnotatedPlot(\@listIds, $plotFile, $dbh,$tmpFolder,$RealBin,$config{'speciesName'});

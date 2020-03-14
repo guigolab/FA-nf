@@ -132,7 +132,7 @@ sub prepareInputFiles
  my $chunkSize = $configRecord->{'chunk_size'};
  my $tmpFolder = $configRecord->{'tmp_dir'};
  my $resultFolder = $configRecord->{'resultPath'};
- my $specieName = $configRecord->{'specie_name'};
+ my $specieName = $configRecord->{'speciesName'};
  my $loglevel =  $configRecord->{'loglevel'};
  
  $tmpFolder = $resultFolder.$tmpFolder;

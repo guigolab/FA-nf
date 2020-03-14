@@ -115,7 +115,7 @@ log.info "------------------"
 log.info "Protein sequence file        : ${params.proteinFile}"
 log.info "Annotation file              : ${params.gffFile}"
 log.info "BLAST results file           : ${params.blastFile}"
-log.info "Species name                  : ${params.specie_name}"
+log.info "Species name                  : ${params.speciesName}"
 log.info "KEGG species                 : ${params.kegg_species}"
 if ( mysql ) {
 log.info "FA database 		       : ${params.dbname}"
