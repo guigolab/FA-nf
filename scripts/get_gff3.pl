@@ -156,7 +156,13 @@ foreach my $idItem(@protIds)
  {
 
   my $descrField='';
-  $selectString =  "select p.stable_id, group_concat( d.definition SEPARATOR \"@@\" ) as definition, p.cds_strand, p.cds_start, p.cds_end, length(p.sequence) as length, p.gene_id, p.seq_id from protein p left outer join definition d on p.protein_id=d.protein_id where p.protein_id = $idItem group by p.protein_id";
+		
+		if(lc( $config{'dbEngine'} ) eq 'mysql') {
+			$selectString =  "select p.stable_id, group_concat( d.definition SEPARATOR \"@@\" ) as definition, p.cds_strand, p.cds_start, p.cds_end, length(p.sequence) as length, p.gene_id, p.seq_id from protein p left outer join definition d on p.protein_id=d.protein_id where p.protein_id = $idItem group by p.protein_id";
+		} else {
+					$selectString =  "select p.stable_id, group_concat( d.definition, \"@@\" ) as definition, p.cds_strand, p.cds_start, p.cds_end, length(p.sequence) as length, p.gene_id, p.seq_id from protein p left outer join definition d on p.protein_id=d.protein_id where p.protein_id = $idItem group by p.protein_id";
+		}
+		
   $results =$dbh->select_from_table($selectString);
   #print STDERR Dumper($results);
   my $definition= $results->[0]->{'definition'}||'';
