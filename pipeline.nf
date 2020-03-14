@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 /*
- * Copyright (c) 2017-2019, Centre for Genomic Regulation (CRG)
+ * Copyright (c) 2017-2020, Centre for Genomic Regulation (CRG)
  *
  * Copyright (c) 2017, Anna Vlasova
  *
