@@ -263,7 +263,7 @@ sub printGoTerms
  {
   open(OUTPUT, ">$fileName")||die("Can't open $fileName for writing! $!\n");
   print OUTPUT "#PROTEIN_NAME\tGO_ACC\tGO_NAME\tGO_TYPE\tGO_SOURCE\n";
-  my $sqlSelect = "select protein.protein_id,protein.stable_id, go_term.go_acc, go_term.go_name, go_term.term_type, group_concat( protein_go.source ) as GO_source from protein,protein_go,go_term where  $condStat protein.protein_id=protein_go.protein_id  and protein_go.go_term_id=go_term.go_term_id group by protein.protein_id, go_term.go_acc order by protein.stable_id;";
+  my $sqlSelect = "select protein.protein_id,protein.stable_id, go_term.go_acc, go_term.go_name, go_term.term_type, group_concat( distinct( protein_go.source ) ) as GO_source from protein,protein_go,go_term where  $condStat protein.protein_id=protein_go.protein_id  and protein_go.go_term_id=go_term.go_term_id group by protein.protein_id, go_term.go_acc order by protein.stable_id;";
   $results =$dbh->select_from_table($sqlSelect);
   foreach my $result (@{$results}) 
   {
@@ -275,7 +275,7 @@ sub printGoTerms
  open(OUTPUT, ">$fileName")||die("Can't opne $fileName for writing! $!\n");
  print OUTPUT "#GENE_NAME\tGO_ACC\tGO_SOURCE\n";
 
-  my $sqlSelect = "select gene_name, GROUP_CONCAT(go_acc) as GO_acc, GROUP_CONCAT( protein_go.source ) as GO_source from gene,protein,protein_go,go_term where $condStat  protein.protein_id=protein_go.protein_id  and protein_go.go_term_id=go_term.go_term_id and protein.gene_id=gene.gene_id group by gene_name order by gene_name";  
+  my $sqlSelect = "select gene_name, GROUP_CONCAT( distinct( go_acc ) ) as GO_acc, GROUP_CONCAT( distinct( protein_go.source ) ) as GO_source from gene,protein,protein_go,go_term where $condStat  protein.protein_id=protein_go.protein_id  and protein_go.go_term_id=go_term.go_term_id and protein.gene_id=gene.gene_id group by gene_name order by gene_name";  
  
   $results =$dbh->select_from_table($sqlSelect);
 
