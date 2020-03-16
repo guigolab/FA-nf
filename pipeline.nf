@@ -223,7 +223,7 @@ if ( diamond == true ) {
   file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
  
   """
-   diamond blastp --db ${formatdb_file}--query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out "blastXml${seq}"
+   diamond blastp --db ${formatdb_file} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out "blastXml${seq}"
   """
  }
 
