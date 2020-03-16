@@ -202,9 +202,10 @@ if ( diamond ) {
  
 } else {
 
+ // TODO: This needs more work
  formatDbFileName = db_path+"/"+db_name+"*.phr"
  formatDbFile = file(formatDbFileName)
- if ( formatDbFile.exists() && formatDbFile.size() > 0 ) {
+ if ( formatDbFile.size() > 0 ) {
    formatdbDetect = true
  }
  
