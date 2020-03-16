@@ -240,14 +240,15 @@ if (params.blastFile == "" ||  params.blastFile == null ){
   
    output:
    file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
-  
-    if ( formatdbDetect == "false" ) {
-     command = "diamond blastp --db ${formatdb_file} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out blastXml${seq}"
-    } else {
-     command = "diamond blastp --db ${db_path}/${db_name} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out blastXml${seq}"
-    }
-    
-    command
+ 
+   script:
+   if ( formatdbDetect == "false" ) {
+    command = "diamond blastp --db ${formatdb_file} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out blastXml${seq}"
+   } else {
+    command = "diamond blastp --db ${db_path}/${db_name} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out blastXml${seq}"
+   }
+   
+   command
    
   }
  
@@ -263,11 +264,10 @@ if (params.blastFile == "" ||  params.blastFile == null ){
    file seq from seq_file6
    file formatdb_file from formatdb
  
-  
    output:
    file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
   
-  
+   script:
    if ( formatdbDetect == "false" ) {
     command = "blastp -db ${formatdb_file} -query $seq -num_threads ${task.cpus} -evalue ${evalue} -out blastXml${seq} -outfmt 5"
    } else {
