@@ -156,6 +156,12 @@ if(params.oboFile == "" ||  params.oboFile == null ) {
 
 obofile=file(params.oboFile)
 
+// TODO: To change for different aligners
+diamond = false
+
+if(params.diamond=="TRUE"||params.diamond=="true") {
+ diamond = true
+}
 
 if (params.blastFile == "" ||  params.blastFile == null ){
 
@@ -163,21 +169,85 @@ if (params.blastFile == "" ||  params.blastFile == null ){
 db_name = file(params.blastDB_path).name
 db_path = file(params.blastDB_path).parent
 
-process blast{
+// Handling Database formatting
+formatdbDetect = false
 
- label 'blast'
+if ( diamond ) {
 
- // publishDir "results", mode: 'copy'
+ formatDbFileName = db_path+"/"+db_name+".dmnd"
+ formatDbFile = file(formatDbFileName)
+ if ( formatDbFile.exists() && formatDbFile.size() > 0 ) {
+  formatdbDetect = true
+ }
+ 
+ if ( formatdbDetect == false ) {
+ 
+  process diamondFormat{
+ 
+   label 'diamond'
+  
+   output:
+   file "${dbname}_formatdb" into formatdb
+  
+   """
+    diamond makedb --in ${db_path}/${db_name} --db "${dbname}_formatdb"
+   """
+  }
+ 
+ }
+ 
+} else {
+ // TODO Need to detect if formatted with BLAST
+ // formatDbFileName = db_path+"/"+db_name+".dmnd"
+ // formatDbFile = file(formatDbFileName)
+ // if ( formatDbFile.exists() && formatDbFile.size() > 0 ) {
+ //  formatdbDetect = true
+ // }
+ // For now exists true
+ formatdbDetect = true
+ formatdb = Channel.fromPath( params.blastDB_path )
+}
 
- input:
- file seq from seq_file6
 
- output:
- file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
+if ( diamond == true ) {
 
- """
-  blastp -db ${db_path}/${db_name} -query $seq -num_threads 8 -evalue  0.00001 -out "blastXml${seq}" -outfmt 5
- """
+ process diamond{
+ 
+  label 'diamond'
+  
+  input:
+  file seq from seq_file6
+  file formatdb_file from formatdb
+ 
+  output:
+  file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
+ 
+  """
+   diamond blastp --db ${formatdb_file}--query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out "blastXml${seq}"
+  """
+ }
+
+} else {
+
+ process blast{
+ 
+  label 'blast'
+ 
+  // publishDir "results", mode: 'copy'
+ 
+  input:
+  file seq from seq_file6
+  file formatdb_file from formatdb
+
+ 
+  output:
+  file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
+ 
+  """
+   blastp -db ${formatdb_file} -query $seq -num_threads ${task.cpus} -evalue ${evalue} -out "blastXml${seq}" -outfmt 5
+  """
+ }
+
 }
 
 } else {
