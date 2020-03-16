@@ -201,12 +201,14 @@ if ( diamond ) {
  }
  
 } else {
-
- // TODO: This needs more work
- formatDbFileName = db_path+"/"+db_name+"*.phr"
- formatDbFile = FileNameFinder().getFileNames( formatDbFileName )
- // println( formatDbFile.size() )
- if ( formatDbFile.size() > 0 ) {
+ 
+ formatDbDir = file( db_path ) 
+ filter =  ~/${db_name}.*.phr/
+ def fcount = 0
+ formatDbDir.list().eachFileMatch( filter ) { it ->
+  fcount = fcount + 1
+ }
+ if ( fcount > 0 ) {
    formatdbDetect = "true"
  }
 
