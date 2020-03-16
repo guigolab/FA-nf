@@ -202,6 +202,7 @@ if ( diamond ) {
  
 } else {
 
+ // TODO: This needs more work
  formatDbFileName = db_path+"/"+db_name+"*.phr"
  formatDbFile = FileNameFinder().getFileNames( formatDbFileName )
  // println( formatDbFile.size() )
@@ -215,7 +216,9 @@ println( formatdbDetect )
   // println( "TUR" )
 
   process blastFormat{
-  
+ 
+   label 'blast'
+ 
    output:
    file "${db_name}.p*" into formatdb
   
