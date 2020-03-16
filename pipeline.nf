@@ -187,10 +187,10 @@ if ( diamond ) {
    label 'diamond'
   
    output:
-   file "${dbname}_formatdb" into formatdb
+   file "${db_name}_formatdb" into formatdb
   
    """
-    diamond makedb --in ${db_path}/${db_name} --db "${dbname}_formatdb"
+    diamond makedb --in ${db_path}/${db_name} --db "${db_name}_formatdb"
    """
   }
  
