@@ -165,139 +165,139 @@ if(params.diamond=="TRUE"||params.diamond=="true") {
 
 if (params.blastFile == "" ||  params.blastFile == null ){
 
-// program-specific parameters
-db_name = file(params.blastDB_path).name
-db_path = file(params.blastDB_path).parent
-
-// Handling Database formatting
-formatdbDetect = "false"
-
-if ( diamond ) {
-
- formatDbFileName = db_path+"/"+db_name+".dmnd"
- formatDbFile = file(formatDbFileName)
- if ( formatDbFile.exists() && formatDbFile.size() > 0 ) {
-  formatdbDetect = "true"
- }
+ // program-specific parameters
+ db_name = file(params.blastDB_path).name
+ db_path = file(params.blastDB_path).parent
  
- if ( formatdbDetect == "false" ) {
+ // Handling Database formatting
+ formatdbDetect = "false"
  
-  process diamondFormat{
+ if ( diamond ) {
  
-   label 'diamond'
-  
-   output:
-   file "${db_name}_formatdb.dmnd" into formatdb
-  
-   """
-    diamond makedb --in ${db_path}/${db_name} --db "${db_name}_formatdb"
-   """
-  }
- 
- } else {
- 
-  formatdb = Channel.fromPath( params.blastDB_path )
-
- }
- 
-} else {
- 
- formatDbDir = file( db_path ) 
- filter =  ~/${db_name}.*.phr/
- def fcount = 0
- formatDbDir.list().eachFileMatch( filter ) { it ->
-  fcount = fcount + 1
- }
- if ( fcount > 0 ) {
+  formatDbFileName = db_path+"/"+db_name+".dmnd"
+  formatDbFile = file(formatDbFileName)
+  if ( formatDbFile.exists() && formatDbFile.size() > 0 ) {
    formatdbDetect = "true"
- }
-
-println( formatdbDetect ) 
- if ( formatdbDetect == "false" ) {
-
-  // println( "TUR" )
-
-  process blastFormat{
- 
-   label 'blast'
- 
-   output:
-   file "${db_name}.p*" into formatdb
-  
-   """
-    makeblastdb -dbtype prot -in ${db_path}/${db_name} -parse_seqids -out ${db_name}
-   """
   }
-
- } else {
-
-  // println( "HERE" )
-  formatdb = params.blastDB_path
- 
- }
-}
-
-
-if ( diamond == true ) {
-
- process diamond{
- 
-  label 'diamond'
   
-  input:
-  file seq from seq_file6
-  file formatdb_file from formatdb
+  if ( formatdbDetect == "false" ) {
+  
+   process diamondFormat{
+  
+    label 'diamond'
+   
+    output:
+    file "${db_name}_formatdb.dmnd" into formatdb
+   
+    """
+     diamond makedb --in ${db_path}/${db_name} --db "${db_name}_formatdb"
+    """
+   }
+  
+  }
+  
+ } else {
+  
+  formatDbDir = file( db_path ) 
+  filter =  ~/${db_name}.*.phr/
+  def fcount = 0
+  formatDbDir.list().eachFileMatch( filter ) { it ->
+   fcount = fcount + 1
+  }
+  if ( fcount > 0 ) {
+    formatdbDetect = "true"
+  }
  
-  output:
-  file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
+  println( formatdbDetect ) 
+  if ( formatdbDetect == "false" ) {
  
-  """
-   diamond blastp --db ${formatdb_file} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out "blastXml${seq}"
-  """
+   // println( "TUR" )
+ 
+   process blastFormat{
+  
+    label 'blast'
+  
+    output:
+    file "${db_name}.p*" into formatdb
+   
+    """
+     makeblastdb -dbtype prot -in ${db_path}/${db_name} -parse_seqids -out ${db_name}
+    """
+   }
+ 
+  }
+ }
+ 
+ if ( diamond == true ) {
+ 
+  process diamond{
+  
+   label 'diamond'
+   
+   input:
+   file seq from seq_file6
+   file formatdb_file from formatdb
+  
+   output:
+   file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
+  
+    if ( formatdbDetect == "false" ) {
+     command = "diamond blastp --db ${formatdb_file} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out blastXml${seq}"
+    } else {
+     command = "diamond blastp --db ${db_path}/${db_name} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out blastXml${seq}"
+    }
+    
+    command
+   
+  }
+ 
+ } else {
+ 
+  process blast{
+  
+   label 'blast'
+  
+   // publishDir "results", mode: 'copy'
+  
+   input:
+   file seq from seq_file6
+   file formatdb_file from formatdb
+ 
+  
+   output:
+   file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
+  
+  
+   if ( formatdbDetect == "false" ) {
+    command = "blastp -db ${formatdb_file} -query $seq -num_threads ${task.cpus} -evalue ${evalue} -out blastXml${seq} -outfmt 5"
+   } else {
+    command = "blastp -db ${db_path}/${db_name} -query $seq -num_threads ${task.cpus} -evalue ${evalue} -out blastXml${seq} -outfmt 5"
+   }
+  
+   command
+  }
+ 
  }
 
 } else {
 
- process blast{
+ blastInput=file(params.blastFile)
  
-  label 'blast'
+ process convertBlast{
  
   // publishDir "results", mode: 'copy'
  
   input:
-  file seq from seq_file6
-  file formatdb_file from formatdb
-
+  file blastFile from blastInput
  
   output:
-  file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
+  file("*.xml") into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
  
   """
-   blastp -db ${formatdb_file} -query $seq -num_threads ${task.cpus} -evalue ${evalue} -out "blastXml${seq}" -outfmt 5
+   hugeBlast2XML.pl -blast $blastFile -n 1000 -out blast.res
   """
+ 
  }
-
-}
-
-} else {
-
-blastInput=file(params.blastFile)
-
-process convertBlast{
-
- // publishDir "results", mode: 'copy'
-
- input:
- file blastFile from blastInput
-
- output:
- file("*.xml") into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
-
- """
-  hugeBlast2XML.pl -blast $blastFile -n 1000 -out blast.res
- """
-
-}
 }
 
 if (params.kolist != "" ||  params.kolist != null ){
