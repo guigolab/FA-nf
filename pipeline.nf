@@ -201,7 +201,7 @@ if (params.blastFile == "" ||  params.blastFile == null ){
   formatDbDir = file( db_path ) 
   filter =  ~/${db_name}.*.phr/
   def fcount = 0
-  formatDbDir.list().eachFileMatch( filter ) { it ->
+  formatDbDir.eachFileMatch( filter ) { it ->
    fcount = fcount + 1
   }
   if ( fcount > 0 ) {
