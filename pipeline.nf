@@ -194,18 +194,39 @@ if ( diamond ) {
    """
   }
  
+ } else {
+ 
+  formatdb = Channel.fromPath( params.blastDB_path )
+
  }
  
 } else {
- // TODO Need to detect if formatted with BLAST
- // formatDbFileName = db_path+"/"+db_name+".dmnd"
- // formatDbFile = file(formatDbFileName)
- // if ( formatDbFile.exists() && formatDbFile.size() > 0 ) {
- //  formatdbDetect = true
- // }
- // For now exists true
- formatdbDetect = true
- formatdb = Channel.fromPath( params.blastDB_path )
+
+ formatDbFileName = db_path+"/"+db_name+"*.phr"
+ formatDbFile = file(formatDbFileName)
+ if ( formatDbFile.exists() && formatDbFile.size() > 0 ) {
+   formatdbDetect = true
+ }
+ 
+ if ( formatdbDetect == false ) {
+
+  process blastFormat{
+ 
+   label 'blast'
+  
+   output:
+   file "${db_name}.p*" into formatdb
+  
+   """
+    makeblastdb -dbtype prot -in ${db_path}/${db_name} -parse_seqids -out ${db_name}
+   """
+  }
+
+ } else {
+
+  formatdb = Channel.fromPath( params.blastDB_path )
+  
+ }
 }
 
 
