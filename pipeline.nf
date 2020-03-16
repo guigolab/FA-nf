@@ -194,6 +194,8 @@ if (params.blastFile == "" ||  params.blastFile == null ){
     """
    }
   
+  } else {
+   formatdb = params.blastDB_path
   }
   
  } else {
@@ -225,6 +227,8 @@ if (params.blastFile == "" ||  params.blastFile == null ){
     """
    }
  
+  } else {
+   formatdb = params.blastDB_path
   }
  }
  
