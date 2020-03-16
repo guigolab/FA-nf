@@ -170,17 +170,17 @@ db_name = file(params.blastDB_path).name
 db_path = file(params.blastDB_path).parent
 
 // Handling Database formatting
-formatdbDetect = false
+formatdbDetect = "false"
 
 if ( diamond ) {
 
  formatDbFileName = db_path+"/"+db_name+".dmnd"
  formatDbFile = file(formatDbFileName)
  if ( formatDbFile.exists() && formatDbFile.size() > 0 ) {
-  formatdbDetect = true
+  formatdbDetect = "true"
  }
  
- if ( formatdbDetect == false ) {
+ if ( formatdbDetect == "false" ) {
  
   process diamondFormat{
  
@@ -203,16 +203,18 @@ if ( diamond ) {
 } else {
 
  formatDbFileName = db_path+"/"+db_name+"*.phr"
- formatDbFile = file(formatDbFileName)
- if ( formatDbFile.exists() && formatDbFile.size() > 0 ) {
-   formatdbDetect = true
+ formatDbFile = FileNameFinder().getFileNames( formatDbFileName )
+ // println( formatDbFile.size() )
+ if ( formatDbFile.size() > 0 ) {
+   formatdbDetect = "true"
  }
- 
- if ( formatdbDetect == false ) {
+
+println( formatdbDetect ) 
+ if ( formatdbDetect == "false" ) {
+
+  // println( "TUR" )
 
   process blastFormat{
- 
-   label 'blast'
   
    output:
    file "${db_name}.p*" into formatdb
@@ -224,8 +226,9 @@ if ( diamond ) {
 
  } else {
 
-  formatdb = Channel.fromPath( params.blastDB_path )
-  
+  // println( "HERE" )
+  formatdb = params.blastDB_path
+ 
  }
 }
 
