@@ -6,8 +6,8 @@
     * Venn Diagrams
 
 ---
+* Allow conversion from GenBank https://metacpan.org/pod/bp_genbank2gff3.pl
 * In reports, put select distincts again tables
-* Check why CDSearch why starts later
 * Allow reports from KEGG orthologs (number of potential orthologs from KEGG species)
 * blast_hit reconsider
 * Allow more flexibility for input parameters batch
