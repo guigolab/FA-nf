@@ -507,7 +507,7 @@ process 'definition_upload'{
 
  // publishDir "results", mode: 'copy'
  input:
- file "*.txt" from blastDef_results.collect()
+ file "def*" from blastDef_results.collect()
  file config from config4perl
 
  output:
@@ -518,7 +518,7 @@ process 'definition_upload'{
   command = checkMySQL( mysql, params.mysqllog )
 
   command += " \
-   cat *.txt > allDef; \
+   cat def* > allDef; \
    upload_go_definitions.pl -i allDef -conf \$config -mode def -param 'blast_def' > def_done \
   "
  
