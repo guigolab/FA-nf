@@ -114,7 +114,9 @@ log.info "General parameters"
 log.info "------------------"
 log.info "Protein sequence file        : ${params.proteinFile}"
 log.info "Annotation file              : ${params.gffFile}"
+if ( ${params.blastFile} != "" ) {
 log.info "BLAST results file           : ${params.blastFile}"
+}
 log.info "Species name                  : ${params.speciesName}"
 log.info "KEGG species                 : ${params.kegg_species}"
 if ( mysql ) {
@@ -156,49 +158,152 @@ if(params.oboFile == "" ||  params.oboFile == null ) {
 
 obofile=file(params.oboFile)
 
+// TODO: To change for different aligners
+diamond = false
+
+if(params.diamond=="TRUE"||params.diamond=="true") {
+ diamond = true
+}
 
 if (params.blastFile == "" ||  params.blastFile == null ){
 
-// program-specific parameters
-db_name = file(params.blastDB_path).name
-db_path = file(params.blastDB_path).parent
-
-process blast{
-
- label 'blast'
-
- // publishDir "results", mode: 'copy'
-
- input:
- file seq from seq_file6
-
- output:
- file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
-
- """
-  blastp -db ${db_path}/${db_name} -query $seq -num_threads 8 -evalue  0.00001 -out "blastXml${seq}" -outfmt 5
- """
-}
+ // program-specific parameters
+ db_name = file(params.blastDbPath).name
+ db_path = file(params.blastDbPath).parent
+ 
+ // Handling Database formatting
+ formatdbDetect = "false"
+ 
+ if ( diamond ) {
+ 
+  formatDbFileName = db_path+"/"+db_name+".dmnd"
+  formatDbFile = file(formatDbFileName)
+  if ( formatDbFile.exists() && formatDbFile.size() > 0 ) {
+   formatdbDetect = "true"
+  }
+  
+  if ( formatdbDetect == "false" ) {
+  
+   process diamondFormat{
+  
+    label 'diamond'
+   
+    output:
+    file "${db_name}_formatdb.dmnd" into formatdb
+   
+    """
+     diamond makedb --in ${db_path}/${db_name} --db "${db_name}_formatdb"
+    """
+   }
+  
+  } else {
+   formatdb = params.blastDbPath
+  }
+  
+ } else {
+  
+  formatDbDir = file( db_path ) 
+  filter =  ~/${db_name}.*.phr/
+  def fcount = 0
+  formatDbDir.eachFileMatch( filter ) { it ->
+   fcount = fcount + 1
+  }
+  if ( fcount > 0 ) {
+    formatdbDetect = "true"
+  }
+ 
+  println( formatdbDetect ) 
+  if ( formatdbDetect == "false" ) {
+ 
+   // println( "TUR" )
+ 
+   process blastFormat{
+  
+    label 'blast'
+  
+    output:
+    file "${db_name}.p*" into formatdb
+   
+    """
+     makeblastdb -dbtype prot -in ${db_path}/${db_name} -parse_seqids -out ${db_name}
+    """
+   }
+ 
+  } else {
+   formatdb = params.blastDbPath
+  }
+ }
+ 
+ if ( diamond == true ) {
+ 
+  process diamond{
+  
+   label 'diamond'
+   
+   input:
+   file seq from seq_file6
+   file formatdb_file from formatdb
+  
+   output:
+   file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
+ 
+   script:
+   if ( formatdbDetect == "false" ) {
+    command = "diamond blastp --db ${formatdb_file} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out blastXml${seq}"
+   } else {
+    command = "diamond blastp --db ${db_path}/${db_name} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out blastXml${seq}"
+   }
+   
+   command
+   
+  }
+ 
+ } else {
+ 
+  process blast{
+  
+   label 'blast'
+  
+   // publishDir "results", mode: 'copy'
+  
+   input:
+   file seq from seq_file6
+   file formatdb_file from formatdb
+ 
+   output:
+   file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
+  
+   script:
+   if ( formatdbDetect == "false" ) {
+    command = "blastp -db ${formatdb_file} -query $seq -num_threads ${task.cpus} -evalue ${evalue} -out blastXml${seq} -outfmt 5"
+   } else {
+    command = "blastp -db ${db_path}/${db_name} -query $seq -num_threads ${task.cpus} -evalue ${evalue} -out blastXml${seq} -outfmt 5"
+   }
+  
+   command
+  }
+ 
+ }
 
 } else {
 
-blastInput=file(params.blastFile)
-
-process convertBlast{
-
- // publishDir "results", mode: 'copy'
-
- input:
- file blastFile from blastInput
-
- output:
- file("*.xml") into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
-
- """
-  hugeBlast2XML.pl -blast $blastFile -n 1000 -out blast.res
- """
-
-}
+ blastInput=file(params.blastFile)
+ 
+ process convertBlast{
+ 
+  // publishDir "results", mode: 'copy'
+ 
+  input:
+  file blastFile from blastInput
+ 
+  output:
+  file("*.xml") into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
+ 
+  """
+   hugeBlast2XML.pl -blast $blastFile -n 1000 -out blast.res
+  """
+ 
+ }
 }
 
 if (params.kolist != "" ||  params.kolist != null ){
