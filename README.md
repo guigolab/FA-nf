@@ -51,6 +51,7 @@ More information can be found in the [Nextflow documentation](https://www.nextfl
 ## Pipeline steps
 
 * **blast**: it perfoms BLAST search against defined database from input files
+* **diamond**: the same as above but using DIAMOND ( ```diamond = "true"``` in config file )
 * **ipscn**: it performs InterProScan analyses from input files
 * **signalP**: it performs signalP analyses from input files
 * **targetP**: it performs targetP analyses from input files
@@ -69,6 +70,11 @@ More information can be found in the [Nextflow documentation](https://www.nextfl
 * **generateResultFiles**: it generates report files
 * **generateGFF3File**: if GFF provided as input, it provides a modified GFF with additional information
 
+### Formatted databases
+
+* For BLAST: ```blastDbPath = "/path/to/db"``` It looks for formatted database files (normally named db.p* for protein type based ones), otherwise it will try to format FASTA file with that name
+* For DIAMOND: ```blastDbPath = "/path/to/db"``` It looks for a single formatted database file (normally named db.dmnd), otherwise it will try to format the FASTA file with that name (gzip compressed files accepted)
+
 ### About blast_annotator
 
 Retrieval of GO terms from BLAST results can be performed either from [BLAST2GO](https://www.blast2go.com/) results or from other methods as far as a BLAST2GO-compatible output format is provided.
@@ -81,12 +87,10 @@ We recommend installing either [Docker](https://www.docker.com/) of [Singularity
 
 The software used all along this pipeline is encapsulated in, at least, 4 containers:
 
-Whenever possible, we try to provide necessary images in a public repository (e.g. Docker hub). However, for some software that includes privative components, we suggest to build the container image by yourself.
+As written down in ```nextflow.config``` file, whenever possible, we try to provide necessary images in a public repository (e.g. [Docker hub](https://hub.docker.com/) or quay.io from [Biocontainers](https://biocontainers.pro/)). However, for some software that includes privative components, we suggest to build the container image by yourself.
 
-* [NCBI Blast](https://hub.docker.com/r/ncbi/blast)
 * [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build this)
 * [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build this)
-* [Environment for annotation scripts](https://hub.docker.com/r/guigolab/fa-nf)
 
 ## How to build a container
 

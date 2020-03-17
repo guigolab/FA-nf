@@ -168,8 +168,8 @@ if(params.diamond=="TRUE"||params.diamond=="true") {
 if (params.blastFile == "" ||  params.blastFile == null ){
 
  // program-specific parameters
- db_name = file(params.blastDB_path).name
- db_path = file(params.blastDB_path).parent
+ db_name = file(params.blastDbPath).name
+ db_path = file(params.blastDbPath).parent
  
  // Handling Database formatting
  formatdbDetect = "false"
@@ -197,7 +197,7 @@ if (params.blastFile == "" ||  params.blastFile == null ){
    }
   
   } else {
-   formatdb = params.blastDB_path
+   formatdb = params.blastDbPath
   }
   
  } else {
@@ -230,7 +230,7 @@ if (params.blastFile == "" ||  params.blastFile == null ){
    }
  
   } else {
-   formatdb = params.blastDB_path
+   formatdb = params.blastDbPath
   }
  }
  
