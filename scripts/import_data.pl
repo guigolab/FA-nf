@@ -7,12 +7,12 @@ use warnings;
 import_data.pl
 
 =head1 SYNOPSIS
-	
+
   perl import_data.pl [-conf configuration file] [-l list_with_ids] [-u update] [-h help]
 
 Import data from fasta and gff files into main DB. This script could upload all data or by given list.
 In case when user wants to upload just some of the proteins he could specify their ids in separate file, one per line.
-Parameter update could have value 1 if user wants to update data or 0 if not. 
+Parameter update could have value 1 if user wants to update data or 0 if not.
 
 =head1 DESCRIPTION
 
@@ -20,7 +20,7 @@ Use this script to import data main DB database.
 
 Typical usage is as follows:
 
-  % perl import_data.pl -conf main_configuration.ini 
+  % perl import_data.pl -conf main_configuration.ini
 
 =head2 Options
 
@@ -59,9 +59,9 @@ my ( $annt_file, $show_help,$fasta_file, $list_file, $do_update, $comment, $o_an
     'help|h'        => \$show_help,
     'comm=s'=>\$comment,
     'conf=s'=>\$confFile,
-				'gff=s'=>\$o_annt_file,
-				'fasta=s'=>\$o_fasta_file,				
-	   )
+		'gff=s'=>\$o_annt_file,
+		'fasta=s'=>\$o_fasta_file,
+	  )
   or pod2usage(-verbose=>2);
 pod2usage(-verbose=>2) if $show_help;
 
@@ -70,7 +70,7 @@ die($usage) if (!$confFile);
 print "Starting to upload data..Configuration file is $confFile\n";
 #read configuration file
 my $cfg = new Config::Simple($confFile);
-#put config parameters into %config                                             
+#put config parameters into %config
 my %config = $cfg->vars();
 #my %conf =  %::conf;
 my $debug = $config{'debug'};
@@ -78,17 +78,18 @@ my $loglevel=$config{'loglevel'};
 my $debugSQL = $config{'debugSQL'};
 
 #check whether protein fa and annotation gff3 files exists
- $annt_file = $config{'gffFile'};
- $fasta_file = $config{'proteinFile'};
-	
-	# Override if specified explicitly
-	if ( defined $o_annt_file ) {
-		$annt_file = $o_annt_file;
-	}
-	
-	if ( defined $o_fasta_file ) {
-		$fasta_file = $o_fasta_file;
-	}
+$annt_file = $config{'gffFile'};
+$fasta_file = $config{'proteinFile'};
+
+# Override if specified explicitly
+if ( defined $o_annt_file ) {
+	$annt_file = $o_annt_file;
+}
+
+# Override fasta file. Useful in debugging
+if ( defined $o_fasta_file ) {
+	$fasta_file = $o_fasta_file;
+}
 
 if(!-e $fasta_file)
  {die "The protein fasta file does not exists! There is nothing to work with!\n";}
@@ -99,7 +100,7 @@ if(!-e $annt_file)
 if(($loglevel eq 'debug')||($loglevel eq 'info'))
  {print "DBname $config{'dbname'}\n"; }
 
-# Connect to the DB,depending on the engine 
+# Connect to the DB,depending on the engine
 if(! exists $config{'dbEngine'})
  {$config{'dbEngine'} = 'mysql';}
 my $dbh;
@@ -123,18 +124,18 @@ if(defined $list_file )
 #upload annotation data from gff file
 if(! defined $annt_file || $annt_file eq ''){print STDOUT "The annotation file was not specified, skipped.\n";}
 else
- { 
+ {
 if(($loglevel eq 'debug')||($loglevel eq 'info'))
    {print STDOUT "Upload annotation data from $annt_file\n";}
 
    #my $checkResult = &checkGFFData($annt_file);
    my $checkResult = 1;
    if ($checkResult==1)
-   { 
+   {
 	&uploadGFFData($annt_file, $dbh,\%IdsList, $do_update, $config{'dbEngine'}, $loglevel);
    }
   else
-  { print STDOUT "Due to the errors in GFF file, data can not be uploaded. Correct the file first!\n"; 
+  { print STDOUT "Due to the errors in GFF file, data can not be uploaded. Correct the file first!\n";
     die;}
  }
 

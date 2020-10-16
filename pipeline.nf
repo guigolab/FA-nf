@@ -137,9 +137,10 @@ seqWebData= Channel
 
 iscan_properties = file("/usr/local/interproscan/interproscan.properties")
 
-if(params.debug=="TRUE"||params.debug=="true") {
+if ( params.debug=="TRUE"||params.debug=="true" ) {
  println("Debugging.. only the first 2 chunks will be processed")
- (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6, seq_file7) = seqData.take(2).into(7)
+ // Diferent parts for different processes. TODO: Change numbers for processes
+ (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6, seq_file7, seq_file8) = seqData.take(2).into(7)
  (web_seq_file1, web_seq_file2) = seqWebData.take(2).into(2)
 
 }
@@ -473,6 +474,7 @@ process initDB {
  input:
   file config_file
   file gff_file
+  file seq from seq_file8
 
  output:
   file 'config' into config4perl
@@ -502,6 +504,11 @@ process initDB {
      command += " -gff ${gff_file}"
     }
    }
+ }
+
+ if ( params.debug=="TRUE"||params.debug=="true" ) {
+   // If in debug mode, we restrict de seq entries we process
+   command += " -fasta ${seq}"
  }
 
  command
