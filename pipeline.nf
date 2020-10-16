@@ -8,7 +8,7 @@
  * Copyright (c) 2017, Emilio Palumbo
  *
  * Copyright (c) 2018-2020, Toni Hermoso Pulido
- * 
+ *
  * Functional Annotation Pipeline for protein annotation from non-model organisms
  * from Genome Annotation Team in Catalonia (GATC) implemented in Nextflow
  *
@@ -65,7 +65,7 @@ evalue = 0.00001 // Default evalue for BLAST
 if(params.evalue != "" ||  params.evalue != null ) {
 
  evalue = params.evalue
- 
+
 }
 
 dbFile = false
@@ -92,7 +92,7 @@ dbhost = null
 // Getting contents of file
 if ( mysql ) {
  dbhost = "127.0.0.1" // Default value. Localhost
- 
+
  if ( new File(  params.mysqllog+"/DBHOST" ).exists() ) {
   dbhost = new File(  params.mysqllog+"/DBHOST" ).text.trim()
  }
@@ -165,44 +165,50 @@ if(params.diamond=="TRUE"||params.diamond=="true") {
  diamond = true
 }
 
+// BlastAnnotMode
+blastAnnotMode = "common"
+if( params.blastAnnotMode != "" && params.blastAnnotMode != null ) {
+  blastAnnotMode = params.blastAnnotMode
+}
+
 if (params.blastFile == "" ||  params.blastFile == null ){
 
  // program-specific parameters
  db_name = file(params.blastDbPath).name
  db_path = file(params.blastDbPath).parent
- 
+
  // Handling Database formatting
  formatdbDetect = "false"
- 
+
  if ( diamond ) {
- 
+
   formatDbFileName = db_path+"/"+db_name+".dmnd"
   formatDbFile = file(formatDbFileName)
   if ( formatDbFile.exists() && formatDbFile.size() > 0 ) {
    formatdbDetect = "true"
   }
-  
+
   if ( formatdbDetect == "false" ) {
-  
+
    process diamondFormat{
-  
+
     label 'diamond'
-   
+
     output:
     file "${db_name}_formatdb.dmnd" into formatdb
-   
+
     """
      diamond makedb --in ${db_path}/${db_name} --db "${db_name}_formatdb"
     """
    }
-  
+
   } else {
    formatdb = params.blastDbPath
   }
-  
+
  } else {
-  
-  formatDbDir = file( db_path ) 
+
+  formatDbDir = file( db_path )
   filter =  ~/${db_name}.*.phr/
   def fcount = 0
   formatDbDir.eachFileMatch( filter ) { it ->
@@ -211,98 +217,98 @@ if (params.blastFile == "" ||  params.blastFile == null ){
   if ( fcount > 0 ) {
     formatdbDetect = "true"
   }
- 
-  println( formatdbDetect ) 
+
+  println( formatdbDetect )
   if ( formatdbDetect == "false" ) {
- 
+
    // println( "TUR" )
- 
+
    process blastFormat{
-  
+
     label 'blast'
-  
+
     output:
     file "${db_name}.p*" into formatdb
-   
+
     """
      makeblastdb -dbtype prot -in ${db_path}/${db_name} -parse_seqids -out ${db_name}
     """
    }
- 
+
   } else {
    formatdb = params.blastDbPath
   }
  }
- 
+
  if ( diamond == true ) {
- 
+
   process diamond{
-  
+
    label 'diamond'
-   
+
    input:
    file seq from seq_file6
    file formatdb_file from formatdb
-  
+
    output:
    file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
- 
+
    script:
    if ( formatdbDetect == "false" ) {
     command = "diamond blastp --db ${formatdb_file} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out blastXml${seq}"
    } else {
     command = "diamond blastp --db ${db_path}/${db_name} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out blastXml${seq}"
    }
-   
+
    command
-   
+
   }
- 
+
  } else {
- 
+
   process blast{
-  
+
    label 'blast'
-  
+
    // publishDir "results", mode: 'copy'
-  
+
    input:
    file seq from seq_file6
    file formatdb_file from formatdb
- 
+
    output:
    file "blastXml${seq}" into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
-  
+
    script:
    if ( formatdbDetect == "false" ) {
     command = "blastp -db ${formatdb_file} -query $seq -num_threads ${task.cpus} -evalue ${evalue} -out blastXml${seq} -outfmt 5"
    } else {
     command = "blastp -db ${db_path}/${db_name} -query $seq -num_threads ${task.cpus} -evalue ${evalue} -out blastXml${seq} -outfmt 5"
    }
-  
+
    command
   }
- 
+
  }
 
 } else {
 
  blastInput=file(params.blastFile)
- 
+
  process convertBlast{
- 
+
   // publishDir "results", mode: 'copy'
- 
+
   input:
   file blastFile from blastInput
- 
+
   output:
   file("*.xml") into (blastXmlResults1, blastXmlResults2, blastXmlResults3)
- 
+
   """
    hugeBlast2XML.pl -blast $blastFile -n 1000 -out blast.res
   """
- 
+
  }
 }
 
@@ -311,13 +317,13 @@ if (params.kolist != "" ||  params.kolist != null ){
 process kofamscan{
 
  label 'kofamscan'
- 
+
  input:
  file seq from seq_file7
 
  output:
  file "koala_${seq}" into koalaResults
- 
+
  """
   exec_annotation --cpu ${task.cpus} -p ${params.koprofiles} -k ${params.kolist} -o koala_${seq} $seq
  """
@@ -348,13 +354,13 @@ keggfile = koala_parsed
 
 
  if(params.keggFile == "" ||  params.keggFile == null ) {
- 
+
   println "Please run KEGG KO group annotation on the web server http://www.genome.jp/tools/kaas/"
-  
+
  }
 
  keggfile=file(params.keggFile)
- 
+
 }
 
 if(params.gogourl != ""){
@@ -362,7 +368,7 @@ if(params.gogourl != ""){
 process blast_annotator {
 
  label 'blastannotator'
- 
+
  input:
  file blastXml from blastXmlResults2.flatMap()
 
@@ -370,7 +376,7 @@ process blast_annotator {
  file "blastAnnot" into blast_annotator_results
 
 """
- blast-annotator.pl -in $blastXml -out blastAnnot --url  $params.gogourl -q --format blastxml
+ blast-annotator.pl -in $blastXml -out blastAnnot --url  $params.gogourl -t $blastAnnotMode -q --format blastxml
 """
 }
 
@@ -380,7 +386,7 @@ process blastDef {
 
  // publishDir "results", mode: 'copy'
  tag "${blastXml}"
- 
+
  input:
  file blastXml from blastXmlResults3.flatMap()
 
@@ -397,22 +403,22 @@ process blastDef {
 if ( gffclean ) {
 
  process cleanGFF {
- 
+
   label 'gffcheck'
-  
+
   input:
    file config_file
-  
+
   output:
    file "annot.gff" into gff_file
-    
+
    """
     # get annot file
     export escaped=\$(echo '$baseDir')
     export basedirvar=\$(echo '\\\$\\{baseDir\\}')
     agat_sp_gxf_to_gff3.pl --gff `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` -o annot.gff
    """
- 
+
  }
 
 
@@ -421,13 +427,13 @@ if ( gffclean ) {
  process copyGFF {
 
   label 'gffcheck'
-  
+
   input:
    file config_file
-  
+
   output:
    file "annot.gff" into gff_file
-    
+
    """
     # get annot file
     export escaped=\$(echo '$baseDir')
@@ -441,22 +447,22 @@ if ( gffclean ) {
 if ( gffstats ) {
 
  process statsGFF {
- 
+
   publishDir params.resultPath, mode: 'copy'
-  
+
   label 'gffcheck'
-  
+
   input:
    file gff_file
-  
+
   output:
    file "*.txt" into gff_stats
-    
+
    """
     # Generate Stats
     agat_sp_statistics.pl --gff $gff_file > ${gff_file}.stats.txt
    """
- 
+
  }
 
 
@@ -477,13 +483,13 @@ process initDB {
  command += "export escaped=\$(echo '$baseDir')\n"
  command += "export basedirvar=\$(echo '\\\$\\{baseDir\\}')\n"
  command += "perl -lae '\$_=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print;' configt > config\n"
- 
- 
+
+
  if ( mysql ) {
   // Add dbhost to config
   command += "echo \"\$(cat config)\n dbhost:${dbhost}\" > configIn ;\n"
   command += "fa_main.v1.pl init -conf configIn"
-  
+
    if ( gffclean ) {
     command += " -gff ${gff_file}"
    }
@@ -491,13 +497,13 @@ process initDB {
 
    if (!exists) {
      command += "fa_main.v1.pl init -conf config"
-     
+
     if ( gffclean ) {
      command += " -gff ${gff_file}"
     }
    }
  }
- 
+
  command
 }
 
@@ -514,14 +520,14 @@ process 'definition_upload'{
  file 'def_done' into definition_passed
 
  script:
-  
+
   command = checkMySQL( mysql, params.mysqllog )
 
   command += " \
    cat def* > allDef; \
    upload_go_definitions.pl -i allDef -conf \$config -mode def -param 'blast_def' > def_done \
   "
- 
+
   command
 }
 
@@ -625,14 +631,14 @@ process 'signalP_upload'{
 
 
  script:
- 
+
   command = checkMySQL( mysql, params.mysqllog )
- 
+
   command += " \
    cat out_signalp* > allSignal ; \
    load_CBSpredictions.signalP.pl -i allSignal -conf \$config -type s > upload_signalp ; \
   "
-  
+
   command
 }
 
@@ -650,14 +656,14 @@ process 'targetP_upload'{
  file("upload_targetp") into upload_targetp
 
  script:
- 
+
   command = checkMySQL( mysql, params.mysqllog )
 
   command += " \
    cat out_targetp* > allTarget ; \
    load_CBSpredictions.signalP.pl -i allTarget -conf \$config -type t > upload_targetp ; \
   "
-  
+
   command
 }
 
@@ -673,8 +679,8 @@ process 'interpro_upload'{
 
  output:
  file("upload_interpro") into upload_interpro
- 
- 
+
+
  script:
 
   command = checkMySQL( mysql, params.mysqllog )
@@ -683,7 +689,7 @@ process 'interpro_upload'{
    cat out_interpro* > allInterpro ; \
    run_interpro.pl -mode upload -i allInterpro -conf \$config > upload_interpro ; \
   "
-  
+
   command
 }
 
@@ -699,16 +705,16 @@ process 'CDsearch_hit_upload'{
 
  output:
  file("upload_hit") into upload_hit
- 
+
  script:
- 
+
   command = checkMySQL( mysql, params.mysqllog )
 
   command += " \
    cat out_hit* > allCDsearchHit ; \
    upload_CDsearch.pl -i allCDsearchHit -type h -conf \$config > upload_hit ; \
   "
-  
+
   command
 }
 
@@ -725,14 +731,14 @@ process 'CDsearch_feat_upload'{
  file("upload_feat") into upload_feat
 
  script:
- 
+
   command = checkMySQL( mysql, params.mysqllog )
-  
+
   command += " \
    cat out_feat* > allCDsearchFeat ; \
    upload_CDsearch.pl -i allCDsearchFeat -type f -conf \$config > upload_feat ; \
   "
-  
+
   command
 }
 
@@ -749,15 +755,15 @@ process 'blast_annotator_upload'{
   file("upload_blast") into upload_blast
 
  script:
- 
+
   command = checkMySQL( mysql, params.mysqllog )
- 
+
   command += " \
    cat blastAnnot* > allBlast ; \
    awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file ; \
    upload_go_definitions.pl -i two_column_file -conf \$config -mode go -param 'blast_annotator' > upload_blast ; \
   "
-  
+
   command
 }
 
@@ -777,13 +783,13 @@ process 'kegg_upload'{
 
 
  script:
- 
+
   command = checkMySQL( mysql, params.mysqllog )
-  
+
   command += " \
    load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf \$config > done 2>err; \
   "
-  
+
   command
 }
 
@@ -794,13 +800,13 @@ process 'generateResultFiles'{
   file obofile from obofile
 
  script:
- 
+
   command = checkMySQL( mysql, params.mysqllog )
-  
+
   command += " \
    get_results.pl -conf \$config -obo $obofile ; \
   "
-  
+
   command
 }
 
@@ -813,13 +819,13 @@ process 'generateGFF3File'{
 
 
  script:
- 
+
   command = checkMySQL( mysql, params.mysqllog )
-  
+
   command += " \
    get_gff3.pl -conf \$config ; \
   "
-  
+
   command
 }
 
@@ -859,9 +865,9 @@ def checkMySQL( mysql, mysqllog )  {
 workflow.onComplete {
 
  println ( workflow.success ? "\nDone! Check results in --> $params.resultPath\n" : "Oops .. something went wrong" )
- 
+
  if ( mysql ) {
-  
+
    def procfile = new File( params.mysqllog+"/PROCESS" )
    procfile.delete()
  }
@@ -871,13 +877,13 @@ workflow.onComplete {
 workflow.onError {
 
  println( "Something went wrong" )
- 
+
  if ( mysql ) {
-  
+
    def procfile = new File( params.mysqllog+"/PROCESS" )
    procfile.delete()
  }
- 
+
 }
 
 signalP_result2
