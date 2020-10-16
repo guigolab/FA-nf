@@ -140,13 +140,13 @@ iscan_properties = file("/usr/local/interproscan/interproscan.properties")
 if ( params.debug=="TRUE"||params.debug=="true" ) {
  println("Debugging.. only the first 2 chunks will be processed")
  // Diferent parts for different processes. TODO: Change numbers for processes
- (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6, seq_file7, seq_file8) = seqData.take(2).into(7)
+ (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6, seq_file7, seq_file8) = seqData.take(2).into(8)
  (web_seq_file1, web_seq_file2) = seqWebData.take(2).into(2)
 
 }
 else {
  println("Process entire dataset")
-(seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6, seq_file7) = seqData.into(7)
+(seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6, seq_file7, seq_file8) = seqData.into(8)
 (web_seq_file1, web_seq_file2) = seqWebData.into(2)
 
 }
