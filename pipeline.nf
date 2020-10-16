@@ -182,7 +182,7 @@ if (params.blastFile == "" ||  params.blastFile == null ){
 
  if ( diamond ) {
 
-  formatDbFileName = db_path+"/"+db_name+".dmnd"
+  formatDbFileName = params.blastDbPath + ".dmnd"
   formatDbFile = file(formatDbFileName)
   if ( formatDbFile.exists() && formatDbFile.size() > 0 ) {
    formatdbDetect = "true"
