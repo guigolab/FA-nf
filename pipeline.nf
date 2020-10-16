@@ -786,7 +786,7 @@ process 'kegg_upload'{
  file("upload_blast") from upload_blast
 
  output:
- file('done') into last_step
+ file('done') into (last_step1, last_step2)
 
 
  script:
@@ -803,7 +803,7 @@ process 'kegg_upload'{
 process 'generateResultFiles'{
  input:
   file config from config4perl9
-  file all_done from last_step
+  file all_done from last_step1
   file obofile from obofile
 
  script:
@@ -822,7 +822,7 @@ if ( annotation != null && annotation != "" ){
 process 'generateGFF3File'{
  input:
   file config from config4perl10
-  file all_done from last_step
+  file all_done from last_step2
 
 
  script:
