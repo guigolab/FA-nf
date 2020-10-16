@@ -477,7 +477,7 @@ process initDB {
   file seq from seq_file8
 
  output:
-  file 'config' into config4perl
+  file 'config' into (config4perl1, config4perl2, config4perl3, config4perl4, config4perl5, config4perl6, config4perl7, config4perl8, config4perl9, config4perl10)
 
  script:
  command = "mkdir -p $params.resultPath\n"
@@ -521,7 +521,7 @@ process 'definition_upload'{
  // publishDir "results", mode: 'copy'
  input:
  file "def*" from blastDef_results.collect()
- file config from config4perl
+ file config from config4perl1
 
  output:
  file 'def_done' into definition_passed
@@ -630,7 +630,7 @@ process 'signalP_upload'{
 
  input:
  file "out_signalp*" from signalP_result1.collect()
- file config from config4perl
+ file config from config4perl2
  file def_done from definition_passed
 
  output:
@@ -656,7 +656,7 @@ process 'targetP_upload'{
 
  input:
  file "out_targetp*" from targetP_result1.collect()
- file config from config4perl
+ file config from config4perl3
  file upload_signalp from upload_signalp
 
  output:
@@ -681,7 +681,7 @@ process 'interpro_upload'{
 
  input:
  file "out_interpro*" from ipscn_result1.collect()
- file config from config4perl
+ file config from config4perl4
  file upload_targetp from upload_targetp
 
  output:
@@ -707,7 +707,7 @@ process 'CDsearch_hit_upload'{
 
  input:
  file "out_hit*" from cdSearch_hit_result.collect()
- file config from config4perl
+ file config from config4perl5
  file upload_interpro from upload_interpro
 
  output:
@@ -731,7 +731,7 @@ process 'CDsearch_feat_upload'{
 
  input:
  file "out_feat*" from cdSearch_feat_result.collect()
- file config from config4perl
+ file config from config4perl6
  file upload_hit from upload_hit
 
  output:
@@ -755,7 +755,7 @@ process 'blast_annotator_upload'{
 
  input:
   file "blastAnnot*" from blast_annotator_results.collect()
-  file config from config4perl
+  file config from config4perl7
   file upload_feat from upload_feat
 
   output:
@@ -782,7 +782,7 @@ process 'kegg_upload'{
 
  input:
  file keggfile from keggfile
- file config from config4perl
+ file config from config4perl8
  file("upload_blast") from upload_blast
 
  output:
@@ -802,7 +802,7 @@ process 'kegg_upload'{
 
 process 'generateResultFiles'{
  input:
-  file config from config4perl
+  file config from config4perl9
   file all_done from last_step
   file obofile from obofile
 
@@ -821,7 +821,7 @@ if ( annotation != null && annotation != "" ){
 
 process 'generateGFF3File'{
  input:
-  file config from config4perl
+  file config from config4perl10
   file all_done from last_step
 
 
