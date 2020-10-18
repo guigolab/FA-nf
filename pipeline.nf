@@ -157,7 +157,7 @@ else {
  (web_seq_file1, web_seq_file2) = seqWebData.into(2)
 
  // Anything for keeping. This is only kept for coherence
- (seq_test) = seqData.take(-1).into(1)
+ (seq_test) = seqData.take(1).into(1)
 
 }
 
