@@ -262,7 +262,7 @@ sub processGOGO {
 
       if ( $type && $type ne "" ) {
 
-        $finalurl .= $type;
+        $finalurl .= "/".$type;
       }
 
       my $json = "";
