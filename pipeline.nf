@@ -156,8 +156,11 @@ else {
  (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6, seq_file7) = seqData.into(7)
  (web_seq_file1, web_seq_file2) = seqWebData.into(2)
 
+ seqTestData = Channel
+  .from(protein)
+
  // Anything for keeping. This is only kept for coherence
- (seq_test) = seqData.take(1).into(1)
+ (seq_test) = seqTestData.into(1)
 
 }
 
