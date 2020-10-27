@@ -37,6 +37,11 @@ params.chunkIPSSize = null
 params.chunkBlastSize = null
 params.chunkKoalaSize = null
 params.chunkWebSize = null
+params.evalue = null
+params.dbEngine = "mysql"
+params.gffclean = false
+params.gffstats = false
+params.diamond = null
 
 //print usage
 if ( params.help ) {
@@ -54,7 +59,6 @@ if ( params.help ) {
   exit 1
 }
 
-
 /*
 * Parse the input parameters
 */
@@ -67,9 +71,7 @@ config_file = file(params.config)
 evalue = 0.00001 // Default evalue for BLAST
 
 if ( params.evalue != "" ||  params.evalue != null ) {
-
  evalue = params.evalue
-
 }
 
 dbFile = false
@@ -82,11 +84,11 @@ if( params.dbEngine.toLowerCase()=="mysql" ) {
  mysql = true
 }
 
-if ( params.gffclean != null && ( params.gffclean=="TRUE" || params.gffclean=="true" ) ) {
+if ( params.gffclean && ( params.gffclean=="TRUE" || params.gffclean=="true" ) ) {
  gffclean = true
 }
 
-if ( params.gffstats != null && ( params.gffstats=="TRUE" || params.gffstats=="true" ) ) {
+if ( params.gffstats && ( params.gffstats=="TRUE" || params.gffstats=="true" ) ) {
  gffstats = true
 }
 
@@ -118,11 +120,14 @@ log.info "General parameters"
 log.info "------------------"
 log.info "Protein sequence file        : ${params.proteinFile}"
 log.info "Annotation file              : ${params.gffFile}"
+
 if ( params.blastFile != "" ) {
   log.info "BLAST results file           : ${params.blastFile}"
 }
+
 log.info "Species name                  : ${params.speciesName}"
 log.info "KEGG species                 : ${params.kegg_species}"
+
 if ( mysql ) {
   log.info "FA database 		       : ${params.dbname}"
 } else {
