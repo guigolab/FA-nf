@@ -1,4 +1,3 @@
-* In debug, avoid some processes process all (initDB)
 * Split KEGG retrieval and upload
 * Include some testing and CI
 * Add PANNZER in analysis

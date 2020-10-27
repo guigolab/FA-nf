@@ -33,9 +33,13 @@
 // default parameters
 params.help = false
 params.debug="false"
+params.chunkIPSSize = null
+params.chunkBlastSize = null
+params.chunkKoalaSize = null
+params.chunkWebSize = null
 
 //print usage
-if (params.help) {
+if ( params.help ) {
   log.info ''
   log.info 'Functional annotation pipeline'
   log.info '----------------------------------------------------'
@@ -62,7 +66,7 @@ config_file = file(params.config)
 
 evalue = 0.00001 // Default evalue for BLAST
 
-if(params.evalue != "" ||  params.evalue != null ) {
+if ( params.evalue != "" ||  params.evalue != null ) {
 
  evalue = params.evalue
 
@@ -74,7 +78,7 @@ boolean mysql = false
 gffclean = false
 gffstats = false
 
-if(params.dbEngine.toLowerCase()=="mysql") {
+if( params.dbEngine.toLowerCase()=="mysql" ) {
  mysql = true
 }
 
@@ -115,32 +119,70 @@ log.info "------------------"
 log.info "Protein sequence file        : ${params.proteinFile}"
 log.info "Annotation file              : ${params.gffFile}"
 if ( params.blastFile != "" ) {
-log.info "BLAST results file           : ${params.blastFile}"
+  log.info "BLAST results file           : ${params.blastFile}"
 }
 log.info "Species name                  : ${params.speciesName}"
 log.info "KEGG species                 : ${params.kegg_species}"
 if ( mysql ) {
-log.info "FA database 		       : ${params.dbname}"
+  log.info "FA database 		       : ${params.dbname}"
 } else {
-log.info "FA database 		       : $dbFileName"
+  log.info "FA database 		       : $dbFileName"
 }
 
 // split protein fasta file into chunks and then execute annotation for each chunk
 // chanels for: interpro, blast, signalP, targetP, cdsearch_hit, cdsearch_features
+
+chunkSize = params.chunkSize
+chunkBlastSize = chunkSize
+chunkIPSSize = chunkSize
+chunkKoalaSize = chunkSize
+chunkWebSize = chunkSize
+
+if ( params.chunkBlastSize ) {
+  chunkBlastSize = params.chunkBlastSize
+}
+
+if ( params.chunkIPSSize ) {
+  chunkIPSSize = params.chunkIPSSize
+}
+
+if ( params.chunkKoalaSize ) {
+  chunkKoalaSize = params.chunkKoalaSize
+}
+
+if ( params.chunkWebSize ) {
+  chunkWebSize = params.chunkWebSize
+}
+
 seqData = Channel
  .from(protein)
- .splitFasta(by: params.chunkSize)
+ .splitFasta( by: chunkSize )
+
+ seqBlastData = Channel
+  .from(protein)
+  .splitFasta( by: chunkBlastSize )
+
+seqKoalaData = Channel
+ .from(protein)
+ .splitFasta( by: chunkKoalaSize )
+
+ seqIPSData = Channel
+  .from(protein)
+  .splitFasta( by: chunkIPSSize )
 
 seqWebData = Channel
  .from(protein)
- .splitFasta(by: params.chunkWebSize)
+ .splitFasta( by: chunkWebSize )
 
 iscan_properties = file("/usr/local/interproscan/interproscan.properties")
 
 if ( params.debug == "TRUE" || params.debug =="true" ) {
  println("Debugging.. only the first 2 chunks will be processed")
  // Diferent parts for different processes. TODO: Change numbers for processes
- (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6, seq_file7) = seqData.take(2).into(7)
+ (seq_file1, seq_file2) = seqData.take(2).into(2)
+ (seq_file_blast) = seqBlastData.take(2).into(1)
+ (seq_file_koala) = seqKoalaData.take(2).into(1)
+ (seq_file_ipscan) = seqIPSData.take(2).into(1)
  (web_seq_file1, web_seq_file2) = seqWebData.take(2).into(2)
 
  testNum = ( params.chunkSize.toInteger() * 2 )
@@ -153,7 +195,10 @@ if ( params.debug == "TRUE" || params.debug =="true" ) {
 }
 else {
  println("Process entire dataset")
- (seq_file1, seq_file2, seq_file3, seq_file4, seq_file5, seq_file6, seq_file7) = seqData.into(7)
+ (seq_file1, seq_file2) = seqData.into(2)
+ (seq_file_blast) = seqBlastData.into(1)
+ (seq_file_koala) = seqKoalaData.into(1)
+ (seq_file_ipscan) = seqIPSData.into(1)
  (web_seq_file1, web_seq_file2) = seqWebData.into(2)
 
  seqTestData = Channel
@@ -261,7 +306,7 @@ if (params.blastFile == "" ||  params.blastFile == null ){
    label 'diamond'
 
    input:
-   file seq from seq_file6
+   file seq from seq_file_blast
    file formatdb_file from formatdb
 
    output:
@@ -287,7 +332,7 @@ if (params.blastFile == "" ||  params.blastFile == null ){
    // publishDir "results", mode: 'copy'
 
    input:
-   file seq from seq_file6
+   file seq from seq_file_blast
    file formatdb_file from formatdb
 
    output:
@@ -333,7 +378,7 @@ process kofamscan{
  label 'kofamscan'
 
  input:
- file seq from seq_file7
+ file seq from seq_file_koala
 
  output:
  file "koala_${seq}" into koalaResults
@@ -556,7 +601,7 @@ process ipscn {
     label 'ipscan'
 
     input:
-    file seq from seq_file1
+    file seq from seq_file_ipscan
     file ("interproscan.properties") from file( iscan_properties )
 
     output:
@@ -608,7 +653,7 @@ process 'signalP' {
     label 'sigtarp'
 
     input:
-    file seq from seq_file4
+    file seq from seq_file1
 
     output:
     file("out_signalp_${seq}") into (signalP_result1, signalP_result2)
@@ -623,7 +668,7 @@ process 'targetP' {
     label 'sigtarp'
 
     input:
-    file seq from seq_file5
+    file seq from seq_file2
 
     output:
     file("out_targetp_${seq}") into (targetP_result1, targetP_result2)
