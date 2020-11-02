@@ -54,11 +54,12 @@ my $confFile = 'main_configuration.ini';
 
 
 my $USAGE = "perl load_kegg_KAAS.pl [-i input]  [-rel Kegg release] [-h help] [-conf configuration file] \n";
-my ($do_update, $show_help, $input, $kegg_release);
+my ($do_update, $show_help, $input, $directory, $kegg_release);
 
 &GetOptions(
 			'update|u=s'		=> \$do_update,
       'input|i=s'     => \$input,
+			'dir|d=s'				=> \$directory,
       'rel|r=s'       => \$kegg_release,
       'conf=s'				=>\$confFile,
 			'help|h'        => \$show_help
@@ -133,19 +134,47 @@ if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {print STDOUT "Number of uni
 #print Dumper( \%keggs );
 #print Dumper( \%organisms );
 
-&uploadKeggInformation( $dbh, \%keggs,\%organisms,$config{'dbEngine'} );
+my $pre_upload_kegg = 0;
 
+if ( $directory ) {
+	$pre_upload_kegg = &preUploadKeggInformation( $dbh, $directory, $config{'dbEngine'} );
+}
+
+&uploadKeggInformation( $dbh, \%keggs, \%organisms, $config{'dbEngine'}, $pre_upload_kegg );
+
+sub preUploadKeggInformation {
+
+	my ($dbh, $directory, $dbEngine) = @_;
+
+	my $pre_upload_kegg = 0;
+
+	opendir(my $dh, $directory) || die "Can't open $directory: $!";
+	my @files = grep { /\.txt/ && -f "$directory/$_" } readdir($dh);
+	closedir $dh;
+
+	foreach my $file (@files) {
+		# Process Downloaded KEGG files and import into DB
+	}
+
+	return $pre_upload_kegg;
+
+}
 
 sub uploadKeggInformation {
- my($dbh, $keggData,$codesOrg,$dbEngine)=@_;
+ my($dbh, $keggData, $codesOrg, $dbEngine, $pre_upload_kegg)=@_;
 
  my($sqlSelect, $sqlInsert,$sqlUpdate);
  my %protDefinitionData=();
 
  foreach my $kegg_id(keys %{$keggData}) {
   #get KO information from server
-  my $hash = parse_kegg_record($kegg_id);
-#  print Dumper($hash)."\n"; die;
+	my $hash;
+	if ( $pre_upload_kegg > 0 ) {
+		$hash = retrieve_kegg_record($kegg_id);
+	} else {
+		$hash = parse_kegg_record($kegg_id);
+	}
+	#  print Dumper($hash)."\n"; die;
 
  	my @proteinList = @{$keggData->{$kegg_id}};
   my $numberProteinsInGroup=scalar @proteinList;
@@ -346,7 +375,18 @@ sub parseKEGGDBLInks
  return $retGO;
 }
 
-# TODO adapt for multiple REST
+# subroutine to retrieve KEGG record from DB
+sub retrieve_kegg_record {
+
+	my $kegg_id=shift;
+	my %returnData = {};
+
+	my $sqlSelect = "SELECT * from ... where kegg_id = $kegg_id";
+	my $result =$dbh->select_from_table($sqlSelect);
+
+	return \%returnData;
+}
+
 # subroutine to parse KEGG record and put its elements into a hash
 sub parse_kegg_record {
     my $kegg_id=shift;
