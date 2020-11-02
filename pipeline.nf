@@ -837,7 +837,27 @@ process 'blast_annotator_upload'{
   command
 }
 
-/** Last step **/
+process 'kegg_download'{
+
+ maxForks 1
+
+ input:
+ file keggfile from keggfile
+ file config from config4perl8
+ file("upload_blast") from upload_blast
+
+ output:
+ file("down_kegg", isDirectory: true) into (down_kegg)
+
+
+ script:
+
+  command += " \
+   download_kegg_KAAS.pl -input $keggfile -conf $config > done 2>err; \
+  "
+
+  command
+}
 
 process 'kegg_upload'{
 
@@ -847,6 +867,7 @@ process 'kegg_upload'{
  file keggfile from keggfile
  file config from config4perl8
  file("upload_blast") from upload_blast
+ file("down_kegg", isDirectory: true) from down_kegg
 
  output:
  file('done') into (last_step1, last_step2)
@@ -857,7 +878,7 @@ process 'kegg_upload'{
   command = checkMySQL( mysql, params.mysqllog )
 
   command += " \
-   load_kegg_KAAS.pl -input $keggfile -rel $params.kegg_release -conf \$config > done 2>err; \
+   load_kegg_KAAS.pl -input $keggfile -dir down_kegg -rel $params.kegg_release -conf \$config > done 2>err; \
   "
 
   command
