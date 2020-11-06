@@ -540,7 +540,7 @@ process initDB {
   file seq from seq_test
 
  output:
-  file 'config' into (config4perl1, config4perl2, config4perl3, config4perl4, config4perl5, config4perl6, config4perl7, config4perl8, config4perl9, config4perl10)
+  file 'config' into (config4perl1, config4perl2, config4perl3, config4perl4, config4perl5, config4perl6, config4perl7, config4perl8, config4perl9, config4perl10, config4perl11)
 
  script:
  command = "mkdir -p $params.resultPath\n"
@@ -847,7 +847,7 @@ process 'kegg_download'{
  file("upload_blast") from upload_blast
 
  output:
- file("down_kegg", isDirectory: true) into (down_kegg)
+ file("down_kegg") into (down_kegg)
 
 
  script:
@@ -865,9 +865,9 @@ process 'kegg_upload'{
 
  input:
  file keggfile from keggfile
- file config from config4perl8
+ file config from config4perl9
  file("upload_blast") from upload_blast
- file("down_kegg", isDirectory: true) from down_kegg
+ file("down_kegg") from down_kegg
 
  output:
  file('done') into (last_step1, last_step2)
@@ -886,7 +886,7 @@ process 'kegg_upload'{
 
 process 'generateResultFiles'{
  input:
-  file config from config4perl9
+  file config from config4perl10
   file all_done from last_step1
   file obofile from obofile
 
@@ -905,7 +905,7 @@ if ( annotation != null && annotation != "" ){
 
 process 'generateGFF3File'{
  input:
-  file config from config4perl10
+  file config from config4perl11
   file all_done from last_step2
 
 
