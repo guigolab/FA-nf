@@ -866,7 +866,6 @@ process 'kegg_upload'{
  input:
  file keggfile from keggfile
  file config from config4perl9
- file("upload_blast") from upload_blast
  file("down_kegg") from down_kegg
 
  output:
