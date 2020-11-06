@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS `kegg_group` (
   `class` TEXT ,
   `db_links` TEXT ,
   `db_id` TEXT  ,
+  `genes` TEXT ,
   `kegg_release` INTEGER);
 
 CREATE TABLE IF NOT EXISTS `organism` (
@@ -166,7 +167,7 @@ CREATE TABLE IF NOT EXISTS `orthologxref` (
   `orthologxref_id` INTEGER PRIMARY KEY AUTOINCREMENT ,
   `dbname` TEXT NOT NULL DEFAULT '' ,
   `dbid` TEXT NOT NULL DEFAULT '' ,
-  `ortholog_id` INTEGER NOT NULL 
+  `ortholog_id` INTEGER NOT NULL
   );
 
 CREATE TABLE IF NOT EXISTS `pathway` (
@@ -191,7 +192,7 @@ CREATE TABLE IF NOT EXISTS `reaction` (
 CREATE TABLE IF NOT EXISTS `ortholog_reaction` (
   `ortholog_reaction_id` INTEGER PRIMARY KEY AUTOINCREMENT ,
   `ortholog_id` INTEGER NOT NULL ,
-  `reaction_id` INTEGER UNSIGNED NOT NULL 
+  `reaction_id` INTEGER UNSIGNED NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS `complex` (
@@ -199,7 +200,7 @@ CREATE TABLE IF NOT EXISTS `complex` (
   `db_id` TEXT NOT NULL DEFAULT '',
   `db_name` TEXT NOT NULL DEFAULT '',
   `name` TEXT NULL DEFAULT NULL,
-  `stable_id` TEXT NOT NULL DEFAULT '' 
+  `stable_id` TEXT NOT NULL DEFAULT ''
   );
 
 

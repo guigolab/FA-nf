@@ -154,9 +154,61 @@ sub preUploadKeggInformation {
 
 	foreach my $file (@files) {
 		# Process Downloaded KEGG files and import into DB
+		my ( @filentries ) = &splitKeggFile( $file );
+		foreach my $filentry ( @filentries ) {
+			&parseAndUploadKEGGEntry( $filentry, $dbh, $dbEngine);
+			$pre_upload_kegg++;
+		}
 	}
 
 	return $pre_upload_kegg;
+
+}
+
+sub splitKeggFile {
+	my $file = shift;
+	my @strings = [];
+
+	open (FH, "$file");
+
+	my $part = "";
+	while (<FH>) {
+		$part.=$_;
+
+		if ( $_=~/\/\/\// ) {
+			push( @strings, $part );
+			$part = "";
+		}
+
+	}
+	close FH;
+
+	return @strings;
+}
+
+sub parseAndUploadKEGGEntry {
+	my $filestr = shift;
+	my $dbh = shift;
+	my $dbEngine = shift;
+
+	my @lines = split(/\n/,$filestr);
+	my($name, $value);
+	foreach my $item (@lines) {
+	 chomp($item);
+	 if($item=~/\/\/\//){last;}
+	 if($item=~/^(\w+)\s+(.+)$/) {
+		 $name =$1;$value=$2;
+		 $value =~s/\"//g;
+		 $returnData{$name}=$value;
+	 }
+	 else {
+		 $item=~s/^\s+//;
+		 $item=~s/\s+$//;
+		 $item =~s/\"//g;
+		 $returnData{$name} .= ','.$item;
+	 }
+
+	}
 
 }
 
@@ -178,8 +230,10 @@ sub uploadKeggInformation {
 
  	my @proteinList = @{$keggData->{$kegg_id}};
   my $numberProteinsInGroup=scalar @proteinList;
+
+	# START to move to a function
   #upload information about KO group into DB if its absent in DB
-  my @absentList=qw(PATHWAY CLASS MODULE DEFINITION DBLINKS);
+  my @absentList=qw(PATHWAY CLASS MODULE DEFINITION DBLINKS GENES);
   foreach my $absItem(@absentList) {
 		if(!defined $hash->{$absItem}) {
 			$hash->{$absItem}="";
@@ -203,15 +257,16 @@ sub uploadKeggInformation {
   my $kegg_group_id = $dbh->select_update_insert("kegg_group_id", $kegg_group_sql_select, $kegg_group_sql_update, $kegg_group_sql_insert, $do_update);
 
 	# small patch for SQLite - the current insert function could not return id of the last inserted record...
-  if(!defined $kegg_group_id)
-    {
+  if (!defined $kegg_group_id) {
       my $select = &selectLastId( $dbEngine );
       my $results = $dbh->select_from_table($select);
       $kegg_group_id=$results->[0]->{'id'};
   }
+
   if(!defined $kegg_group_id) {
 		die("Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n");
 	}
+	# END of function move
 
   foreach my $proteinItem(@proteinList) {
 
