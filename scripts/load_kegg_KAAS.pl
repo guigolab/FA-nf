@@ -436,8 +436,12 @@ sub retrieve_kegg_record {
 	my $kegg_id=shift;
 	my %returnData = {};
 
-	my $sqlSelect = "SELECT * from ... where kegg_id = $kegg_id";
-	my $result =$dbh->select_from_table($sqlSelect);
+	my $sqlSelect = "SELECT * from kegg_group where kegg_id = $kegg_id limit 1";
+	my $results =$dbh->select_from_table($sqlSelect);
+
+	if ( $#{$results} >= 0 ) {
+		%returnData = $results->[0];
+	}
 
 	return \%returnData;
 }

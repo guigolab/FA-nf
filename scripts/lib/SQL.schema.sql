@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS `domain` (
 
 CREATE TABLE IF NOT EXISTS `kegg_group` (
   `kegg_group_id` INTEGER  PRIMARY KEY AUTO_INCREMENT  ,
+  `kegg_id` TEXT ,
   `name` TEXT ,
   `definition` TEXT,
   `pathway` TEXT,
