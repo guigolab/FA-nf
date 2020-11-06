@@ -147,11 +147,18 @@ sub parseAndUploadKEGGEntry {
 	my $dbh = shift;
 	my $dbEngine = shift;
 
+	my %returnData;
+	my $kegg_id;
+
 	my @lines = split(/\n/,$filestr);
 	my($name, $value);
 	foreach my $item (@lines) {
 	 chomp($item);
 	 if($item=~/\/\/\//){last;}
+
+	 if($item=~/^ENTRY\s+(\w+)/) {
+		 $kegg_id = $1;
+	 }
 	 if($item=~/^(\w+)\s+(.+)$/) {
 		 $name =$1;$value=$2;
 		 $value =~s/\"//g;
@@ -165,6 +172,14 @@ sub parseAndUploadKEGGEntry {
 	 }
 
 	}
+
+	my $kegg_group_id = &uploadSingleKEGGId( $kegg_id, \%returnData, $dbh, $dbEngine );
+
+	if(!defined $kegg_group_id) {
+		die("Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n");
+	}
+
+	return 1;
 
 }
 sub preUploadKeggInformation {
@@ -221,13 +236,13 @@ sub uploadSingleKEGGId {
 	#populate kegg_group table
 	#check if kegg_group already exists (yes && do_update => update record; no => insert new kegg_group)
 	my $kegg_group_sql_select = qq{ SELECT kegg_group_id FROM kegg_group WHERE db_id=\"$kegg_id\" };
-	my $kegg_group_sql_update = qq{ UPDATE kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", kegg_release=\"$kegg_release\";};
+	my $kegg_group_sql_update = qq{ UPDATE kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", genes=\"$hash->{'GENES'}\", kegg_release=\"$kegg_release\";};
 	my $kegg_group_sql_insert = "";
 	if( lc( $dbEngine ) eq 'sqlite') {
-		$kegg_group_sql_insert = qq{ INSERT INTO kegg_group(kegg_group_id,name,definition,pathway,module,class,db_links,db_id,kegg_release) VALUES (NULL,\"$hash->{'NAME'}\",\"$hash->{'DEFINITION'}\",\"$hash->{'PATHWAY'}\",\"$hash->{'MODULE'}\",\"$hash->{'CLASS'}\", \"$hash->{'DBLINKS'}\",\"$kegg_id\",\"$kegg_release\")};
+		$kegg_group_sql_insert = qq{ INSERT INTO kegg_group(kegg_group_id,name,definition,pathway,module,class,db_links,db_id,genes,kegg_release) VALUES (NULL,\"$hash->{'NAME'}\",\"$hash->{'DEFINITION'}\",\"$hash->{'PATHWAY'}\",\"$hash->{'MODULE'}\",\"$hash->{'CLASS'}\", \"$hash->{'DBLINKS'}\",\"$kegg_id\",\"$hash->{'GENES'}\",\"$kegg_release\")};
 	}
 	else {
-		$kegg_group_sql_insert = qq{ INSERT INTO kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", kegg_release=\"$kegg_release\";};
+		$kegg_group_sql_insert = qq{ INSERT INTO kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", genes=\"$hash->{'GENES'}\", kegg_release=\"$kegg_release\";};
 	}
 	if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {
 		print "SQL: $kegg_group_sql_insert\n";
@@ -459,8 +474,14 @@ sub retrieve_kegg_record {
 	my $kegg_group_id;
 
 	if ( $#{$results} >= 0 ) {
-		%returnData = $results->[0];
 		$kegg_group_id = $results->[0]->{"id"};
+
+		foreach my $key ( keys %{$results->[0]} ) {
+			my $finalkey = uc($key);
+			$finalkey=~s/\_//g;
+			$returnData{$finalkey} = $results->[0]->{$key};
+		}
+
 	}
 
 	return (%returnData, $kegg_group_id);
