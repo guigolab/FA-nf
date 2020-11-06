@@ -142,6 +142,31 @@ if ( $directory ) {
 
 &uploadKeggInformation( $dbh, \%keggs, \%organisms, $config{'dbEngine'}, $pre_upload_kegg );
 
+sub parseAndUploadKEGGEntry {
+	my $filestr = shift;
+	my $dbh = shift;
+	my $dbEngine = shift;
+
+	my @lines = split(/\n/,$filestr);
+	my($name, $value);
+	foreach my $item (@lines) {
+	 chomp($item);
+	 if($item=~/\/\/\//){last;}
+	 if($item=~/^(\w+)\s+(.+)$/) {
+		 $name =$1;$value=$2;
+		 $value =~s/\"//g;
+		 $returnData{$name}=$value;
+	 }
+	 else {
+		 $item=~s/^\s+//;
+		 $item=~s/\s+$//;
+		 $item =~s/\"//g;
+		 $returnData{$name} .= ','.$item;
+	 }
+
+	}
+
+}
 sub preUploadKeggInformation {
 
 	my ($dbh, $directory, $dbEngine) = @_;
@@ -186,29 +211,38 @@ sub splitKeggFile {
 	return @strings;
 }
 
-sub parseAndUploadKEGGEntry {
-	my $filestr = shift;
+sub uploadSingleKEGGId {
+
+	my $kegg_id = shift;
+	my $hash = shift;
 	my $dbh = shift;
 	my $dbEngine = shift;
 
-	my @lines = split(/\n/,$filestr);
-	my($name, $value);
-	foreach my $item (@lines) {
-	 chomp($item);
-	 if($item=~/\/\/\//){last;}
-	 if($item=~/^(\w+)\s+(.+)$/) {
-		 $name =$1;$value=$2;
-		 $value =~s/\"//g;
-		 $returnData{$name}=$value;
-	 }
-	 else {
-		 $item=~s/^\s+//;
-		 $item=~s/\s+$//;
-		 $item =~s/\"//g;
-		 $returnData{$name} .= ','.$item;
-	 }
-
+	#populate kegg_group table
+	#check if kegg_group already exists (yes && do_update => update record; no => insert new kegg_group)
+	my $kegg_group_sql_select = qq{ SELECT kegg_group_id FROM kegg_group WHERE db_id=\"$kegg_id\" };
+	my $kegg_group_sql_update = qq{ UPDATE kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", kegg_release=\"$kegg_release\";};
+	my $kegg_group_sql_insert = "";
+	if( lc( $dbEngine ) eq 'sqlite') {
+		$kegg_group_sql_insert = qq{ INSERT INTO kegg_group(kegg_group_id,name,definition,pathway,module,class,db_links,db_id,kegg_release) VALUES (NULL,\"$hash->{'NAME'}\",\"$hash->{'DEFINITION'}\",\"$hash->{'PATHWAY'}\",\"$hash->{'MODULE'}\",\"$hash->{'CLASS'}\", \"$hash->{'DBLINKS'}\",\"$kegg_id\",\"$kegg_release\")};
 	}
+	else {
+		$kegg_group_sql_insert = qq{ INSERT INTO kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", kegg_release=\"$kegg_release\";};
+	}
+	if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {
+		print "SQL: $kegg_group_sql_insert\n";
+	}
+
+	my $kegg_group_id = $dbh->select_update_insert("kegg_group_id", $kegg_group_sql_select, $kegg_group_sql_update, $kegg_group_sql_insert, $do_update);
+
+	# small patch for SQLite - the current insert function could not return id of the last inserted record...
+	if (!defined $kegg_group_id) {
+			my $select = &selectLastId( $dbEngine );
+			my $results = $dbh->select_from_table($select);
+			$kegg_group_id=$results->[0]->{'id'};
+	}
+
+	return $kegg_group_id;
 
 }
 
@@ -218,55 +252,38 @@ sub uploadKeggInformation {
  my($sqlSelect, $sqlInsert,$sqlUpdate);
  my %protDefinitionData=();
 
- foreach my $kegg_id(keys %{$keggData}) {
+ foreach my $kegg_id (keys %{$keggData}) {
   #get KO information from server
 	my $hash;
+	my $kegg_group_id;
 	if ( $pre_upload_kegg > 0 ) {
-		$hash = retrieve_kegg_record($kegg_id);
+
+		( $hash, $kegg_group_id ) = retrieve_kegg_record($kegg_id);
+
 	} else {
+
 		$hash = parse_kegg_record($kegg_id);
+
+		#upload information about KO group into DB if its absent in DB
+	  my @absentList=qw(PATHWAY CLASS MODULE DEFINITION DBLINKS GENES);
+	  foreach my $absItem(@absentList) {
+			if(!defined $hash->{$absItem}) {
+				$hash->{$absItem}="";
+			}
+	  }
+
+		$kegg_group_id = &uploadSingleKEGGId($kegg_id, $hash, $dbh, $dbEngine);
 	}
+
 	#  print Dumper($hash)."\n"; die;
+
+
+	if(!defined $kegg_group_id) {
+		die("Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n");
+	}
 
  	my @proteinList = @{$keggData->{$kegg_id}};
   my $numberProteinsInGroup=scalar @proteinList;
-
-	# START to move to a function
-  #upload information about KO group into DB if its absent in DB
-  my @absentList=qw(PATHWAY CLASS MODULE DEFINITION DBLINKS GENES);
-  foreach my $absItem(@absentList) {
-		if(!defined $hash->{$absItem}) {
-			$hash->{$absItem}="";
-		}
-  }
-  #populate kegg_group table
-  #check if kegg_group already exists (yes && do_update => update record; no => insert new kegg_group)
-  my $kegg_group_sql_select = qq{ SELECT kegg_group_id FROM kegg_group WHERE db_id=\"$kegg_id\" };
-  my $kegg_group_sql_update = qq{ UPDATE kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", kegg_release=\"$kegg_release\";};
-  my $kegg_group_sql_insert = "";
-  if( lc( $dbEngine ) eq 'sqlite') {
-		$kegg_group_sql_insert = qq{ INSERT INTO kegg_group(kegg_group_id, name,definition,pathway,module,class,db_links,db_id,kegg_release) VALUES (NULL,\"$hash->{'NAME'}\",\"$hash->{'DEFINITION'}\",\"$hash->{'PATHWAY'}\",\"$hash->{'MODULE'}\",\"$hash->{'CLASS'}\", \"$hash->{'DBLINKS'}\",\"$kegg_id\",\"$kegg_release\")};
-	}
-  else {
-		$kegg_group_sql_insert = qq{ INSERT INTO kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", kegg_release=\"$kegg_release\";};
-	}
-  if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {
-		print "SQL: $kegg_group_sql_insert\n";
-	}
-
-  my $kegg_group_id = $dbh->select_update_insert("kegg_group_id", $kegg_group_sql_select, $kegg_group_sql_update, $kegg_group_sql_insert, $do_update);
-
-	# small patch for SQLite - the current insert function could not return id of the last inserted record...
-  if (!defined $kegg_group_id) {
-      my $select = &selectLastId( $dbEngine );
-      my $results = $dbh->select_from_table($select);
-      $kegg_group_id=$results->[0]->{'id'};
-  }
-
-  if(!defined $kegg_group_id) {
-		die("Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n");
-	}
-	# END of function move
 
   foreach my $proteinItem(@proteinList) {
 
@@ -436,14 +453,17 @@ sub retrieve_kegg_record {
 	my $kegg_id=shift;
 	my %returnData = {};
 
-	my $sqlSelect = "SELECT * from kegg_group where kegg_id = $kegg_id limit 1";
+	my $sqlSelect = "SELECT * from kegg_group where db_id = $kegg_id limit 1";
 	my $results =$dbh->select_from_table($sqlSelect);
+
+	my $kegg_group_id;
 
 	if ( $#{$results} >= 0 ) {
 		%returnData = $results->[0];
+		$kegg_group_id = $results->[0]->{"id"};
 	}
 
-	return \%returnData;
+	return (%returnData, $kegg_group_id);
 }
 
 # subroutine to parse KEGG record and put its elements into a hash
