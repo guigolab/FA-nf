@@ -200,6 +200,8 @@ sub parseAndUploadKEGGEntry {
 
 		my $kegg_group_id = &uploadSingleKEGGId( $kegg_id, \%returnData, $dbh, $dbEngine );
 
+		print STDERR $kegg_group_id, "\n";
+
 		if(!defined $kegg_group_id) {
 			die("Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n");
 		}
@@ -288,6 +290,7 @@ sub uploadSingleKEGGId {
 	}
 
 	my $kegg_group_id = $dbh->select_update_insert("kegg_group_id", $kegg_group_sql_select, $kegg_group_sql_update, $kegg_group_sql_insert, $do_update);
+	print STDERR "- HERE $kegg_group_id\n";
 
 	# small patch for SQLite - the current insert function could not return id of the last inserted record...
 	if (!defined $kegg_group_id) {
