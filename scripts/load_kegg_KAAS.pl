@@ -145,6 +145,8 @@ if ( $directory ) {
 	$pre_upload_kegg = &preUploadKeggInformation( $dbh, $directory, $config{'dbEngine'} );
 }
 
+print STDERR "KO entries: ".$pre_upload_kegg."\n";
+
 &uploadKeggInformation( $dbh, \%keggs, \%organisms, $config{'dbEngine'}, $pre_upload_kegg );
 
 sub parseAndUploadKEGGEntry {
@@ -500,8 +502,8 @@ sub parseKEGGDBLInks
 # subroutine to retrieve KEGG record from DB
 sub retrieve_kegg_record {
 
-	my $kegg_id=shift;
-	my %returnData = {};
+	my $kegg_id = shift;
+	my %hash = {};
 
 	my $sqlSelect = "SELECT * from kegg_group where db_id = $kegg_id limit 1";
 	my $results =$dbh->select_from_table($sqlSelect);
@@ -514,12 +516,12 @@ sub retrieve_kegg_record {
 		foreach my $key ( keys %{$results->[0]} ) {
 			my $finalkey = uc($key);
 			$finalkey=~s/\_//g;
-			$returnData{$finalkey} = $results->[0]->{$key};
+			$hash{$finalkey} = $results->[0]->{$key};
 		}
 
 	}
 
-	return (%returnData, $kegg_group_id);
+	return (%hash, $kegg_group_id);
 }
 
 # subroutine to parse KEGG record and put its elements into a hash
