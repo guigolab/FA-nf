@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `kegg_group` (
   `db_links` TEXT ,
   `db_id` TEXT  ,
   `genes` TEXT ,
-  `kegg_release` INTEGER);
+  `kegg_release` FLOAT);
 
 CREATE TABLE IF NOT EXISTS `organism` (
   `organism_id` INTEGER  PRIMARY KEY AUTOINCREMENT  ,

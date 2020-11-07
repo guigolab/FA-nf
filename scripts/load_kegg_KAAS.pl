@@ -69,8 +69,13 @@ pod2usage(-verbose=>2) if $show_help;
 
 $do_update = 0 if (!defined $do_update);
 
-if (!$input || !$kegg_release) {
+if ( !$input || !$kegg_release ) {
 	die("Please specify input file with results of KAAS server or KEGG DB release used to annotated data!\n Launch 'perl load_kegg_KAAS.pl -h' to see parameters description\n")
+}
+
+# If null, let's assign 0.0
+if ( $kegg_release eq 'null' ) {
+	$kegg_release = 0.0;
 }
 
 #read configuration file
@@ -194,7 +199,7 @@ sub preUploadKeggInformation {
 
 	foreach my $file (@files) {
 		# Process Downloaded KEGG files and import into DB
-		my ( @filentries ) = &splitKeggFile( $file );
+		my ( @filentries ) = &splitKeggFile( $directory."/".$file );
 		foreach my $filentry ( @filentries ) {
 			&parseAndUploadKEGGEntry( $filentry, $dbh, $dbEngine);
 			$pre_upload_kegg++;
