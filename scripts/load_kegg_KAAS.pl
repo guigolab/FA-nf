@@ -182,8 +182,6 @@ sub parseAndUploadKEGGEntry {
  	 }
 	}
 
-	print STDERR $kegg_id, "\n";
-	print STDERR Dumper( \%returnData );
 
 	# Avoid Genes too many entries
 
@@ -191,10 +189,15 @@ sub parseAndUploadKEGGEntry {
 		my (@parts) = split(",", $returnData{"GENES"} );
 		if ( $#parts > 250 ) { # TODO: margin
 			$returnData{"GENES"} = join(",", @parts[0 .. 250] );
+			print STDERR "** Done\n";
 		}
 	}
 
 	if ( $kegg_id ) {
+
+		print STDERR $kegg_id, "\n";
+		print STDERR Dumper( \%returnData );
+
 		my $kegg_group_id = &uploadSingleKEGGId( $kegg_id, \%returnData, $dbh, $dbEngine );
 
 		if(!defined $kegg_group_id) {
