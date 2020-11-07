@@ -184,7 +184,15 @@ sub parseAndUploadKEGGEntry {
 
 	print STDERR $kegg_id, "\n";
 	print STDERR Dumper( \%returnData );
+	
+	# Avoid Genes too many entries
 
+	if ( $returnData{"GENES"} ) {
+		my (@parts) = split(",", $returnData{"GENES"} );
+		if ( $#parts > 250 ) { # TODO: margin
+			$returnData{"GENES"} = join(",", @parts[0 .. 250] );
+		}
+	}
 
 	my $kegg_group_id = &uploadSingleKEGGId( $kegg_id, \%returnData, $dbh, $dbEngine );
 
@@ -246,6 +254,13 @@ sub uploadSingleKEGGId {
 	my $hash = shift;
 	my $dbh = shift;
 	my $dbEngine = shift;
+
+	my @absentList=qw(PATHWAY CLASS MODULE DEFINITION DBLINKS GENES);
+	foreach my $absItem(@absentList) {
+		if(!defined $hash->{$absItem}) {
+			$hash->{$absItem}="";
+		}
+	}
 
 	#populate kegg_group table
 	#check if kegg_group already exists (yes && do_update => update record; no => insert new kegg_group)
