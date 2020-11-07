@@ -187,8 +187,8 @@ sub parseAndUploadKEGGEntry {
 
 	if ( $returnData{"GENES"} ) {
 		my (@parts) = split(",", $returnData{"GENES"} );
-		if ( $#parts > 2000 ) { # TODO: check this margin
-			$returnData{"GENES"} = join(",", @parts[0 .. 2000] );
+		if ( $#parts > 1500 ) { # TODO: check this margin
+			$returnData{"GENES"} = join(",", @parts[0 .. 1500] );
 			print STDERR "** Too big GENES in $kegg_id\n";
 		}
 	}
