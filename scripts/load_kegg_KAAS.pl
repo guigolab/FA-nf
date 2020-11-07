@@ -241,11 +241,15 @@ sub splitKeggFile {
 
 	my $part = "";
 	while (<FH>) {
-		$part.=$_;
 
 		if ( $_=~/\/\/\// ) {
-			push( @strings, $part );
+			if ( $part!~/^\s*$/ ) {
+				$part.=$_;
+				push( @strings, $part );
+			}
 			$part = "";
+		} else {
+			$part.=$_;
 		}
 
 	}
@@ -311,7 +315,7 @@ sub uploadKeggInformation {
 	if ( $pre_upload_kegg > 0 ) {
 
 		print STDERR "* Entering $kegg_id\n";
-		( $hash, $kegg_group_id ) = retrieve_kegg_record($kegg_id);
+		( $hash, $kegg_group_id ) = retrieve_kegg_record( $kegg_id );
 
 	} else {
 
@@ -504,9 +508,9 @@ sub parseKEGGDBLInks
 sub retrieve_kegg_record {
 
 	my $kegg_id = shift;
-	my %hash = {};
+	my %hash;
 
-	my $sqlSelect = "SELECT * from kegg_group where db_id = $kegg_id limit 1";
+	my $sqlSelect = "SELECT * from kegg_group where db_id = \"$kegg_id\" limit 1";
 	my $results =$dbh->select_from_table($sqlSelect);
 
 	my $kegg_group_id;
