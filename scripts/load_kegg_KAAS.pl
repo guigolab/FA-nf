@@ -187,20 +187,20 @@ sub parseAndUploadKEGGEntry {
 
 	if ( $returnData{"GENES"} ) {
 		my (@parts) = split(",", $returnData{"GENES"} );
-		if ( $#parts > 1500 ) { # TODO: margin
-			$returnData{"GENES"} = join(",", @parts[0 .. 1500] );
-			print STDERR "** Done\n";
+		if ( $#parts > 2000 ) { # TODO: check this margin
+			$returnData{"GENES"} = join(",", @parts[0 .. 2000] );
+			print STDERR "** Too big GENES in $kegg_id\n";
 		}
 	}
 
 	if ( $kegg_id ) {
 
-		print STDERR "* KEGG_ID: ", $kegg_id, "\n";
-		print STDERR Dumper( \%returnData );
+		#print STDERR "* KEGG_ID: ", $kegg_id, "\n";
+		#print STDERR Dumper( \%returnData );
 
 		my $kegg_group_id = &uploadSingleKEGGId( $kegg_id, \%returnData, $dbh, $dbEngine );
 
-		print STDERR $kegg_group_id, "\n";
+		#print STDERR $kegg_group_id, "\n";
 
 		if(!defined $kegg_group_id) {
 			die("Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n");
@@ -290,7 +290,6 @@ sub uploadSingleKEGGId {
 	}
 
 	my $kegg_group_id = $dbh->select_update_insert("kegg_group_id", $kegg_group_sql_select, $kegg_group_sql_update, $kegg_group_sql_insert, $do_update);
-	print STDERR "- HERE $kegg_group_id\n";
 
 	# small patch for SQLite - the current insert function could not return id of the last inserted record...
 	if (!defined $kegg_group_id) {
@@ -317,12 +316,12 @@ sub uploadKeggInformation {
 	my $kegg_group_id;
 	if ( $pre_upload_kegg > 0 ) {
 
-		print STDERR "* Entering $kegg_id\n";
+		# print STDERR "* Entering $kegg_id\n";
 		( $hash, $kegg_group_id ) = retrieve_kegg_record( $kegg_id );
 
-		print STDERR "Prefilled\n";
-		print STDERR Dumper( $hash );
-		print STDERR Dumper( $kegg_group_id );
+		#print STDERR "Prefilled\n";
+		#print STDERR Dumper( $hash );
+		#print STDERR Dumper( $kegg_group_id );
 
 	} else {
 
