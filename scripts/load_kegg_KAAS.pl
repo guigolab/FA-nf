@@ -187,8 +187,8 @@ sub parseAndUploadKEGGEntry {
 
 	if ( $returnData{"GENES"} ) {
 		my (@parts) = split(",", $returnData{"GENES"} );
-		if ( $#parts > 1000 ) { # TODO: margin
-			$returnData{"GENES"} = join(",", @parts[0 .. 500] );
+		if ( $#parts > 1500 ) { # TODO: margin
+			$returnData{"GENES"} = join(",", @parts[0 .. 1500] );
 			print STDERR "** Done\n";
 		}
 	}
