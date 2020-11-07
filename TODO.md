@@ -1,6 +1,5 @@
 
 * Improve documentation of parameters
-* Split KEGG retrieval and upload
 * Include some testing and CI
 * Add PANNZER in analysis
 * Add PhylomeDB in analysis
