@@ -852,9 +852,7 @@ process 'kegg_download'{
 
  script:
 
-  command += " \
-   download_kegg_KAAS.pl -input $keggfile -conf $config > done 2>err; \
-  "
+  command = "download_kegg_KAAS.pl -input $keggfile -conf $config > done 2>err"
 
   command
 }
