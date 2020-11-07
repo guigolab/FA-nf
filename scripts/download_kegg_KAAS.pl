@@ -97,7 +97,7 @@ my $webChunk = 10;
 my @queue = [];
 my $iter = 0;
 
-foreach my $kegg_id (keys %{%keggs} ) {
+foreach my $kegg_id ( keys %keggs ) {
 
   if ( $#queue > $webChunk - 1 ) {
 
