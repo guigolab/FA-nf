@@ -159,24 +159,32 @@ sub parseAndUploadKEGGEntry {
 	my($name, $value);
 	foreach my $item (@lines) {
 	 chomp($item);
-	 if($item=~/\/\/\//){last;}
-
-	 if($item=~/^ENTRY\s+(\w+)/) {
-		 $kegg_id = $1;
-	 }
-	 if($item=~/^(\w+)\s+(.+)$/) {
-		 $name =$1;$value=$2;
-		 $value =~s/\"//g;
-		 $returnData{$name}=$value;
-	 }
-	 else {
-		 $item=~s/^\s+//;
-		 $item=~s/\s+$//;
-		 $item =~s/\"//g;
-		 $returnData{$name} .= ','.$item;
-	 }
-
+	 if ($item=~/\/\/\//) {
+		 $name = ""; $value = "";
+		 last;
+	 } else {
+		 if($item=~/^ENTRY\s+(\w+)/) {
+			 $kegg_id = $1;
+		 } else {
+			 if($item=~/^(\w+)\s+(.+)$/) {
+				 $name = $1; $value = $2;
+				 $value =~s/\"//g;
+				 $returnData{$name}=$value;
+			 } else {
+				 if ( $name ) {
+				 	$item=~s/^\s+//;
+				 	$item=~s/\s+$//;
+				 	$item =~s/\"//g;
+				 	$returnData{$name} .= ','.$item;
+			 	}
+			 }
+	 	 }
+ 	 }
 	}
+
+	print STDERR $kegg_id, "\n";
+	print STDERR Dumper( \%returnData );
+
 
 	my $kegg_group_id = &uploadSingleKEGGId( $kegg_id, \%returnData, $dbh, $dbEngine );
 
@@ -187,6 +195,7 @@ sub parseAndUploadKEGGEntry {
 	return 1;
 
 }
+
 sub preUploadKeggInformation {
 
 	my ($dbh, $directory, $dbEngine) = @_;
