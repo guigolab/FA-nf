@@ -187,7 +187,7 @@ sub parseAndUploadKEGGEntry {
 
 	if ( $returnData{"GENES"} ) {
 		my (@parts) = split(",", $returnData{"GENES"} );
-		if ( $#parts > 500 ) { # TODO: margin
+		if ( $#parts > 1000 ) { # TODO: margin
 			$returnData{"GENES"} = join(",", @parts[0 .. 500] );
 			print STDERR "** Done\n";
 		}
@@ -357,7 +357,10 @@ sub uploadKeggInformation {
 			my $protein_definition = $res->[0]->{'definition'};
 
 			#add orthologus information from the list of species for proteins associated to this KO group
-			my $gene_string = $hash->{'GENES'};
+			my $gene_string = "";
+			if ( $hash->{'GENES'} ) {
+				$gene_string = $hash->{'GENES'};
+			}
 
 			#print STDERR $proteinItem, "\t", $gene_string, "\n";
 			#print "gene string: $gene_string\n";
@@ -427,81 +430,81 @@ sub uploadKeggInformation {
         if( lc( $config{'dbEngine'} ) eq 'sqlite') {
 					$prot_ortholog_sql_insert = qq{ INSERT INTO protein_ortholog (protein_ortholog_id, protein_id,ortholog_id,type,kegg_group_id) VALUES(NULL,\"$protein_id\",\"$ortholog_id\",\"$type\",\"$kegg_group_id\");};}
         else {
-					$prot_ortholog_sql_insert = qq{ INSERT INTO protein_ortholog SET protein_id=\"$protein_id\",ortholog_id=\"$ortholog_id\",type=\"$type\",kegg_group_id=\"$kegg_group_id\";};}
-					my $protein_ortholog_id = $dbh->select_update_insert("protein_ortholog_id", $prot_ortholog_sql_select, $prot_ortholog_sql_update, $prot_ortholog_sql_insert, $do_update);
-				} #for each group of genes in multiply organisms
-
-				#update definition field for proteins associated to this KO group
-				if($hash->{'DEFINITION'} && $hash->{'DEFINITION'} ne '') {
-					push(@{$protDefinitionData{$protein_id}{'annot'}},$hash->{'DEFINITION'});
+					$prot_ortholog_sql_insert = qq{ INSERT INTO protein_ortholog SET protein_id=\"$protein_id\",ortholog_id=\"$ortholog_id\",type=\"$type\",kegg_group_id=\"$kegg_group_id\";};
 				}
 
-				# Toniher. This below is not necessary since it is sent to updateProteinDefinition
-				#$protein_definition .='KEGG:'.$hash->{'DEFINITION'}.';';
-				#$sqlUpdate = "UPDATE protein set definition='$protein_definition' where protein_id=$protein_id";
-				#      print "SQL_CODE:$sqlUpdate\n" ;
-				#$dbh->update_set($sqlUpdate);
+				my $protein_ortholog_id = $dbh->select_update_insert("protein_ortholog_id", $prot_ortholog_sql_select, $prot_ortholog_sql_update, $prot_ortholog_sql_insert, $do_update);
+			} #for each group of genes in multiply organisms
 
-				# add GO terms info into go_term and protein_go table.
-				# TODO Consider in the future other annotations, such as COG
-				if(defined $hash->{'DBLINKS'}) {
-				 my $goId = parseKEGGDBLInks($hash->{'DBLINKS'});
-				 if($goId ne '') {
-				     #insert go term, associated with this protein into go_term table, and then into protein_go
-				     my $sqlSelect = "SELECT go_term_id from go_term where go_acc like '$goId'";
-				     my $sqlUpdate ="";
-				     my $sqlInsert = "";
-				     if( lc( $dbEngine ) eq 'sqlite') {
-							 $sqlInsert = "INSERT INTO go_term (go_term_id,go_acc) VALUES (NULL,\"$goId\")";
-						 }
-				     else {
-							 $sqlInsert = "INSERT INTO go_term SET go_acc =\"$goId\"";
-						 }
-				     my $goTermId = $dbh->select_update_insert("go_term_id", $sqlSelect, $sqlUpdate, $sqlInsert, 0);
-				     #small patch for SQLite - the current insert function could not return id of the last inserted record...
-				     if(!defined $goTermId) {
-				        my $select = &selectLastId( $dbEngine );
-				        my $results = $dbh->select_from_table($select);
-				        $goTermId=$results->[0]->{'id'};
-				     }
-				     #select protein_go_id if there is one, and add 'KEGG' to the source field
-				     $sqlSelect = "SELECT protein_go_id, source FROM protein_go where protein_id = $protein_id and go_term_id=$goTermId and source='KEGG'";
-				     my $result =$dbh->select_from_table($sqlSelect);
-						 if ( $#$result < 0 ) {
-				      if( lc( $config{'dbEngine'} ) eq 'sqlite') {
-								$sqlInsert = "INSERT INTO protein_go (protein_go_id,source, protein_id, go_term_id) VALUES (NULL,'KEGG',$protein_id,$goTermId)";
-							} else {
-								$sqlInsert = "INSERT INTO protein_go SET source='KEGG', protein_id=$protein_id, go_term_id = $goTermId";
-							}
-							$dbh->insert_set($sqlInsert);
-				     }
-				 }#if there was a GO records
-			 }#if defined dbLinks
-			}#foreach protein Item
-		}#foreach kegg KO item
+			#update definition field for proteins associated to this KO group
+			if($hash->{'DEFINITION'} && $hash->{'DEFINITION'} ne '') {
+				push(@{$protDefinitionData{$protein_id}{'annot'}},$hash->{'DEFINITION'});
+			}
 
-			#update protein definition for KEGG source
-			#print STDERR "Definition\n";
-			#print STDERR Dumper( \%protDefinitionData );
-  	&updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
+			# Toniher. This below is not necessary since it is sent to updateProteinDefinition
+			#$protein_definition .='KEGG:'.$hash->{'DEFINITION'}.';';
+			#$sqlUpdate = "UPDATE protein set definition='$protein_definition' where protein_id=$protein_id";
+			#      print "SQL_CODE:$sqlUpdate\n" ;
+			#$dbh->update_set($sqlUpdate);
 
-	}#sub
+			# add GO terms info into go_term and protein_go table.
+			# TODO Consider in the future other annotations, such as COG
+			if(defined $hash->{'DBLINKS'}) {
+			 my $goId = parseKEGGDBLInks($hash->{'DBLINKS'});
+			 if($goId ne '') {
+			     #insert go term, associated with this protein into go_term table, and then into protein_go
+			     my $sqlSelect = "SELECT go_term_id from go_term where go_acc like '$goId'";
+			     my $sqlUpdate ="";
+			     my $sqlInsert = "";
+			     if( lc( $dbEngine ) eq 'sqlite') {
+						 $sqlInsert = "INSERT INTO go_term (go_term_id,go_acc) VALUES (NULL,\"$goId\")";
+					 }
+			     else {
+						 $sqlInsert = "INSERT INTO go_term SET go_acc =\"$goId\"";
+					 }
+			     my $goTermId = $dbh->select_update_insert("go_term_id", $sqlSelect, $sqlUpdate, $sqlInsert, 0);
+			     #small patch for SQLite - the current insert function could not return id of the last inserted record...
+			     if(!defined $goTermId) {
+			        my $select = &selectLastId( $dbEngine );
+			        my $results = $dbh->select_from_table($select);
+			        $goTermId=$results->[0]->{'id'};
+			     }
+			     #select protein_go_id if there is one, and add 'KEGG' to the source field
+			     $sqlSelect = "SELECT protein_go_id, source FROM protein_go where protein_id = $protein_id and go_term_id=$goTermId and source='KEGG'";
+			     my $result =$dbh->select_from_table($sqlSelect);
+					 if ( $#$result < 0 ) {
+			      if( lc( $config{'dbEngine'} ) eq 'sqlite') {
+							$sqlInsert = "INSERT INTO protein_go (protein_go_id,source, protein_id, go_term_id) VALUES (NULL,'KEGG',$protein_id,$goTermId)";
+						} else {
+							$sqlInsert = "INSERT INTO protein_go SET source='KEGG', protein_id=$protein_id, go_term_id = $goTermId";
+						}
+						$dbh->insert_set($sqlInsert);
+			     }
+			 }#if there was a GO records
+		 }#if defined dbLinks
+	}#foreach protein Item
+ }#foreach kegg KO item
+
+	#update protein definition for KEGG source
+	#print STDERR "Definition\n";
+	#print STDERR Dumper( \%protDefinitionData );
+	&updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
+
+}#sub
 
 
-sub parseKEGGDBLInks
-{
- my $dbLinks = shift;
+sub parseKEGGDBLInks {
+	my $dbLinks = shift;
 
- my $retGO='';
+	my $retGO='';
 
- $dbLinks=~s/\n//g;
- if($dbLinks =~/(GO\:\s*\d+)\s*/)
-  {
-   $retGO = $1;
-   $retGO=~s/\s+//g;
-  }
+	$dbLinks=~s/\n//g;
+	if($dbLinks =~/(GO\:\s*\d+)\s*/) {
+	 $retGO = $1;
+	 $retGO=~s/\s+//g;
+	}
 
- return $retGO;
+	return $retGO;
 }
 
 # subroutine to retrieve KEGG record from DB
@@ -526,7 +529,7 @@ sub retrieve_kegg_record {
 
 	}
 
-	return (%hash, $kegg_group_id);
+	return (\%hash, $kegg_group_id);
 }
 
 # subroutine to parse KEGG record and put its elements into a hash
