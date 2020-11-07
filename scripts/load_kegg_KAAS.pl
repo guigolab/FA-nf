@@ -320,6 +320,10 @@ sub uploadKeggInformation {
 		print STDERR "* Entering $kegg_id\n";
 		( $hash, $kegg_group_id ) = retrieve_kegg_record( $kegg_id );
 
+		print STDERR "Prefilled\n";
+		print STDERR Dumper( $hash );
+		print STDERR Dumper( $kegg_group_id );
+
 	} else {
 
 		$hash = parse_kegg_record($kegg_id);
