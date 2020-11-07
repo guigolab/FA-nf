@@ -526,7 +526,7 @@ sub retrieve_kegg_record {
 	my $kegg_group_id;
 
 	if ( $#{$results} >= 0 ) {
-		$kegg_group_id = $results->[0]->{"id"};
+		$kegg_group_id = $results->[0]->{"kegg_group_id"};
 
 		foreach my $key ( keys %{$results->[0]} ) {
 			my $finalkey = uc($key);
