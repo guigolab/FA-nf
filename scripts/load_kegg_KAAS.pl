@@ -184,7 +184,7 @@ sub parseAndUploadKEGGEntry {
 
 	print STDERR $kegg_id, "\n";
 	print STDERR Dumper( \%returnData );
-	
+
 	# Avoid Genes too many entries
 
 	if ( $returnData{"GENES"} ) {
@@ -194,10 +194,13 @@ sub parseAndUploadKEGGEntry {
 		}
 	}
 
-	my $kegg_group_id = &uploadSingleKEGGId( $kegg_id, \%returnData, $dbh, $dbEngine );
+	if ( $kegg_id ) {
+		my $kegg_group_id = &uploadSingleKEGGId( $kegg_id, \%returnData, $dbh, $dbEngine );
 
-	if(!defined $kegg_group_id) {
-		die("Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n");
+		if(!defined $kegg_group_id) {
+			die("Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n");
+		}
+
 	}
 
 	return 1;
