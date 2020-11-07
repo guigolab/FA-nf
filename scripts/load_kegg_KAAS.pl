@@ -343,7 +343,8 @@ sub uploadKeggInformation {
 
 
 	if(!defined $kegg_group_id) {
-		die("Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n");
+		print STDERR "Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n";
+		next; # Skip to another entry
 	}
 
  	my @proteinList = @{$keggData->{$kegg_id}};
