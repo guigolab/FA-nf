@@ -145,8 +145,6 @@ if ( $directory ) {
 	$pre_upload_kegg = &preUploadKeggInformation( $dbh, $directory, $config{'dbEngine'} );
 }
 
-print STDERR "KO entries: ".$pre_upload_kegg."\n";
-
 &uploadKeggInformation( $dbh, \%keggs, \%organisms, $config{'dbEngine'}, $pre_upload_kegg );
 
 sub parseAndUploadKEGGEntry {
@@ -189,15 +187,15 @@ sub parseAndUploadKEGGEntry {
 
 	if ( $returnData{"GENES"} ) {
 		my (@parts) = split(",", $returnData{"GENES"} );
-		if ( $#parts > 250 ) { # TODO: margin
-			$returnData{"GENES"} = join(",", @parts[0 .. 250] );
+		if ( $#parts > 500 ) { # TODO: margin
+			$returnData{"GENES"} = join(",", @parts[0 .. 500] );
 			print STDERR "** Done\n";
 		}
 	}
 
 	if ( $kegg_id ) {
 
-		print STDERR $kegg_id, "\n";
+		print STDERR "* KEGG_ID: ", $kegg_id, "\n";
 		print STDERR Dumper( \%returnData );
 
 		my $kegg_group_id = &uploadSingleKEGGId( $kegg_id, \%returnData, $dbh, $dbEngine );
@@ -301,6 +299,8 @@ sub uploadSingleKEGGId {
 sub uploadKeggInformation {
  my($dbh, $keggData, $codesOrg, $dbEngine, $pre_upload_kegg)=@_;
 
+ print STDERR "KO entries: ".$pre_upload_kegg."\n";
+
  my($sqlSelect, $sqlInsert,$sqlUpdate);
  my %protDefinitionData=();
 
@@ -310,6 +310,7 @@ sub uploadKeggInformation {
 	my $kegg_group_id;
 	if ( $pre_upload_kegg > 0 ) {
 
+		print STDERR "* Entering $kegg_id\n";
 		( $hash, $kegg_group_id ) = retrieve_kegg_record($kegg_id);
 
 	} else {
