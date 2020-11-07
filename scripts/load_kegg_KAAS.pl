@@ -75,7 +75,9 @@ if ( !$input || !$kegg_release ) {
 
 # If null, let's assign 0.0
 if ( $kegg_release eq 'null' ) {
-	$kegg_release = 0.0;
+
+	$kegg_release = &retrieve_kegg_release;
+
 }
 
 #read configuration file
@@ -146,6 +148,25 @@ if ( $directory ) {
 }
 
 &uploadKeggInformation( $dbh, \%keggs, \%organisms, $config{'dbEngine'}, $pre_upload_kegg );
+
+sub retrieve_kegg_release {
+
+	my $value = 0.0;
+
+	my $url = "http://rest.kegg.jp/info/ko";
+	my $response = get $url;
+	# print $response;
+	my @lines = split(/\n/,$response);
+	foreach my $item (@lines) {
+	 chomp($item);
+	 if ( $item =~ /^ko\s+Release\s+(\d+)/ ) {
+		 $value = $1;
+	 }
+
+	}
+
+	return $value;
+}
 
 sub parseAndUploadKEGGEntry {
 	my $filestr = shift;
