@@ -910,6 +910,7 @@ process 'generateGFF3File'{
 
   command = checkMySQL( mysql, params.mysqllog )
 
+  // TODO: add case for debug using -list
   command += " \
    get_gff3.pl -conf \$config ; \
   "
