@@ -1,4 +1,4 @@
-
+* Add Nextflow parameters tweaking in wrapper
 * Improve documentation of parameters
 * Include some testing and CI
 * Add PANNZER in analysis
