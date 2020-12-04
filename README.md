@@ -14,12 +14,12 @@ The software used in this pipeline is free software for academic users. For the 
 The pipeline is build on Nextflow as a woking engine, so it need to be installed first
 
 ```
- wget -qO- get.nextflow.io | bash 
+ wget -qO- get.nextflow.io | bash
 ```
 The detailed procedure is described in the [Nextflow documentation](https://www.nextflow.io/docs/latest/getstarted.html)
 
 ### KEGG orthology groups
-Predictions of the KEGG orthology groups (KO) should be obtained outside of the pipeline, i.e. via [KAAS server](http://www.genome.jp/tools/kaas/). 
+Predictions of the KEGG orthology groups (KO) should be obtained outside of the pipeline, i.e. via [KAAS server](http://www.genome.jp/tools/kaas/).
 
 Note: for the downstream processing of the KO file it is very important to store information about species used for predictions. Species are encoded in three lellters abbreviations, and the list can be copied from the 'Selected organisms' field in the kaas_main form.
 
@@ -37,7 +37,7 @@ Result files, including main annotation file in gff format and annotation report
 The annotation step can be launched by using the following command:
 
 ```
-./nextflow run -bg pipeline.nf --config configuration_file.config &> logfile 
+./nextflow run -bg pipeline.nf --config configuration_file.config &> logfile
 ```
 
 ![Pipeline flow chart](./flowchart.png "Pipeline flow chart")
@@ -66,7 +66,7 @@ More information can be found in the [Nextflow documentation](https://www.nextfl
 * **CDSearch_hit_upload**: : it uploads NCBI CDSearch Hit analyses into the DB
 * **CDSearch_feat_upload**: it uploads NCBI CDSearch Feature analyses into the DB
 * **blast_annotator_upload**: it uploads GO terms from BLAST hits into the DB
-* **kegg_upload**: it retrieves and uploads KEGG data into the DB 
+* **kegg_upload**: it retrieves and uploads KEGG data into the DB
 * **generateResultFiles**: it generates report files
 * **generateGFF3File**: if GFF provided as input, it provides a modified GFF with additional information
 
@@ -100,9 +100,13 @@ As written down in ```nextflow.config``` file, whenever possible, we try to prov
 
 ## Running in MySQL mode
 
-We offer a convenience wrapper script for running the pipeline in MySQL mode either in SGE-compatible clusters or in local. 
+We offer a convenience wrapper script for running the pipeline in MySQL mode either in SGE-compatible clusters or in local.
 
     nohup perl run_pipeline_mysql.pl -conf ./main_configuration.config  &> log.mysql &
+
+It is also possible to pass additional Nextflow parameters
+
+    nohup perl run_pipeline_mysql.pl -params "-with-dag -with-report -with-timeline" -conf ./main_configuration.config  &> log.mysql &
 
 
 ## Running only MySQL
@@ -115,5 +119,3 @@ This is convenient for checking results database once analyses are finished. NO 
 for further options or details, run:
 
     perl run_pipeline_mysql.pl -h
-
-
