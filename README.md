@@ -70,7 +70,7 @@ More information can be found in the [Nextflow documentation](https://www.nextfl
 * **generateResultFiles**: it generates report files
 * **generateGFF3File**: if GFF provided as input, it provides a modified GFF with additional information
 
-### Formatted databases
+### Formatted databases
 
 * For BLAST: ```blastDbPath = "/path/to/db"``` It looks for formatted database files (normally named db.p* for protein type based ones), otherwise it will try to format FASTA file with that name
 * For DIAMOND: ```blastDbPath = "/path/to/db"``` It looks for a single formatted database file (normally named db.dmnd), otherwise it will try to format the FASTA file with that name (gzip compressed files accepted)
@@ -79,7 +79,7 @@ More information can be found in the [Nextflow documentation](https://www.nextfl
 
 Retrieval of GO terms from BLAST results can be performed either from [BLAST2GO](https://www.blast2go.com/) results or from other methods as far as a BLAST2GO-compatible output format is provided.
 
-As a example, in our case we are using a [web API](https://github.com/toniher/gogoAPI) providing this information from [UniProt GOA](https://www.ebi.ac.uk/GOA) database imported into a MySQL and [Neo4j](https://github.com/toniher/neo4j-biorelation).
+As an example, in our case we are using a [web API](https://github.com/toniher/gogoAPI) providing this information from [UniProt GOA](https://www.ebi.ac.uk/GOA) database imported into a MySQL and [Neo4j](https://github.com/toniher/neo4j-biorelation).
 
 ## Associated containers
 
