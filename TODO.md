@@ -1,3 +1,4 @@
+* Check kegg_upload slow process
 * Add option to detect if possible contamination from BLAST (inspiration from MEGAN)
 * Improve documentation of parameters
 * Include some testing and CI
