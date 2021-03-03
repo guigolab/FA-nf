@@ -37,6 +37,7 @@ params.chunkIPSSize = null
 params.chunkBlastSize = null
 params.chunkKoalaSize = null
 params.chunkWebSize = null
+params.debugSize = 2
 params.evalue = null
 params.dbEngine = "mysql"
 params.gffclean = false
@@ -182,15 +183,15 @@ seqWebData = Channel
 iscan_properties = file("/usr/local/interproscan/interproscan.properties")
 
 if ( params.debug == "TRUE" || params.debug =="true" ) {
- println("Debugging.. only the first 2 chunks will be processed")
+ println("Debugging.. only the first $params.debugSize chunks will be processed")
  // Diferent parts for different processes. TODO: Change numbers for processes
- (seq_file1, seq_file2) = seqData.take(2).into(2)
- (seq_file_blast) = seqBlastData.take(2).into(1)
- (seq_file_koala) = seqKoalaData.take(2).into(1)
- (seq_file_ipscan) = seqIPSData.take(2).into(1)
- (web_seq_file1, web_seq_file2) = seqWebData.take(2).into(2)
+ (seq_file1, seq_file2) = seqData.take(debugSize).into(2)
+ (seq_file_blast) = seqBlastData.take(debugSize).into(1)
+ (seq_file_koala) = seqKoalaData.take(debugSize).into(1)
+ (seq_file_ipscan) = seqIPSData.take(debugSize).into(1)
+ (web_seq_file1, web_seq_file2) = seqWebData.take(debugSize).into(2)
 
- testNum = ( params.chunkSize.toInteger() * 2 )
+ testNum = ( params.chunkSize.toInteger() * debugSize )
  seqTestData = Channel
   .from(protein)
   .splitFasta(by: testNum)
@@ -214,18 +215,17 @@ else {
 
 }
 
-if(params.oboFile == "" ||  params.oboFile == null ) {
-
- println "Please download OBO File from http://www.geneontology.org/ontology/gene_ontology.obo"
- // TODO: Download OBO file
+if( params.oboFile == "" || params.oboFile == null ) {
+  oboFile = downloadURL( "http://www.geneontology.org/ontology/gene_ontology.obo", "gene_ontology.obo" )
+} else {
+  oboFile = file(params.oboFile)
 }
 
-obofile=file(params.oboFile)
 
 // TODO: To change for different aligners
 diamond = false
 
-if(params.diamond=="TRUE"||params.diamond=="true") {
+if( params.diamond == "TRUE" || params.diamond =="true" ) {
  diamond = true
 }
 
@@ -949,6 +949,12 @@ def checkMySQL( mysql, mysqllog )  {
  return command
 
 }
+
+def downloadURL( address, filename ) {
+  downFile = new File( filename ) << new URL (address).getText()
+  return downFile
+}
+
 
 // On finising
 workflow.onComplete {
