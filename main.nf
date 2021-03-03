@@ -185,13 +185,13 @@ iscan_properties = file("/usr/local/interproscan/interproscan.properties")
 if ( params.debug == "TRUE" || params.debug =="true" ) {
  println("Debugging.. only the first $params.debugSize chunks will be processed")
  // Diferent parts for different processes. TODO: Change numbers for processes
- (seq_file1, seq_file2) = seqData.take(debugSize).into(2)
- (seq_file_blast) = seqBlastData.take(debugSize).into(1)
- (seq_file_koala) = seqKoalaData.take(debugSize).into(1)
- (seq_file_ipscan) = seqIPSData.take(debugSize).into(1)
- (web_seq_file1, web_seq_file2) = seqWebData.take(debugSize).into(2)
+ (seq_file1, seq_file2) = seqData.take(params.debugSize).into(2)
+ (seq_file_blast) = seqBlastData.take(params.debugSize).into(1)
+ (seq_file_koala) = seqKoalaData.take(params.debugSize).into(1)
+ (seq_file_ipscan) = seqIPSData.take(params.debugSize).into(1)
+ (web_seq_file1, web_seq_file2) = seqWebData.take(params.debugSize).into(2)
 
- testNum = ( params.chunkSize.toInteger() * debugSize )
+ testNum = ( params.chunkSize.toInteger() * params.debugSize )
  seqTestData = Channel
   .from(protein)
   .splitFasta(by: testNum)
