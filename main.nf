@@ -38,7 +38,7 @@ params.chunkBlastSize = null
 params.chunkKoalaSize = null
 params.chunkWebSize = null
 params.debugSize = 2
-params.evalue = null
+params.evalue = 0.00001
 params.dbEngine = "mysql"
 params.gffclean = false
 params.gffstats = false
@@ -70,14 +70,6 @@ if ( params.help ) {
 protein = file(params.proteinFile)
 annotation = file(params.gffFile)
 config_file = file(params.config)
-
-if ( params.evalue != "" || params.evalue != null ) {
- evalue = params.evalue
-} else {
-  if ( params.evalue == null ) {
-    evalue = 0.00001 // Default evalue for BLAST
-  }
-}
 
 dbFile = false
 boolean exists = false
@@ -323,9 +315,9 @@ if (params.blastFile == "" ||  params.blastFile == null ){
 
    script:
    if ( formatdbDetect == "false" ) {
-    command = "diamond blastp --db ${formatdb_file} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out blastXml${seq}"
+    command = "diamond blastp --db ${formatdb_file} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${params.evalue} --out blastXml${seq}"
    } else {
-    command = "diamond blastp --db ${db_path}/${db_name} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${evalue} --out blastXml${seq}"
+    command = "diamond blastp --db ${db_path}/${db_name} --query $seq --outfmt 5 --threads ${task.cpus} --evalue ${params.evalue} --out blastXml${seq}"
    }
 
    command
@@ -349,9 +341,9 @@ if (params.blastFile == "" ||  params.blastFile == null ){
 
    script:
    if ( formatdbDetect == "false" ) {
-    command = "blastp -db ${formatdb_file} -query $seq -num_threads ${task.cpus} -evalue ${evalue} -out blastXml${seq} -outfmt 5"
+    command = "blastp -db ${formatdb_file} -query $seq -num_threads ${task.cpus} -evalue ${params.evalue} -out blastXml${seq} -outfmt 5"
    } else {
-    command = "blastp -db ${db_path}/${db_name} -query $seq -num_threads ${task.cpus} -evalue ${evalue} -out blastXml${seq} -outfmt 5"
+    command = "blastp -db ${db_path}/${db_name} -query $seq -num_threads ${task.cpus} -evalue ${params.evalue} -out blastXml${seq} -outfmt 5"
    }
 
    command
