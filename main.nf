@@ -7,7 +7,7 @@
  *
  * Copyright (c) 2017, Emilio Palumbo
  *
- * Copyright (c) 2018-2020, Toni Hermoso Pulido
+ * Copyright (c) 2018-2021, Toni Hermoso Pulido
  *
  * Functional Annotation Pipeline for protein annotation from non-model organisms
  * from Genome Annotation Team in Catalonia (GATC) implemented in Nextflow
