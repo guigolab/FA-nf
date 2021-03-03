@@ -26,7 +26,7 @@ Note: for the downstream processing of the KO file it is very important to store
 ### Configuration file
 The pipeline require as an input the configuration file with specified parameters, such as path to the input files, specie name, KEGG specie abbreviations used to obtain KO groups, and some more.
 
-The example of configuration file is included into this repository with name main_configuration.config
+The example of configuration file is included into this repository with name params.config
 
 ## Running the pipeline
 
@@ -102,18 +102,18 @@ As written down in ```nextflow.config``` file, whenever possible, we try to prov
 
 We offer a convenience wrapper script for running the pipeline in MySQL mode either in SGE-compatible clusters or in local.
 
-    nohup perl run_pipeline_mysql.pl -conf ./main_configuration.config  &> log.mysql &
+    nohup perl run_pipeline_mysql.pl -conf ./params.config  &> log.mysql &
 
 It is also possible to pass additional Nextflow parameters
 
-    nohup perl run_pipeline_mysql.pl -params "-with-dag -with-report -with-timeline" -conf ./main_configuration.config  &> log.mysql &
+    nohup perl run_pipeline_mysql.pl -params "-with-dag -with-report -with-timeline" -conf ./params.config  &> log.mysql &
 
 
 ## Running only MySQL
 
 This is convenient for checking results database once analyses are finished. NO further analyses are run.
 
-	nohup perl run_pipeline_mysql.pl -mysqlonly -conf ./main_configuration.config &> log.mysql.only &
+	nohup perl run_pipeline_mysql.pl -mysqlonly -conf ./params.config &> log.mysql.only &
 
 
 for further options or details, run:
