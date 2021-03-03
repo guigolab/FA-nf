@@ -71,10 +71,12 @@ protein = file(params.proteinFile)
 annotation = file(params.gffFile)
 config_file = file(params.config)
 
-evalue = 0.00001 // Default evalue for BLAST
-
-if ( params.evalue != "" ||  params.evalue != null ) {
+if ( params.evalue != "" || params.evalue != null ) {
  evalue = params.evalue
+} else {
+  if ( params.evalue == null ) {
+    evalue = 0.00001 // Default evalue for BLAST
+  }
 }
 
 dbFile = false
