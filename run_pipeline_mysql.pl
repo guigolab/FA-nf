@@ -162,7 +162,7 @@ if ( lc( $config{"dbEngine"} ) eq 'mysql' ) {
             my $myip=`cat "$mysqllog/DBHOST"`;
             print "DBHOST: ".$myip."\n";
            	print( "Run NEXTFLOW\n") ;
-            system( "$nextflow run $nfparams -bg pipeline.nf $resumeStr --config $confFile" );
+            system( "$nextflow run $nfparams -bg main.nf $resumeStr --config $confFile" );
         } else {
 
             while ( ! -f "$mysqllog/DBHOST" ) {
@@ -183,6 +183,6 @@ if ( lc( $config{"dbEngine"} ) eq 'mysql' ) {
     # Else, SQLite mode
     # Run Nextflow pipeline
     print( "Run NEXTFLOW\n") ;
-    system( "$nextflow run $nfparams -bg pipeline.nf $resumeStr --config $confFile" );
+    system( "$nextflow run $nfparams -bg main.nf $resumeStr --config $confFile" );
 
 }
