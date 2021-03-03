@@ -4,7 +4,7 @@
 * Include some testing and CI
 * Visualization of results
     * Venn Diagrams
-
+* Ensure stop of MySQL process when error
 ---
 * Allow conversion from GenBank https://metacpan.org/pod/bp_genbank2gff3.pl
 * In reports, put select distincts again tables

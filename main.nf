@@ -885,7 +885,7 @@ process 'generateResultFiles'{
  input:
   file config from config4perl10
   file all_done from last_step1
-  file obofile from obofile
+  file obofile from oboFile
 
  script:
 
