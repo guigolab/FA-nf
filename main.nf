@@ -43,6 +43,8 @@ params.dbEngine = "mysql"
 params.gffclean = false
 params.gffstats = false
 params.diamond = null
+params.blastAnnotMode = "common"
+params.oboFile = null
 
 //print usage
 if ( params.help ) {
