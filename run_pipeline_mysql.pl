@@ -13,6 +13,7 @@ use Cwd qw(cwd);
 
 my ($confFile,$show_help);
 my $nextflow = "nextflow";
+my $nfscript = "main.nf";
 my $nfparams = ""; # By default no additional params
 
 my $resume = 0;
@@ -162,7 +163,7 @@ if ( lc( $config{"dbEngine"} ) eq 'mysql' ) {
             my $myip=`cat "$mysqllog/DBHOST"`;
             print "DBHOST: ".$myip."\n";
            	print( "Run NEXTFLOW\n") ;
-            system( "$nextflow run $nfparams -bg main.nf $resumeStr --config $confFile" );
+            system( "$nextflow run $nfparams -bg $nfscript $resumeStr --config $confFile" );
         } else {
 
             while ( ! -f "$mysqllog/DBHOST" ) {
@@ -183,6 +184,6 @@ if ( lc( $config{"dbEngine"} ) eq 'mysql' ) {
     # Else, SQLite mode
     # Run Nextflow pipeline
     print( "Run NEXTFLOW\n") ;
-    system( "$nextflow run $nfparams -bg main.nf $resumeStr --config $confFile" );
+    system( "$nextflow run $nfparams -bg $nfscript $resumeStr --config $confFile" );
 
 }
