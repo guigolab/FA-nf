@@ -101,10 +101,9 @@ my @kegg_codes = map { trim($_) } split /,/, $config{'kegg_species'};
 if(!defined $config{'dbEngine'}){$config{'dbEngine'} = 'mysql';}
 my $dbh;
 #connect to the DB
-if(lc( $config{'dbEngine'} ) eq 'mysql')
-{ $dbh= FunctionalAnnotation::DB->new('mysql',$config{'dbname'},$config{'dbhost'},$config{'dbuser'},$config{'dbpass'},$config{'dbport'});}
-else
-{
+if (lc( $config{'dbEngine'} ) eq 'mysql') {
+	$dbh= FunctionalAnnotation::DB->new('mysql',$config{'dbname'},$config{'dbhost'},$config{'dbuser'},$config{'dbpass'},$config{'dbport'});
+} else {
   my $dbName = $config{'resultPath'}.$config{'dbname'}.'.db';
   my $dsn = "DBI:SQLite:dbname=$dbName";
   $dbh= FunctionalAnnotation::DB->new('sqlite',$dbName);
@@ -146,6 +145,10 @@ my $pre_upload_kegg = 0;
 if ( $directory ) {
 	$pre_upload_kegg = &preUploadKeggInformation( $dbh, $directory, $config{'dbEngine'} );
 }
+
+print Dumper( \%keggs );
+print Dumper( \%organisms );
+print Dumper( $pre_upload_kegg );
 
 &uploadKeggInformation( $dbh, \%keggs, \%organisms, $config{'dbEngine'}, $pre_upload_kegg );
 
@@ -204,12 +207,11 @@ sub parseAndUploadKEGGEntry {
 	}
 
 
-	# Avoid Genes too many entries
-
+	# TODO: Rewrite into specific table
 	if ( $returnData{"GENES"} ) {
-		my (@parts) = split(",", $returnData{"GENES"} );
+		my (@parts) = split( ",", $returnData{"GENES"} );
 		if ( $#parts > 1500 ) { # TODO: check this margin
-			$returnData{"GENES"} = join(",", @parts[0 .. 1500] );
+			$returnData{"GENES"} = join( ",", @parts[0 .. 1000] );
 			print STDERR "** Too big GENES in $kegg_id\n";
 		}
 	}
@@ -331,18 +333,29 @@ sub uploadKeggInformation {
  my($sqlSelect, $sqlInsert,$sqlUpdate);
  my %protDefinitionData=();
 
+ my @countk = keys %{$keggData};
+ print STDERR "* COUNT: ", $#countk, "\n";
+ my $lim = 10;
+
+ my $l = 0;
  foreach my $kegg_id (keys %{$keggData}) {
   #get KO information from server
+
+	$l++;
+	if ( $l > $lim ) {
+		last;
+	}
+
 	my $hash;
 	my $kegg_group_id;
 	if ( $pre_upload_kegg > 0 ) {
 
-		# print STDERR "* Entering $kegg_id\n";
+		print STDERR "* Entering $kegg_id\n";
 		( $hash, $kegg_group_id ) = retrieve_kegg_record( $kegg_id );
 
-		#print STDERR "Prefilled\n";
-		#print STDERR Dumper( $hash );
-		#print STDERR Dumper( $kegg_group_id );
+		print STDERR "Prefilled\n";
+		print STDERR Dumper( $hash );
+		print STDERR Dumper( $kegg_group_id );
 
 	} else {
 
@@ -653,14 +666,13 @@ sub organism_table {
 				# print "4. ".$organism_id."\n";
 
     #small patch for SQLite - the current insert function could not return id of the last inserted record...
-     if(!defined $organism_id && lc( $engine ) eq "sqlite")
-       {
+     if(!defined $organism_id && lc( $engine ) eq "sqlite") {
 
         my $select = &selectLastId( $engine );
         my $results = $dbh->select_from_table($select);
         #print Dumper($results);
         $organism_id=$results->[0]->{'id'};
-       }
+     }
 
     }#if ! defined organism id
 
