@@ -146,9 +146,10 @@ if ( $directory ) {
 	$pre_upload_kegg = &preUploadKeggInformation( $dbh, $directory, $config{'dbEngine'} );
 }
 
-print Dumper( \%keggs );
-print Dumper( \%organisms );
-print Dumper( $pre_upload_kegg );
+#print Dumper( \%keggs );
+#print Dumper( \%organisms );
+#print Dumper( $pre_upload_kegg );
+#exit;
 
 &uploadKeggInformation( $dbh, \%keggs, \%organisms, $config{'dbEngine'}, $pre_upload_kegg );
 
@@ -309,7 +310,7 @@ sub uploadSingleKEGGId {
 		$kegg_group_sql_insert = qq{ INSERT INTO kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", genes=\"$hash->{'GENES'}\", kegg_release=\"$kegg_release\";};
 	}
 	if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {
-		print "SQL: $kegg_group_sql_insert\n";
+		# print "SQL: $kegg_group_sql_insert\n";
 	}
 
 	my $kegg_group_id = $dbh->select_update_insert("kegg_group_id", $kegg_group_sql_select, $kegg_group_sql_update, $kegg_group_sql_insert, $do_update);
@@ -338,6 +339,7 @@ sub uploadKeggInformation {
  my $lim = 10;
 
  my $l = 0;
+ exit;
  foreach my $kegg_id (keys %{$keggData}) {
   #get KO information from server
 
@@ -383,6 +385,8 @@ sub uploadKeggInformation {
  	my @proteinList = @{$keggData->{$kegg_id}};
   my $numberProteinsInGroup=scalar @proteinList;
 
+	print "NUM PROT: $#proteinList\n";
+
   foreach my $proteinItem(@proteinList) {
 
 			#select protein_id infor (because items are stable_ids in protein table)
@@ -411,6 +415,9 @@ sub uploadKeggInformation {
 			# We do batch mode for MySQL but not sqlite
 			# https://sqlite.org/np1queryprob.html
 			my @orthobucket = ();
+
+			print "NUM LINES: $#lines\n";
+
 			foreach my $l (@lines) {
 
 				# insert each ortholog
@@ -462,6 +469,8 @@ sub uploadKeggInformation {
 				$dbh->multiple_query( \@orthobucket );
 			}
 
+			print "NUM LINES: $#lines\n";
+
 			foreach my $l (@lines) {
 
 				# insert each ortholog
@@ -498,9 +507,17 @@ sub uploadKeggInformation {
 					$type="one2one";
 				}
 
-				my $results_ortho = $dbh->select_from_table("SELECT ortholog_id from ortholog WHERE name = \"$gene_id\" AND organism_id = \"$organism_id\" AND db_id = \"$kegg_id\"");
-				my $ortholog_id = $results_ortho->[0]->{'id'};
+				my $query = "SELECT ortholog_id from ortholog WHERE name = \"$gene_id\" AND organism_id = \"$organism_id\" AND db_id = \"$kegg_id\"";
+				my $results_ortho = $dbh->select_from_table($query);
 
+				my $ortholog_id = $results_ortho->[0]->{'ortholog_id'};
+
+				print STDERR "* $ortholog_id\n";
+
+				if ( $ortholog_id eq '' ) {
+					print STDERR "Major error here";
+					exit;
+				}
 
         my $prot_ortholog_sql_select = qq{ SELECT protein_ortholog_id FROM protein_ortholog WHERE protein_id=\"$protein_id\" AND ortholog_id=\"$ortholog_id\" };
         my $prot_ortholog_sql_update = qq{ UPDATE protein_ortholog SET protein_id=\"$protein_id\",ortholog_id=\"$ortholog_id\",type=\"$type\",kegg_group_id=\"$kegg_group_id\";};
@@ -567,6 +584,7 @@ sub uploadKeggInformation {
 	#print STDERR "Definition\n";
 	#print STDERR Dumper( \%protDefinitionData );
 	&updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
+	print STDERR "Finished here\n";
 
 }#sub
 
