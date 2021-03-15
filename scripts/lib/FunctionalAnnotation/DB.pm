@@ -346,15 +346,17 @@ sub select_update_insert {
 
 sub multiple_query {
     my ($self, $queries) = @_;
+    my $dbh = $self->db_connection;
 
-    $self->{AutoCommit} = 0;
-    foreach(  @{$queries} )
+    $dbh->{AutoCommit} = 0;
+    foreach(  @{$queries} ) {
 
       my $sth = $self->prepare_stmt($_);
-      $$th->execute();
+      $sth->execute();
 
     }
-    $self->commit();
+
+    $dbh->commit();
     return 1;
 }
 
