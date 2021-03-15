@@ -407,14 +407,15 @@ sub uploadKeggInformation {
 			#print "gene string: $gene_string\n";
 			my @lines=split/\,/,$gene_string;
 			my $is_cluster;
+
+			# We do batch mode for MySQL but not sqlite
+			# https://sqlite.org/np1queryprob.html
+			my @orthobucket = ();
 			foreach my $l (@lines) {
+
 				# insert each ortholog
 				my ($code,$gene_id)=split/\:/,$l;
 				$gene_id=~s/^ //;
-				# determine if $gene_id containt a cluster of genes
-				my @cluster=split/ /,$gene_id;
-				$is_cluster=1 if scalar(@cluster)>1;
-				$is_cluster=0 if scalar(@cluster)==1;
 				my $lcode=lc($code);
 				#print STDERR "* ", $lcode, "\n";
 				#print STDERR "- ", Dumper( $codesOrg );
@@ -434,25 +435,56 @@ sub uploadKeggInformation {
 
 				my $ortholog_sql_insert = "";
 				if( lc( $dbEngine ) eq 'sqlite') {
-						$ortholog_sql_insert = qq{ INSERT INTO ortholog(ortholog_id,name,organism_id, db_id,db_name ) VALUES(NULL,\"$gene_id\",\"$organism_id\",\"$kegg_id\",\"KEGG\")};
-				}
-				else {
-					$ortholog_sql_insert = qq{ INSERT INTO ortholog SET name=\"$gene_id\",organism_id=\"$organism_id\",db_id=\"$kegg_id\",db_name=\"KEGG\";};
-				}
-				# print STDERR $ortholog_sql_insert, "\n";
-				my $ortholog_id = $dbh->select_update_insert("ortholog_id", $ortholog_sql_select, $ortholog_sql_update, $ortholog_sql_insert, $do_update);
-        #small patch for SQLite - the current insert function could not return id of the last inserted record...
-        if(!defined $ortholog_id) {
-					my $select = &selectLastId( $dbEngine );
-          my $results = $dbh->select_from_table($select);
-          $ortholog_id=$results->[0]->{'id'};
-        }
+						$ortholog_sql_insert = qq{ INSERT INTO ortholog(ortholog_id, name, organism_id, db_id, db_name ) VALUES(NULL,\"$gene_id\",\"$organism_id\",\"$kegg_id\",\"KEGG\")};
 
-				if(($loglevel eq 'debug' )||($loglevel eq 'info' )){ print "SQL: $ortholog_sql_insert --- $ortholog_id\n";}
+						# print STDERR $ortholog_sql_insert, "\n";
+						my $ortholog_id = $dbh->select_update_insert("ortholog_id", $ortholog_sql_select, $ortholog_sql_update, $ortholog_sql_insert, $do_update);
+
+						# Not needed for next step
+						#small patch for SQLite - the current insert function could not return id of the last inserted record...
+		        # if(!defined $ortholog_id) {
+						# 	my $select = &selectLastId( $dbEngine );
+		        #   my $results = $dbh->select_from_table($select);
+		        #   $ortholog_id=$results->[0]->{'id'};
+		        # }
+
+						if(($loglevel eq 'debug' )||($loglevel eq 'info' )){
+							print "SQL: $ortholog_sql_insert --- $ortholog_id\n";
+						}
+				} else {
+					# Handling stuff for SQL
+					push( @orthobucket, "INSERT INTO ortholog (name, organism_id, db_id, db_name) values(\"$gene_id\", \"$organism_id\", \"$kegg_id\", \"KEGG\") ON DUPLICATE KEY UPDATE name = \"$gene_id\", organism_id = \"$organism_id\", db_id = \"$kegg_id\" ;");
+				}
+
+			}
+
+			if ($#orthobucket >= 0) {
+				$dbh->multiple_query( \@orthobucket );
+			}
+
+			foreach my $l (@lines) {
+
+				# insert each ortholog
+				my ($code,$gene_id)=split/\:/,$l;
+				$gene_id=~s/^ //;
+				# determine if $gene_id containt a cluster of genes
+				my @cluster=split/ /,$gene_id;
+				$is_cluster=1 if scalar(@cluster)>1;
+				$is_cluster=0 if scalar(@cluster)==1;
+				my $lcode=lc($code);
+				#print STDERR "* ", $lcode, "\n";
+				#print STDERR "- ", Dumper( $codesOrg );
+				# next if ortholog is not in the list of species to analyze
+				next if !$codesOrg->{$lcode};
+				#print STDERR "Passed\n";
+				#get organism_id from DB
+				#my $organism_id= organism_table($lcode,$dbEngine,$dbh);
+				my $organism_id= $codesOrg->{$lcode};
+
+				# TODO: Missing here ortholog_id we should retrieve from somewhere else via select
+
 				#populate protein_ortholog
 				#check if protein_ortholog already exists in the table (yes && do_update => update record; no => insert new protein_ortholog)
-
-				# TODO start new iterator from here
 
 				my $type;
 
@@ -465,6 +497,11 @@ sub uploadKeggInformation {
 				} else {
 					$type="one2one";
 				}
+
+				my $results_ortho = $dbh->select_from_table("SELECT ortholog_id from ortholog WHERE name = \"$gene_id\" AND organism_id = \"$organism_id\" AND db_id = \"$kegg_id\"");
+				my $ortholog_id = $results_ortho->[0]->{'id'};
+
+
         my $prot_ortholog_sql_select = qq{ SELECT protein_ortholog_id FROM protein_ortholog WHERE protein_id=\"$protein_id\" AND ortholog_id=\"$ortholog_id\" };
         my $prot_ortholog_sql_update = qq{ UPDATE protein_ortholog SET protein_id=\"$protein_id\",ortholog_id=\"$ortholog_id\",type=\"$type\",kegg_group_id=\"$kegg_group_id\";};
         my $prot_ortholog_sql_insert ="";

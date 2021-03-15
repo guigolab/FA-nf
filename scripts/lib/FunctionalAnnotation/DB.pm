@@ -344,6 +344,20 @@ sub select_update_insert {
     return $dbID;
 }
 
+sub multiple_query {
+    my ($self, $queries) = @_;
+
+    $self->{AutoCommit} = 0;
+    foreach(  @{$queries} )
+
+      my $sth = $self->prepare_stmt($_);
+      $$th->execute();
+
+    }
+    $self->commit();
+    return 1;
+}
+
 sub _clean_sql () {
    my ($self, $par) = @_;
 
