@@ -477,7 +477,21 @@ sub uploadKeggInformation {
 
 			print "NUM LINES: $#lines\n";
 
-			# TODO: Here we preretrieve orthologs_id, gene and organism for saving time with fixed KEGG_ID
+			# Here we preretrieve orthologs_id for saving time with fixed KEGG_ID
+			my ($orthoidlist) = {};
+			my $results_ortho = $dbh->select_from_table("SELECT ortholog_id, name, organism_id from `ortholog` where db_id = \"$kegg_id\" ;");
+
+			foreach my $result ( @{$results_ortho} ) {
+				my $org = $result->{"organism_id"};
+				my $name = $result->{"name"};
+				my $oid = $result->{"ortholog_id"};
+
+				if ( ! $orthoidlist->{$org} ) {
+					$orthoidlist->{$org} = {};
+				}
+
+				$orthoidlist->{$org}->{$name} = $oid;
+			}
 
 			foreach my $l (@lines) {
 
@@ -513,14 +527,15 @@ sub uploadKeggInformation {
 					$type="one2one";
 				}
 
-				my $query = "SELECT ortholog_id from ortholog WHERE name = \"$gene_id\" AND organism_id = \"$organism_id\" AND db_id = \"$kegg_id\"";
-				my $results_ortho = $dbh->select_from_table($query);
+				#my $query = "SELECT ortholog_id from ortholog WHERE name = \"$gene_id\" AND organism_id = \"$organism_id\" AND db_id = \"$kegg_id\"";
+				#my $results_ortho = $dbh->select_from_table($query);
 
-				my $ortholog_id = $results_ortho->[0]->{'ortholog_id'};
+				#my $ortholog_id = $results_ortho->[0]->{'ortholog_id'};
+				my $ortholog_id = $orthoidlist->{$organism_id}->{$gene_id};
 
 				print STDERR "* $ortholog_id\n";
 
-				if ( $ortholog_id eq '' ) {
+				if ( ! $ortholog_id ) {
 					print STDERR "Major error here";
 					exit;
 				}
