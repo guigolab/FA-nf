@@ -146,7 +146,6 @@ if ( $directory ) {
 	$pre_upload_kegg = &preUploadKeggInformation( $dbh, $directory, $config{'dbEngine'} );
 }
 
-print "* PREUPLOAD: ".getLoggingTime()."\n";
 
 #print Dumper( \%keggs );
 #print Dumper( \%organisms );
@@ -340,17 +339,17 @@ sub uploadKeggInformation {
  print STDERR "* COUNT: ", $#countk + 1, "\n";
 
  # Temporary limit
- my $lim = 3;
+ # my $lim = 3;
 
- my $l = 0;
+ # my $l = 0;
 
  foreach my $kegg_id (sort( keys %{$keggData})) {
   #get KO information from server
 
-	$l++;
-	if ( $l > $lim ) {
-		last;
-	}
+	# $l++;
+	# if ( $l > $lim ) {
+	#	last;
+	#}
 
 	my $hash;
 	my $kegg_group_id;
@@ -389,7 +388,7 @@ sub uploadKeggInformation {
  	my @proteinList = @{$keggData->{$kegg_id}};
   my $numberProteinsInGroup=scalar @proteinList;
 
-	print "* NUM PROT: $#proteinList ".getLoggingTime()."\n";
+	print "* NUM PROT: $#proteinList\n";
 
 
   foreach my $proteinItem(@proteinList) {
@@ -478,7 +477,7 @@ sub uploadKeggInformation {
 				$dbh->multiple_query( $query, \@orthobucket );
 			}
 
-			print "* NUM LINES ORTHO: $#lines ".getLoggingTime()."\n";
+			print "* NUM LINES ORTHO: $#lines\n";
 
 			# Here we preretrieve orthologs_id for saving time with fixed KEGG_ID
 			my ($orthoidlist) = {};
@@ -570,7 +569,7 @@ sub uploadKeggInformation {
 				$dbh->multiple_query( $query, \@porthobucket );
 			}
 
-			print "* NUM LINES PORTHO: $#lines ".getLoggingTime()."\n";
+			print "* NUM LINES PORTHO: $#lines\n";
 
 
 			#update definition field for proteins associated to this KO group
