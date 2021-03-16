@@ -213,7 +213,7 @@ sub parseAndUploadKEGGEntry {
 		my (@parts) = split( ",", $returnData{"GENES"} );
 		if ( $#parts > 1500 ) { # TODO: check this margin
 			$returnData{"GENES"} = join( ",", @parts[0 .. 1000] );
-			print STDERR "** Too big GENES in $kegg_id\n";
+			# print STDERR "** Too big GENES in $kegg_id\n";
 		}
 	}
 
@@ -336,11 +336,13 @@ sub uploadKeggInformation {
 
  my @countk = keys %{$keggData};
  print STDERR "* COUNT: ", $#countk, "\n";
- my $lim = 10;
+
+ # Temporary limit
+ my $lim = 3;
 
  my $l = 0;
- exit;
- foreach my $kegg_id (keys %{$keggData}) {
+
+ foreach my $kegg_id (sort( keys %{$keggData})) {
   #get KO information from server
 
 	$l++;
