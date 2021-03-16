@@ -70,7 +70,9 @@ CREATE TABLE IF NOT EXISTS `ortholog` (
   `name` TEXT NOT NULL DEFAULT '' ,
   `db_id` TEXT  ,
   `db_name` TEXT,
-  `organism_id` INTEGER NOT NULL );
+  `organism_id` INTEGER NOT NULL,
+  UNIQUE( `name`, `db_id`, `db_name`, `organism_id`  ) 
+);
 
 CREATE TABLE IF NOT EXISTS `protein_ortholog` (
   `protein_ortholog_id` INTEGER  PRIMARY KEY AUTO_INCREMENT ,

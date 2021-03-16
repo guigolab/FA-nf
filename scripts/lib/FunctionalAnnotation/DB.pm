@@ -353,11 +353,9 @@ sub multiple_query {
     $query =~ s/#VALUES#/$values_string/;
     print STDERR $query;
 
-    $dbh->{AutoCommit} = 0;
     my $sth = $self->prepare_stmt($query);
     $sth->execute();
 
-    $dbh->commit();
     return 1;
 }
 

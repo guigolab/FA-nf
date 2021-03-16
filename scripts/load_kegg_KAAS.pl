@@ -477,6 +477,8 @@ sub uploadKeggInformation {
 
 			print "NUM LINES: $#lines\n";
 
+			# TODO: Here we preretrieve orthologs_id, gene and organism for saving time with fixed KEGG_ID
+
 			foreach my $l (@lines) {
 
 				# insert each ortholog
@@ -495,8 +497,6 @@ sub uploadKeggInformation {
 				#get organism_id from DB
 				#my $organism_id= organism_table($lcode,$dbEngine,$dbh);
 				my $organism_id= $codesOrg->{$lcode};
-
-				# TODO: Missing here ortholog_id we should retrieve from somewhere else via select
 
 				#populate protein_ortholog
 				#check if protein_ortholog already exists in the table (yes && do_update => update record; no => insert new protein_ortholog)
