@@ -146,6 +146,8 @@ if ( $directory ) {
 	$pre_upload_kegg = &preUploadKeggInformation( $dbh, $directory, $config{'dbEngine'} );
 }
 
+print "* PREUPLOAD: ".getLoggingTime()."\n";
+
 #print Dumper( \%keggs );
 #print Dumper( \%organisms );
 #print Dumper( $pre_upload_kegg );
@@ -387,7 +389,8 @@ sub uploadKeggInformation {
  	my @proteinList = @{$keggData->{$kegg_id}};
   my $numberProteinsInGroup=scalar @proteinList;
 
-	print "NUM PROT: $#proteinList\n";
+	print "* NUM PROT: $#proteinList ".getLoggingTime()."\n";
+
 
   foreach my $proteinItem(@proteinList) {
 
@@ -475,7 +478,7 @@ sub uploadKeggInformation {
 				$dbh->multiple_query( $query, \@orthobucket );
 			}
 
-			print "NUM LINES: $#lines\n";
+			print "* NUM LINES ORTHO: $#lines ".getLoggingTime()."\n";
 
 			# Here we preretrieve orthologs_id for saving time with fixed KEGG_ID
 			my ($orthoidlist) = {};
@@ -567,6 +570,9 @@ sub uploadKeggInformation {
 				$dbh->multiple_query( $query, \@porthobucket );
 			}
 
+			print "* NUM LINES PORTHO: $#lines ".getLoggingTime()."\n";
+
+
 			#update definition field for proteins associated to this KO group
 			if($hash->{'DEFINITION'} && $hash->{'DEFINITION'} ne '') {
 				push(@{$protDefinitionData{$protein_id}{'annot'}},$hash->{'DEFINITION'});
@@ -620,7 +626,7 @@ sub uploadKeggInformation {
 	#print STDERR "Definition\n";
 	#print STDERR Dumper( \%protDefinitionData );
 	&updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
-	print STDERR "Finished here\n";
+	print STDERR "Finished here ".getLoggingTime()."\n";
 
 }#sub
 
@@ -774,6 +780,14 @@ sub organism_table {
    }
 
     return %returnData;
+}
+
+sub getLoggingTime {
+
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst)=localtime(time);
+    my $nice_timestamp = sprintf ( "%04d%02d%02d %02d:%02d:%02d",
+                                   $year+1900,$mon+1,$mday,$hour,$min,$sec);
+    return $nice_timestamp;
 }
 
 sub selectLastId {
