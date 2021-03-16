@@ -345,16 +345,17 @@ sub select_update_insert {
 }
 
 sub multiple_query {
-    my ($self, $queries) = @_;
+    my ($self, $query, $values) = @_;
     my $dbh = $self->db_connection;
 
+    my $values_string = join( ", " @{$values} );
+
+    $query =~ s/#VALUES#/$values_string/;
+    print STDERR $query;
+
     $dbh->{AutoCommit} = 0;
-    foreach(  @{$queries} ) {
-
-      my $sth = $self->prepare_stmt($_);
-      $sth->execute();
-
-    }
+    my $sth = $self->prepare_stmt($query);
+    $sth->execute();
 
     $dbh->commit();
     return 1;

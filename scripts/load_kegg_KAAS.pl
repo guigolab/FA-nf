@@ -462,14 +462,17 @@ sub uploadKeggInformation {
 						}
 				} else {
 					# Handling stuff for SQL
-					push( @orthobucket, "INSERT INTO ortholog (name, organism_id, db_id, db_name) values(\"$gene_id\", \"$organism_id\", \"$kegg_id\", \"KEGG\") ON DUPLICATE KEY UPDATE name = \"$gene_id\", organism_id = \"$organism_id\", db_id = \"$kegg_id\" ;");
+					my $values = "( \"$gene_id\", \"$organism_id\", \"$kegg_id\", \"KEGG\" )";
+					push( @orthobucket, $values );
 				}
 
 			}
 
 			if ($#orthobucket >= 0) {
+				# VALUES here used for replacement
+				my $query = "INSERT INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ON DUPLICATE KEY UPDATE name = values(name), organism_id = values(organism_id), db_id = values(db_id) ;";
 				print STDERR Dumper( \@orthobucket );
-				$dbh->multiple_query( \@orthobucket );
+				$dbh->multiple_query( $query, \@orthobucket );
 			}
 
 			print "NUM LINES: $#lines\n";
