@@ -557,7 +557,6 @@ sub uploadKeggInformation {
 					push( @porthobucket, $values );
 				}
 
-				my $protein_ortholog_id = $dbh->select_update_insert("protein_ortholog_id", $prot_ortholog_sql_select, $prot_ortholog_sql_update, $prot_ortholog_sql_insert, $do_update);
 			} #for each group of genes in multiply organisms
 
 			if ($#porthobucket >= 0) {
