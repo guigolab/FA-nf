@@ -338,7 +338,7 @@ sub uploadKeggInformation {
  print STDERR "* COUNT: ", $#countk + 1, "\n";
 
  # Temporary limit
- my $lim = 1;
+ my $lim = 3;
 
  my $l = 0;
 
