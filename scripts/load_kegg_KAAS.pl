@@ -493,7 +493,11 @@ sub uploadKeggInformation {
 				$orthoidlist->{$org}->{$name} = $oid;
 			}
 
-			print STDERR Dumper( $orthoidlist );
+			# print STDERR Dumper( $orthoidlist );
+
+			# We do batch mode for MySQL but not sqlite
+			# https://sqlite.org/np1queryprob.html
+			my @porthobucket = ();
 
 			foreach my $l (@lines) {
 
@@ -546,13 +550,23 @@ sub uploadKeggInformation {
         my $prot_ortholog_sql_update = qq{ UPDATE protein_ortholog SET protein_id=\"$protein_id\",ortholog_id=\"$ortholog_id\",type=\"$type\",kegg_group_id=\"$kegg_group_id\";};
         my $prot_ortholog_sql_insert ="";
         if( lc( $config{'dbEngine'} ) eq 'sqlite') {
-					$prot_ortholog_sql_insert = qq{ INSERT INTO protein_ortholog (protein_ortholog_id, protein_id,ortholog_id,type,kegg_group_id) VALUES(NULL,\"$protein_id\",\"$ortholog_id\",\"$type\",\"$kegg_group_id\");};}
-        else {
-					$prot_ortholog_sql_insert = qq{ INSERT INTO protein_ortholog SET protein_id=\"$protein_id\",ortholog_id=\"$ortholog_id\",type=\"$type\",kegg_group_id=\"$kegg_group_id\";};
+					$prot_ortholog_sql_insert = qq{ INSERT INTO protein_ortholog (protein_ortholog_id, protein_id,ortholog_id,type,kegg_group_id) VALUES(NULL,\"$protein_id\",\"$ortholog_id\",\"$type\",\"$kegg_group_id\");};
+					my $protein_ortholog_id = $dbh->select_update_insert("protein_ortholog_id", $prot_ortholog_sql_select, $prot_ortholog_sql_update, $prot_ortholog_sql_insert, $do_update);
+				} else {
+					my $values = "( \"$protein_id\", \"$ortholog_id\", \"$type\", \"$kegg_group_id\" )";
+					push( @porthobucket, $values );
 				}
 
 				my $protein_ortholog_id = $dbh->select_update_insert("protein_ortholog_id", $prot_ortholog_sql_select, $prot_ortholog_sql_update, $prot_ortholog_sql_insert, $do_update);
 			} #for each group of genes in multiply organisms
+
+			if ($#porthobucket >= 0) {
+				# VALUES here used for replacement
+				my $query = "INSERT INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), ortholog_id=values(ortholog_id), type=values(ortholog_id), kegg_group_id=values(kegg_group_id) ;";
+
+				print STDERR Dumper( \@porthobucket );
+				$dbh->multiple_query( $query, \@porthobucket );
+			}
 
 			#update definition field for proteins associated to this KO group
 			if($hash->{'DEFINITION'} && $hash->{'DEFINITION'} ne '') {

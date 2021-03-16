@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS `ortholog` (
   `db_id` TEXT  ,
   `db_name` TEXT,
   `organism_id` INTEGER NOT NULL,
-  UNIQUE( `name`, `db_id`, `db_name`, `organism_id`  ) 
+  UNIQUE( `name`, `db_id`, `db_name`, `organism_id`  )
 );
 
 CREATE TABLE IF NOT EXISTS `protein_ortholog` (
@@ -79,7 +79,9 @@ CREATE TABLE IF NOT EXISTS `protein_ortholog` (
   `type` TEXT,
   `kegg_group_id` INTEGER NOT NULL ,
   `protein_id` INTEGER  NOT NULL ,
-  `ortholog_id` INTEGER NOT NULL );
+  `ortholog_id` INTEGER NOT NULL,
+  UNIQUE( `type`, `kegg_group_id`, `protein_id`, `ortholog_id`  )
+);
 
 CREATE TABLE IF NOT EXISTS `ipscn_version` (
   `idipscn_version_id` INTEGER PRIMARY KEY AUTO_INCREMENT ,
