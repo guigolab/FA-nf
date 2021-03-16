@@ -348,7 +348,7 @@ sub multiple_query {
     my ($self, $query, $values) = @_;
     my $dbh = $self->db_connection;
 
-    my $values_string = join( ", " @{$values} );
+    my $values_string = join( ", ", @{$values} );
 
     $query =~ s/#VALUES#/$values_string/;
     print STDERR $query;
