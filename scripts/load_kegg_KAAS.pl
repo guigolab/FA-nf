@@ -493,6 +493,8 @@ sub uploadKeggInformation {
 				$orthoidlist->{$org}->{$name} = $oid;
 			}
 
+			print STDERR Dumper( $orthoidlist );
+
 			foreach my $l (@lines) {
 
 				# insert each ortholog
