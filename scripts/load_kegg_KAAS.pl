@@ -422,6 +422,7 @@ sub uploadKeggInformation {
 
 			print "NUM LINES: $#lines\n";
 
+			# TODO: Converge sqlite case to MySQL approach if possible
 			foreach my $l (@lines) {
 
 				# insert each ortholog
@@ -459,9 +460,6 @@ sub uploadKeggInformation {
 		        #   $ortholog_id=$results->[0]->{'id'};
 		        # }
 
-						if(($loglevel eq 'debug' )||($loglevel eq 'info' )){
-							print "SQL: $ortholog_sql_insert --- $ortholog_id\n";
-						}
 				} else {
 					# Handling stuff for SQL
 					my $values = "( \"$gene_id\", \"$organism_id\", \"$kegg_id\", \"KEGG\" )";
@@ -473,7 +471,7 @@ sub uploadKeggInformation {
 			if ($#orthobucket >= 0) {
 				# VALUES here used for replacement
 				my $query = "INSERT INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ON DUPLICATE KEY UPDATE name = values(name), organism_id = values(organism_id), db_id = values(db_id) ;";
-				print STDERR Dumper( \@orthobucket );
+				# print STDERR Dumper( \@orthobucket );
 				$dbh->multiple_query( $query, \@orthobucket );
 			}
 
@@ -541,7 +539,7 @@ sub uploadKeggInformation {
 				#my $ortholog_id = $results_ortho->[0]->{'ortholog_id'};
 				my $ortholog_id = $orthoidlist->{$organism_id}->{$gene_id};
 
-				print STDERR "* $ortholog_id\n";
+				# print STDERR "* $ortholog_id\n";
 
 				if ( ! $ortholog_id ) {
 					print STDERR "Major error here";
@@ -565,11 +563,11 @@ sub uploadKeggInformation {
 				# VALUES here used for replacement
 				my $query = "INSERT INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), ortholog_id=values(ortholog_id), type=values(ortholog_id), kegg_group_id=values(kegg_group_id) ;";
 
-				print STDERR Dumper( \@porthobucket );
+				# print STDERR Dumper( \@porthobucket );
 				$dbh->multiple_query( $query, \@porthobucket );
 			}
 
-			print "* NUM LINES PORTHO: $#lines\n";
+			# print "* NUM LINES PORTHO: $#lines\n";
 
 
 			#update definition field for proteins associated to this KO group
