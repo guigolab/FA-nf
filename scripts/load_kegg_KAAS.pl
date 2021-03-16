@@ -335,10 +335,10 @@ sub uploadKeggInformation {
  my %protDefinitionData=();
 
  my @countk = keys %{$keggData};
- print STDERR "* COUNT: ", $#countk, "\n";
+ print STDERR "* COUNT: ", $#countk + 1, "\n";
 
  # Temporary limit
- my $lim = 3;
+ my $lim = 1;
 
  my $l = 0;
 
@@ -357,9 +357,9 @@ sub uploadKeggInformation {
 		print STDERR "* Entering $kegg_id\n";
 		( $hash, $kegg_group_id ) = retrieve_kegg_record( $kegg_id );
 
-		print STDERR "Prefilled\n";
-		print STDERR Dumper( $hash );
-		print STDERR Dumper( $kegg_group_id );
+		#print STDERR "Prefilled\n";
+		#print STDERR Dumper( $hash );
+		#print STDERR Dumper( $kegg_group_id );
 
 	} else {
 
@@ -468,6 +468,7 @@ sub uploadKeggInformation {
 			}
 
 			if ($#orthobucket >= 0) {
+				print STDERR Dumper( \@orthobucket );
 				$dbh->multiple_query( \@orthobucket );
 			}
 
