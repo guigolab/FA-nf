@@ -67,16 +67,16 @@ CREATE TABLE IF NOT EXISTS `organism` (
 
 CREATE TABLE IF NOT EXISTS `ortholog` (
   `ortholog_id` INTEGER PRIMARY KEY AUTO_INCREMENT ,
-  `name` TEXT NOT NULL DEFAULT '' ,
-  `db_id` TEXT  ,
-  `db_name` TEXT,
+  `name` VARCHAR(255) NOT NULL DEFAULT '' ,
+  `db_id` VARCHAR(25),
+  `db_name` VARCHAR(25),
   `organism_id` INTEGER NOT NULL,
   UNIQUE( `name`, `db_id`, `db_name`, `organism_id`  )
 );
 
 CREATE TABLE IF NOT EXISTS `protein_ortholog` (
   `protein_ortholog_id` INTEGER  PRIMARY KEY AUTO_INCREMENT ,
-  `type` TEXT,
+  `type` VARCHAR(25),
   `kegg_group_id` INTEGER NOT NULL ,
   `protein_id` INTEGER  NOT NULL ,
   `ortholog_id` INTEGER NOT NULL,
