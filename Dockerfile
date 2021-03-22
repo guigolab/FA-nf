@@ -1,4 +1,4 @@
-FROM biocorecrg/debian-perlbrew:stretch
+FROM biocorecrg/debian-perlbrew:buster
 
 # File Author / Maintainer
 MAINTAINER Toni Hermoso Pulido <toni.hermoso@crg.eu>

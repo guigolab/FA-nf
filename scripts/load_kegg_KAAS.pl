@@ -469,8 +469,13 @@ sub uploadKeggInformation {
 			}
 
 			if ($#orthobucket >= 0) {
+				my $query;
 				# VALUES here used for replacement
-				my $query = "INSERT INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ON DUPLICATE KEY UPDATE name = values(name), organism_id = values(organism_id), db_id = values(db_id) ;";
+				if ( lc($dbEngine eq 'sqlite') ) {
+					$query = "INSERT INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ON CONFLICT DO UPDATE SET name = values(name), organism_id = values(organism_id), db_id = values(db_id) ;";
+				} else {
+					$query = "INSERT INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ON DUPLICATE KEY UPDATE name = values(name), organism_id = values(organism_id), db_id = values(db_id) ;";
+				}
 				# print STDERR Dumper( \@orthobucket );
 				$dbh->multiple_query( $query, \@orthobucket );
 			}
@@ -546,9 +551,9 @@ sub uploadKeggInformation {
 					exit;
 				}
 
-        my $prot_ortholog_sql_select = qq{ SELECT protein_ortholog_id FROM protein_ortholog WHERE protein_id=\"$protein_id\" AND ortholog_id=\"$ortholog_id\" };
-        my $prot_ortholog_sql_update = qq{ UPDATE protein_ortholog SET protein_id=\"$protein_id\",ortholog_id=\"$ortholog_id\",type=\"$type\",kegg_group_id=\"$kegg_group_id\";};
-        my $prot_ortholog_sql_insert ="";
+        #my $prot_ortholog_sql_select = qq{ SELECT protein_ortholog_id FROM protein_ortholog WHERE protein_id=\"$protein_id\" AND ortholog_id=\"$ortholog_id\" };
+        #my $prot_ortholog_sql_update = qq{ UPDATE protein_ortholog SET protein_id=\"$protein_id\",ortholog_id=\"$ortholog_id\",type=\"$type\",kegg_group_id=\"$kegg_group_id\";};
+        #my $prot_ortholog_sql_insert ="";
         #if( lc( $config{'dbEngine'} ) eq 'sqlite') {
 				#	$prot_ortholog_sql_insert = qq{ INSERT INTO protein_ortholog (protein_ortholog_id, protein_id,ortholog_id,type,kegg_group_id) VALUES(NULL,\"$protein_id\",\"$ortholog_id\",\"$type\",\"$kegg_group_id\");};
 				#	my $protein_ortholog_id = $dbh->select_update_insert("protein_ortholog_id", $prot_ortholog_sql_select, $prot_ortholog_sql_update, $prot_ortholog_sql_insert, $do_update);
@@ -560,9 +565,13 @@ sub uploadKeggInformation {
 			} #for each group of genes in multiply organisms
 
 			if ($#porthobucket >= 0) {
+				my $query;
 				# VALUES here used for replacement
-				my $query = "INSERT INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), ortholog_id=values(ortholog_id), type=values(ortholog_id), kegg_group_id=values(kegg_group_id) ;";
-
+				if ( lc($dbEngine eq 'sqlite') ) {
+					$query = "INSERT INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ON CONFLICT DO UPDATE SET protein_id=values(protein_id), ortholog_id=values(ortholog_id), type=values(ortholog_id), kegg_group_id=values(kegg_group_id) ;";
+				} else {
+					$query = "INSERT INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), ortholog_id=values(ortholog_id), type=values(ortholog_id), kegg_group_id=values(kegg_group_id) ;";
+				}
 				# print STDERR Dumper( \@porthobucket );
 				$dbh->multiple_query( $query, \@porthobucket );
 			}
