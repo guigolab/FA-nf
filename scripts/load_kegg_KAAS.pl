@@ -304,12 +304,12 @@ sub uploadSingleKEGGId {
 	my $kegg_group_sql_select = qq{ SELECT kegg_group_id FROM kegg_group WHERE db_id=\"$kegg_id\" };
 	my $kegg_group_sql_update = qq{ UPDATE kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", genes=\"$hash->{'GENES'}\", kegg_release=\"$kegg_release\";};
 	my $kegg_group_sql_insert = "";
-	if( lc( $dbEngine ) eq 'sqlite') {
-		$kegg_group_sql_insert = qq{ INSERT INTO kegg_group(kegg_group_id,name,definition,pathway,module,class,db_links,db_id,genes,kegg_release) VALUES (NULL,\"$hash->{'NAME'}\",\"$hash->{'DEFINITION'}\",\"$hash->{'PATHWAY'}\",\"$hash->{'MODULE'}\",\"$hash->{'CLASS'}\", \"$hash->{'DBLINKS'}\",\"$kegg_id\",\"$hash->{'GENES'}\",\"$kegg_release\")};
-	}
-	else {
-		$kegg_group_sql_insert = qq{ INSERT INTO kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", genes=\"$hash->{'GENES'}\", kegg_release=\"$kegg_release\";};
-	}
+	#if( lc( $dbEngine ) eq 'sqlite') {
+	$kegg_group_sql_insert = qq{ INSERT INTO kegg_group(name,definition,pathway,module,class,db_links,db_id,genes,kegg_release) VALUES (\"$hash->{'NAME'}\",\"$hash->{'DEFINITION'}\",\"$hash->{'PATHWAY'}\",\"$hash->{'MODULE'}\",\"$hash->{'CLASS'}\", \"$hash->{'DBLINKS'}\",\"$kegg_id\",\"$hash->{'GENES'}\",\"$kegg_release\")};
+	#}
+	#else {
+	#	$kegg_group_sql_insert = qq{ INSERT INTO kegg_group SET name=\"$hash->{'NAME'}\",definition=\"$hash->{'DEFINITION'}\",pathway=\"$hash->{'PATHWAY'}\",module=\"$hash->{'MODULE'}\",class=\"$hash->{'CLASS'}\", db_links=\"$hash->{'DBLINKS'}\", db_id=\"$kegg_id\", genes=\"$hash->{'GENES'}\", kegg_release=\"$kegg_release\";};
+	#}
 	if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {
 		# print "SQL: $kegg_group_sql_insert\n";
 	}
@@ -446,11 +446,11 @@ sub uploadKeggInformation {
 				# print STDERR  $ortholog_sql_update, "\n";
 
 				my $ortholog_sql_insert = "";
-				if( lc( $dbEngine ) eq 'sqlite') {
-						$ortholog_sql_insert = qq{ INSERT INTO ortholog(ortholog_id, name, organism_id, db_id, db_name ) VALUES(NULL,\"$gene_id\",\"$organism_id\",\"$kegg_id\",\"KEGG\")};
+				#if( lc( $dbEngine ) eq 'sqlite') {
+				#		$ortholog_sql_insert = qq{ INSERT INTO ortholog(ortholog_id, name, organism_id, db_id, db_name ) VALUES(NULL,\"$gene_id\",\"$organism_id\",\"$kegg_id\",\"KEGG\")};
 
 						# print STDERR $ortholog_sql_insert, "\n";
-						my $ortholog_id = $dbh->select_update_insert("ortholog_id", $ortholog_sql_select, $ortholog_sql_update, $ortholog_sql_insert, $do_update);
+				#		my $ortholog_id = $dbh->select_update_insert("ortholog_id", $ortholog_sql_select, $ortholog_sql_update, $ortholog_sql_insert, $do_update);
 
 						# Not needed for next step
 						#small patch for SQLite - the current insert function could not return id of the last inserted record...
@@ -460,11 +460,11 @@ sub uploadKeggInformation {
 		        #   $ortholog_id=$results->[0]->{'id'};
 		        # }
 
-				} else {
+				#} else {
 					# Handling stuff for SQL
-					my $values = "( \"$gene_id\", \"$organism_id\", \"$kegg_id\", \"KEGG\" )";
-					push( @orthobucket, $values );
-				}
+				my $values = "( \"$gene_id\", \"$organism_id\", \"$kegg_id\", \"KEGG\" )";
+				push( @orthobucket, $values );
+				#}
 
 			}
 
@@ -549,13 +549,13 @@ sub uploadKeggInformation {
         my $prot_ortholog_sql_select = qq{ SELECT protein_ortholog_id FROM protein_ortholog WHERE protein_id=\"$protein_id\" AND ortholog_id=\"$ortholog_id\" };
         my $prot_ortholog_sql_update = qq{ UPDATE protein_ortholog SET protein_id=\"$protein_id\",ortholog_id=\"$ortholog_id\",type=\"$type\",kegg_group_id=\"$kegg_group_id\";};
         my $prot_ortholog_sql_insert ="";
-        if( lc( $config{'dbEngine'} ) eq 'sqlite') {
-					$prot_ortholog_sql_insert = qq{ INSERT INTO protein_ortholog (protein_ortholog_id, protein_id,ortholog_id,type,kegg_group_id) VALUES(NULL,\"$protein_id\",\"$ortholog_id\",\"$type\",\"$kegg_group_id\");};
-					my $protein_ortholog_id = $dbh->select_update_insert("protein_ortholog_id", $prot_ortholog_sql_select, $prot_ortholog_sql_update, $prot_ortholog_sql_insert, $do_update);
-				} else {
-					my $values = "( \"$protein_id\", \"$ortholog_id\", \"$type\", \"$kegg_group_id\" )";
-					push( @porthobucket, $values );
-				}
+        #if( lc( $config{'dbEngine'} ) eq 'sqlite') {
+				#	$prot_ortholog_sql_insert = qq{ INSERT INTO protein_ortholog (protein_ortholog_id, protein_id,ortholog_id,type,kegg_group_id) VALUES(NULL,\"$protein_id\",\"$ortholog_id\",\"$type\",\"$kegg_group_id\");};
+				#	my $protein_ortholog_id = $dbh->select_update_insert("protein_ortholog_id", $prot_ortholog_sql_select, $prot_ortholog_sql_update, $prot_ortholog_sql_insert, $do_update);
+				#} else {
+				my $values = "( \"$protein_id\", \"$ortholog_id\", \"$type\", \"$kegg_group_id\" )";
+				push( @porthobucket, $values );
+				#}
 
 			} #for each group of genes in multiply organisms
 
