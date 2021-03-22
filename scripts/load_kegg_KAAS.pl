@@ -355,7 +355,7 @@ sub uploadKeggInformation {
 	my $kegg_group_id;
 	if ( $pre_upload_kegg > 0 ) {
 
-		print STDERR "* Entering $kegg_id\n";
+		print STDERR "\n* Entering $kegg_id\n";
 		( $hash, $kegg_group_id ) = retrieve_kegg_record( $kegg_id );
 
 		#print STDERR "Prefilled\n";
