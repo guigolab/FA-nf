@@ -6,7 +6,7 @@ MAINTAINER Toni Hermoso Pulido <toni.hermoso@crg.eu>
 RUN set -x ; apt-get update && apt-get -y upgrade
 
 # Specific of FA pipeline
-RUN apt-get install -y r-base sqlite mysql-client default-libmysqlclient-dev
+RUN apt-get install -y r-base sqlite mariadb-client default-libmysqlclient-dev
 RUN apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
 
 RUN apt-get install -y libxml2-dev libexpat1-dev libdb-dev libgd-dev
