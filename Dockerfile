@@ -15,7 +15,9 @@ RUN apt-get install -y libxml2-dev libexpat1-dev libdb-dev libgd-dev
 RUN cpanm Config::Simple Config::JSON DBI DBD::mysql DBD::SQLite Digest::SHA File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util Scalar::Util String::Util
 
 ARG BIOPERL_VERSION=1.7.5
-RUN cpanm install CDRAUG/BioPerl-${BIOPERL_VERSION}.tar.gz
+# https://stackoverflow.com/questions/47966512/error-installing-xmldomxpath
+RUN cpanm --force XML::DOM::XPath
+RUN cpanm CDRAUG/BioPerl-${BIOPERL_VERSION}.tar.gz
 RUN cpanm Bio::SearchIO::blastxml
 
 RUN apt-get install -y libssl-dev
