@@ -440,12 +440,12 @@ sub uploadKeggInformation {
 
 				#populate ortholog table
 				#check if ortholog already exists (yes && do_update => update record; no => insert new ortholog)
-				my $ortholog_sql_select = qq{ SELECT ortholog_id FROM ortholog WHERE name=\"$gene_id\" };
+				# my $ortholog_sql_select = qq{ SELECT ortholog_id FROM ortholog WHERE name=\"$gene_id\" };
 				# print STDERR  $ortholog_sql_select, "\n";
-				my $ortholog_sql_update = qq{ UPDATE ortholog SET name=\"$gene_id\",organism_id=\"$organism_id\",db_id=\"$kegg_id\",db_name=\"KEGG\";};
+				# my $ortholog_sql_update = qq{ UPDATE ortholog SET name=\"$gene_id\",organism_id=\"$organism_id\",db_id=\"$kegg_id\",db_name=\"KEGG\";};
 				# print STDERR  $ortholog_sql_update, "\n";
 
-				my $ortholog_sql_insert = "";
+				# my $ortholog_sql_insert = "";
 				#if( lc( $dbEngine ) eq 'sqlite') {
 				#		$ortholog_sql_insert = qq{ INSERT INTO ortholog(ortholog_id, name, organism_id, db_id, db_name ) VALUES(NULL,\"$gene_id\",\"$organism_id\",\"$kegg_id\",\"KEGG\")};
 
