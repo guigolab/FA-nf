@@ -427,7 +427,7 @@ sub uploadKeggInformation {
 
 				# insert each ortholog
 				my ($code,$gene_id)=split/\:/,$l;
-				$gene_id=~s/^ //;
+				$gene_id = trim($gene_id);
 				my $lcode=lc($code);
 				#print STDERR "* ", $lcode, "\n";
 				#print STDERR "- ", Dumper( $codesOrg );
@@ -508,7 +508,7 @@ sub uploadKeggInformation {
 
 				# insert each ortholog
 				my ($code,$gene_id)=split/\:/,$l;
-				$gene_id=~s/^ //;
+				$gene_id = trim($gene_id);
 				# determine if $gene_id containt a cluster of genes
 				my @cluster=split/ /,$gene_id;
 				$is_cluster=1 if scalar(@cluster)>1;
