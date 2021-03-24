@@ -390,6 +390,8 @@ sub uploadKeggInformation {
 
 	print "* NUM PROT: $#proteinList\n";
 
+	# Number limit names
+	my $limnames = 9;
 
   foreach my $proteinItem(@proteinList) {
 
@@ -411,8 +413,8 @@ sub uploadKeggInformation {
 				$gene_string = $hash->{'GENES'};
 			}
 
-			print STDERR $proteinItem, "\t", $gene_string, "\n";
-			print STDERR "gene string: $gene_string\n";
+			# print STDERR $proteinItem, "\t", $gene_string, "\n";
+			# print STDERR "gene string: $gene_string\n";
 			my @lines=split/\,/,$gene_string;
 			my $is_cluster;
 
@@ -433,8 +435,8 @@ sub uploadKeggInformation {
 				my $name;
 				# Gene id can be too long
 				my (@names) = split(/ /, $gene_id);
-				if ( $#names > 9 ) {
-					$name = join(" ", @names[0..9]);
+				if ( $#names > $limnames ) {
+					$name = join(" ", @names[0..$limnames]);
 				} else {
 					$name = join(" ", @names);
 				}
@@ -522,8 +524,8 @@ sub uploadKeggInformation {
 				my $name;
 				# Gene id can be too long
 				my (@names) = split(/ /, $gene_id);
-				if ( $#names > 9 ) {
-					$name = join(" ", @names[0..9]);
+				if ( $#names > $limnames ) {
+					$name = join(" ", @names[0..$limnames]);
 				} else {
 					$name = join(" ", @names);
 				}
