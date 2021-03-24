@@ -411,8 +411,8 @@ sub uploadKeggInformation {
 				$gene_string = $hash->{'GENES'};
 			}
 
-			#print STDERR $proteinItem, "\t", $gene_string, "\n";
-			#print "gene string: $gene_string\n";
+			print STDERR $proteinItem, "\t", $gene_string, "\n";
+			print STDERR "gene string: $gene_string\n";
 			my @lines=split/\,/,$gene_string;
 			my $is_cluster;
 
@@ -428,7 +428,16 @@ sub uploadKeggInformation {
 				# insert each ortholog
 				my ($code,$gene_id)=split/\:/,$l;
 				$gene_id = trim($gene_id);
-				my $lcode=lc($code);
+				my $lcode=lc(trim($code));
+
+				my $name;
+				# Gene id can be too long
+				my (@names) = split(/ /, $gene_id);
+				if ( $#names > 9 ) {
+					$name = join(" ", @names[0..9]);
+				} else {
+					$name = join(" ", @names);
+				}
 				#print STDERR "* ", $lcode, "\n";
 				#print STDERR "- ", Dumper( $codesOrg );
 				# next if ortholog is not in the list of species to analyze
@@ -462,7 +471,7 @@ sub uploadKeggInformation {
 
 				#} else {
 					# Handling stuff for SQL
-				my $values = "( \"$gene_id\", \"$organism_id\", \"$kegg_id\", \"KEGG\" )";
+				my $values = "( \"$name\", \"$organism_id\", \"$kegg_id\", \"KEGG\" )";
 				push( @orthobucket, $values );
 				#}
 
@@ -510,10 +519,18 @@ sub uploadKeggInformation {
 				my ($code,$gene_id)=split/\:/,$l;
 				$gene_id = trim($gene_id);
 				# determine if $gene_id containt a cluster of genes
-				my @cluster=split/ /,$gene_id;
-				$is_cluster=1 if scalar(@cluster)>1;
-				$is_cluster=0 if scalar(@cluster)==1;
-				my $lcode=lc($code);
+				my $name;
+				# Gene id can be too long
+				my (@names) = split(/ /, $gene_id);
+				if ( $#names > 9 ) {
+					$name = join(" ", @names[0..9]);
+				} else {
+					$name = join(" ", @names);
+				}
+
+				$is_cluster=1 if scalar(@names)>1;
+				$is_cluster=0 if scalar(@names)==1;
+				my $lcode=lc(trim($code));
 				#print STDERR "* ", $lcode, "\n";
 				#print STDERR "- ", Dumper( $codesOrg );
 				# next if ortholog is not in the list of species to analyze
@@ -542,7 +559,7 @@ sub uploadKeggInformation {
 				#my $results_ortho = $dbh->select_from_table($query);
 
 				#my $ortholog_id = $results_ortho->[0]->{'ortholog_id'};
-				my $ortholog_id = $orthoidlist->{$organism_id}->{$gene_id};
+				my $ortholog_id = $orthoidlist->{$organism_id}->{$name};
 
 				# print STDERR "* $ortholog_id\n";
 
