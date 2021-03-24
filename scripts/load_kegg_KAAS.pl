@@ -471,8 +471,8 @@ sub uploadKeggInformation {
 			if ($#orthobucket >= 0) {
 				my $query;
 				# VALUES here used for replacement
-				if ( lc($dbEngine eq 'sqlite') ) {
-					$query = "INSERT INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ON CONFLICT DO UPDATE SET name = values(name), organism_id = values(organism_id), db_id = values(db_id) ;";
+				if ( lc($dbEngine) eq 'sqlite' ) {
+					$query = "INSERT OR IGNORE INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ;";
 				} else {
 					$query = "INSERT INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ON DUPLICATE KEY UPDATE name = values(name), organism_id = values(organism_id), db_id = values(db_id) ;";
 				}
@@ -567,8 +567,8 @@ sub uploadKeggInformation {
 			if ($#porthobucket >= 0) {
 				my $query;
 				# VALUES here used for replacement
-				if ( lc($dbEngine eq 'sqlite') ) {
-					$query = "INSERT INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ON CONFLICT DO UPDATE SET protein_id=values(protein_id), ortholog_id=values(ortholog_id), type=values(ortholog_id), kegg_group_id=values(kegg_group_id) ;";
+				if ( lc($dbEngine) eq 'sqlite' ) {
+					$query = "INSERT OR IGNORE INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ;";
 				} else {
 					$query = "INSERT INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), ortholog_id=values(ortholog_id), type=values(ortholog_id), kegg_group_id=values(kegg_group_id) ;";
 				}
