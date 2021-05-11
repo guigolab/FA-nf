@@ -206,7 +206,7 @@ open FH,"$inFile";
 
     # Toniher: Handling IDs more in detail since no always only words. Notice TransDecoder output
     my (@sids) = split( /\;/, $elms[$ids_ix] );
-    
+
     if ( $#sids >= 0 && $sids[0]=~/ID\=(\S+)\s*$/ ) {
      $gene_name=$1;
     }
@@ -269,37 +269,37 @@ open FH,"$inFile";
  # TODO: All this stuff below should be better rationalized for different cases
 
   elsif (($elms[$type_ix] eq 'transcript' )||($elms[$type_ix] eq 'mRNA' )||(($elms[$type_ix] eq 'CDS') && ( !$c_prot_id || $c_prot_id eq ''))) {
-   
+
    my $prot_id='';
-   
+
    # Toniher: allowing more flexibility for parsing
    my $sid = $elms[$ids_ix];
    if ( $sid ne '' ) {
-    
+
      # TransDecoder. Added by Toniher
      if($prot_id eq '' && $elms[$annot_ix] eq 'transdecoder') {
       #if(($loglevel eq 'debug')) { print "TRANSID\n"; }
       $prot_id=$1 if $sid=~/ID=([^\;]+)/;
       }
-     
+
      # Priority one
      if($prot_id eq '') {
       #if(($loglevel eq 'debug')) { print "TARGET\n"; }
       $prot_id=$1 if $sid=~/Target=([^\;]+)/;
       }
-     
+
     #update 18/11/2015
     #In some annotation versions, provided by Tyler he added 'product' instead of Target... Parent is also exists, but it refer to the transcripts, not proteins
     if($prot_id eq '') {
      #if(($loglevel eq 'debug')) { print "PRODUCT\n"; }
      $prot_id=$1 if $sid=~/product\=([^\;]+)/;
      }
-    
+
     if($prot_id eq '') {
      #if(($loglevel eq 'debug')) { print "NAME\n"; }
      $prot_id=$1 if $sid=~/Name\=([^\;]+)/;
      }
-    
+
     #In some annotation versions, provided by Tyler, Target field is absent and only present Parent transcript id.
      if($prot_id eq '') {
       #if(($loglevel eq 'debug')) { print "PARENT\n"; }
@@ -349,9 +349,9 @@ close FH;
 sub insertProtein
 {
  my($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh, $engine,$loglevel) =@_;
- 
+
  if ( ! $c_prot_id || $c_prot_id eq '' ) { return; }
- 
+
  if(!defined $engine){$engine = 'mysql';}
 
  my $numberElements = scalar keys %{$idList}||'';
@@ -397,7 +397,7 @@ sub updateProteinDefinition
  my $debugSQL = 1;
  my ($selectString,$res,$proteinId);
  my @protList=();
-  
+
  foreach my $protItem(keys %{$annotData}) {
     #select protein_id from DB
     if($keyType eq 'protein_id') {$selectString = "SELECT d.protein_id, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.protein_id = $protItem and d.source = '$source'";}
@@ -405,18 +405,18 @@ sub updateProteinDefinition
     {$selectString = "SELECT d.protein_id, p.sha1, d.definition from protein p, definition d where p.protein_id=d.protein_id and p.stable_id like '$protItem' and d.source = '$source'";}
     #print STDERR $selectString, "\n";
     $res = $dbh->select_from_table($selectString);
- 
+
     if ( $#res < 0 ) {
- 
+
       $definition = trim( join( " ", @{$annotData->{$protItem}{'annot'}} ) ); #TODO: Check quoting here
       $definition=~s/\s{2,}/ /g;
-      
+
       my $insertString;
       if($keyType eq 'protein_id') {
-       
+
        if( lc( $engine ) eq 'sqlite') {
          $insertString = "INSERT INTO definition ( definition_id, definition, source, protein_id ) values ( NULL, \"$definition\",  \"$source\", '$protItem' );";
- 
+
        } else {
 
         $insertString = "INSERT INTO definition SET definition=\"$definition\", source =\"$source\", protein_id='$protItem';";
@@ -428,23 +428,23 @@ sub updateProteinDefinition
          $proteinId=$res->[0]->{'protein_id'};
         if( lc( $engine ) eq 'sqlite') {
           $insertString = "INSERT INTO definition ( definition_id, definition, source, protein_id ) values ( NULL, \"$definition\",  \"$source\", '$proteinId' );";
-  
+
         } else {
          $insertString = "INSERT INTO definition SET definition=\"$definition\", source =\"$source\", protein_id='$proteinId';";
-         
+
         }
         }
       }
      if(($loglevel eq 'debug'))
      { print "$insertString\n";}
       $dbh->insert_set($insertString);
-      
+
    } else {
-     
+
       if(($loglevel eq 'debug')||($loglevel eq 'info'))
       {  print STDERR "There is no protein_id for $protItem, skipped!\n";}
        next;
-       
+
     }
  }
 
@@ -551,7 +551,7 @@ sub uploadInterProResults
   {
    next;
   }
-  
+
   #  next if $updateFlag==0;
 
   #if updateFlag ==1
@@ -726,34 +726,67 @@ return 1;
 }
 
 
-sub updateAnnotationStatus
-{
- my $dbh=shift;
- #annotation status can be either 0 = not annotated, or 1 - annotated. Status==1 setting up when there is at least one hit from any
- # source of evidence was used for annotation.
+sub updateAnnotationStatus {
+  my $dbh=shift;
 
- #lets reset to zero status any of the protein in DB
+  #annotation status can be either 0 = not annotated, or 1 - annotated. Status==1 setting up when there is at least one hit from any
+  # source of evidence was used for annotation.
+
+  #lets reset to zero status any of the protein in DB
   my $updateString = "UPDATE protein set status = 0";
-if(($loglevel eq 'debug')){   print "SQL_CODE:$updateString\n";}
+  if(($loglevel eq 'debug')){   print "SQL_CODE:$updateString\n";}
   $dbh->update_set($updateString);
 
- #then lets go through all tables and update status to 1 in case if protein had a record in selected table_name
- #definition blast2go and kegg
- # $updateString = "UPDATE protein, definition set protein.status = 1 where definition.definition is not null and definition.definition not like '' and protein.protein_id=definition.protein_id";
- $updateString = "UPDATE protein SET status = 1 where protein_id in ( SELECT protein_id from definition where definition is not null and definition not like '' )";
- if(($loglevel eq 'debug')){  print "SQL_CODE:$updateString\n" ;}
-  $dbh->update_set($updateString);
-#blast hits, interpro domains and keggs
-#my @tableList = qw(blast_hit domain protein_ortholog signalP);
-my @tableList = qw(domain protein_ortholog signalP);
- foreach my $dbItem(@tableList)
- {
-   $updateString = "UPDATE protein set status = 1 where protein_id in (select distinct protein_id from $dbItem )";
-  if(($loglevel eq 'debug')){  print "SQL_CODE:$updateString\n";}
-   $dbh->update_set($updateString);
- }
+  #then lets go through all tables and update status to 1 in case if protein had a record in selected table_name
+  #definition blast2go and kegg
+  # $updateString = "UPDATE protein, definition set protein.status = 1 where definition.definition is not null and definition.definition not like '' and protein.protein_id=definition.protein_id";
 
- return 1;
+  # Let's get in bulks of 100;
+  my $protIdSelect = "SELECT protein_id from definition where definition is not null and definition not like '' ";
+  my $protIdDefs = $dbh->select_from_array($protIdSelect);
+
+  &updateProteinStatus($dbh, $protIdDefs);
+
+  #blast hits, interpro domains and keggs
+  #my @tableList = qw(blast_hit domain protein_ortholog signalP);
+  my @tableList = qw(domain protein_ortholog signalP);
+  foreach my $dbItem (@tableList) {
+
+    my $protIdSelect = "select distinct protein_id from $dbItem";
+    my $protIdDefs = $dbh->select_from_array($protIdSelect);
+
+    &updateProteinStatus($dbh, $protIdDefs);
+  }
+
+  return 1;
+}
+
+sub updateProteinStatus {
+
+  my $dbh = shift;
+  my $ids = shift;
+
+  my $bulkNum = 100; # TODO: This could be adapted
+
+  my @temp = ();
+  foreach my $protIdDef ( @{$ids} ) {
+    push( @temp, $protIdDef );
+    if ( $#temp > $bulkNum ) {
+      $tmpStr = join( ", ", @temp );
+      my $updateString = "UPDATE protein SET status = 1 where protein_id in ( $tmpStr )";
+      if(($loglevel eq 'debug')){  print "SQL_CODE:$updateString\n" ;}
+      $dbh->update_set($updateString);
+      @temp = ();
+    }
+  }
+  if ( $#temp >= 0 ) {
+    $tmpStr = join( ", ", @temp );
+    my $updateString = "UPDATE protein SET status = 1 where protein_id in ( $tmpStr )";
+    if(($loglevel eq 'debug')){  print "SQL_CODE:$updateString\n" ;}
+    $dbh->update_set($updateString);
+  }
+
+  return 1;
 }
 
 sub uploadCDsearchData
@@ -769,7 +802,7 @@ sub uploadCDsearchData
   $sth2->execute();
   my $proteinId = $sth2->fetchrow()||'';
   $sth2->finish();
-  
+
   #$results = $dbh->select_from_table($select);
   #my $proteinId = $results->[0]{'protein_id'};
 
@@ -957,11 +990,11 @@ sub parseAnnotation
   {
    chomp($line);
    ($proteinName, $annotTerm)=$line=~/^(\S+)\s+(\S.*)\s*/;
-   
+
    if ( $annotTerm eq '#' ) {
-    
+
     ($proteinName, $annotTerm)=$line=~/^(\S+)\s+\#\s+(\S.*)\s*/;
-    
+
    }
 
 #some patch - new Lynx annotation had transcript name within protein name: LYPA23B012832T1|LYPA23B012832P1 I need only the second part, not the first one:
@@ -983,7 +1016,7 @@ sub parseAnnotation
     push(@{$returnData{$proteinName}{'annot'}}, $annotTerm);
 
   }
-   
+
    #if($line=~/\S+\s+\S+\s+(.+)$/)
    # {push(@{$returnData{$proteinName}{'definition'}}, $1); }
 
@@ -1258,7 +1291,7 @@ sub constructStatment {
 
         $stmt .= $f . " = " . $val;
     }
-    
+
     return $stmt;
 
 }
@@ -1268,11 +1301,11 @@ sub selectLastId {
 	my $engine = shift;
 
 	if ( $engine eq 'mysql' ) {
-	
+
 		return "SELECT last_insert_id() as id ";
 
 	} else {
-		
+
 		return "SELECT last_insert_rowid() as id ";
 
 	}
@@ -1280,26 +1313,26 @@ sub selectLastId {
 }
 
 sub handleValue {
- 
+
   my $value = shift;
   my $context = shift;
-  
+
   if ( $context eq 'evalue' ) {
-   
+
    if ( looks_like_number( $value ) ) {
-    
+
      return $value;
-    
+
    } else {
-    
+
     return undef;
    }
-   
-   
+
+
   } else {
     return $value;
   }
- 
+
 }
 
 1;

@@ -16,7 +16,7 @@ Utility to get summary information about annotated and not annotated proteins, a
 
 Typical usage is as follows:
 
-  % perl get_results.pl -conf main_configuration.ini 
+  % perl get_results.pl -conf main_configuration.ini
 
 =head2 Options
 
@@ -28,10 +28,10 @@ Script to extract basic information about annotated and not annotated proteins
           -list      : File with selected protein IDs - script will process only those sequences
           -help      : This documentation
 
-Note: Don't forget to specify mandatory options in the main configuration file : 
+Note: Don't forget to specify mandatory options in the main configuration file :
              Database name and path;
              Result folder name;
-             
+
 
 =head1 AUTHORS
 
@@ -56,10 +56,10 @@ use Config::Simple;
 
 my ( $show_help,$confFile,$oboFile,$listFile);
 
-&GetOptions(    	
+&GetOptions(
                         'conf=s'=>\$confFile,
 																								'obo=s'=>\$oboFile,
-                        'list=s'=>\$listFile, 
+                        'list=s'=>\$listFile,
 			'help|h'        => \$show_help
 	   )
   or pod2usage(-verbose=>2);
@@ -74,7 +74,7 @@ if(!defined $oboFile)
 
 #read configuration file
 my $cfg = new Config::Simple($confFile);
-#put config parameters into %config                                             
+#put config parameters into %config
 my %config = $cfg->vars();
 
 #my %conf =  %::conf;
@@ -103,7 +103,7 @@ system("mkdir $outputFolder") if (!-d $outputFolder);
 
 my @listIds=();
 #create a list with protein ids, if ones is setted up
-if(defined $listFile) 
+if(defined $listFile)
  {  @listIds=&getSelectedIds($listFile);   }
 
 #First - need to fulfill go term information if there are go terms without name and term_type fields fulfilled. To fulfill GO term information
@@ -118,7 +118,8 @@ if ( ! -f $ontologyFile ) {
 # print "Ontology File is here: $ontologyFile\n";
 &uploadGOInfo($dbh, $ontologyFile);
 
-#Then need to update annotation status to 'annotated' for those proteins with hits in any source of evidence (including blast). 
+
+#Then need to update annotation status to 'annotated' for those proteins with hits in any source of evidence (including blast).
 &updateAnnotationStatus($dbh);
 
 #get summary information

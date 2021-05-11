@@ -266,6 +266,20 @@ sub select_from_table {
     return $self->{'select_from_table'};
 }
 
+sub select_from_array {
+    my ($self, $par) = @_;
+
+    #if(($loglevel eq 'debug')){ $debugSQL && print STDOUT "SQL CODE: $par\n";}
+    my $sth = $self->prepare_stmt($par);
+    $sth->execute();
+    $self->{'sth'} = $sth;
+    my @array=();
+    while (my $res = $sth->fetchrow_arrayref()) {
+    	    push(@array, $res->[0]);
+    }
+    return \@array;
+}
+
 sub sth {
     my ($self, $sth) = @_;
     $self->{'sth'} = $sth if $sth;
