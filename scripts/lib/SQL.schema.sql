@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `domain` (
   `sequence` TEXT ,
   `description` TEXT NOT NULL DEFAULT '' ,
   `rel_start` INTEGER ,
-  `rel_start` INTEGER ,
+  `rel_end` INTEGER ,
   `db_xref` TEXT NOT NULL DEFAULT '' ,
   `score` REAL DEFAULT NULL ,
   `evalue` REAL DEFAULT NULL ,
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `domain` (
   `go` TEXT,
   `protein_id` INTEGER  NOT NULL,
   KEY `rel_start_idx` ( `rel_start` ),
-  KEY `rel_end_idx` ( `rel_start` ),
+  KEY `rel_end_idx` ( `rel_end` ),
   KEY `score_idx` (`score`),
   KEY `evalue_idx` (`evalue`),
   KEY `protein_id_idx` (`protein_id`)
