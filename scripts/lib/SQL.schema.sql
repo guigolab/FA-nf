@@ -33,9 +33,10 @@ CREATE TABLE IF NOT EXISTS `protein` (
 
 CREATE TABLE IF NOT EXISTS `definition` (
   `definition_id` INTEGER PRIMARY KEY AUTO_INCREMENT  ,
-  `protein_id` TEXT NOT NULL DEFAULT '' ,
+  `protein_id` INTEGER  NOT NULL ,
   `definition` TEXT,
-  `source` TEXT
+  `source` TEXT,
+  KEY `protein_id_idx` (`protein_id`)
 );
 
 

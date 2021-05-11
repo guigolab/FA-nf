@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `protein` (
 
 CREATE TABLE IF NOT EXISTS `definition` (
   `definition_id` INTEGER PRIMARY KEY AUTOINCREMENT  ,
-  `protein_id` TEXT NOT NULL DEFAULT '' ,
+  `protein_id` INTEGER  NOT NULL ,
   `definition` TEXT,
   `source` TEXT);
 
