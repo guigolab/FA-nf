@@ -597,13 +597,12 @@ sub uploadKeggInformation {
 
 			# print "* NUM LINES PORTHO: $#lines\n";
 
-
-			#update definition field for proteins associated to this KO group
-			if($hash->{'DEFINITION'} && $hash->{'DEFINITION'} ne '') {
-				push(@{$protDefinitionData{$protein_id}{'annot'}},$hash->{'DEFINITION'});
-			}
-
 			# Toniher. This below is not necessary since it is sent to updateProteinDefinition
+			#update definition field for proteins associated to this KO group
+			#if($hash->{'DEFINITION'} && $hash->{'DEFINITION'} ne '') {
+			#	push(@{$protDefinitionData{$protein_id}{'annot'}},$hash->{'DEFINITION'});
+			#}
+
 			#$protein_definition .='KEGG:'.$hash->{'DEFINITION'}.';';
 			#$sqlUpdate = "UPDATE protein set definition='$protein_definition' where protein_id=$protein_id";
 			#      print "SQL_CODE:$sqlUpdate\n" ;
@@ -612,6 +611,8 @@ sub uploadKeggInformation {
 			# add GO terms info into go_term and protein_go table.
 			# TODO Consider in the future other annotations, such as COG
 			if(defined $hash->{'DBLINKS'}) {
+			 # TODO: Multiple GOs here, need to consider all maybe
+			 # DBLINKS     GO: 0016279 0030544
 			 my $goId = parseKEGGDBLInks($hash->{'DBLINKS'});
 			 if($goId ne '') {
 			     #insert go term, associated with this protein into go_term table, and then into protein_go
@@ -632,6 +633,7 @@ sub uploadKeggInformation {
 			        $goTermId=$results->[0]->{'id'};
 			     }
 			     #select protein_go_id if there is one, and add 'KEGG' to the source field
+					 # TODO: Change INSERT or IGNORE here
 			     $sqlSelect = "SELECT protein_go_id, source FROM protein_go where protein_id = $protein_id and go_term_id=$goTermId and source='KEGG'";
 			     my $result =$dbh->select_from_table($sqlSelect);
 					 if ( $#$result < 0 ) {
@@ -650,7 +652,8 @@ sub uploadKeggInformation {
 	#update protein definition for KEGG source
 	#print STDERR "Definition\n";
 	#print STDERR Dumper( \%protDefinitionData );
-	&updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
+	# Toniher: We do not include protein Definition here
+	# &updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
 	print STDERR "Finished here ".getLoggingTime()."\n";
 
 }#sub
