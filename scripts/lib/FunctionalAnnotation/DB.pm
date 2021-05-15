@@ -365,7 +365,7 @@ sub multiple_query {
     my $values_string = join( ", ", @{$values} );
 
     $query =~ s/#VALUES#/$values_string/;
-    print STDERR $query;
+    # print STDERR $query;
 
     my $sth = $self->prepare_stmt($query);
     $sth->execute();
