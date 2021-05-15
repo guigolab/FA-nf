@@ -120,6 +120,8 @@ foreach my $item ( @kegg_codes ) {
 #get list of organisms from the KEGG server and select only ones that needed
 %organisms = &organism_table(\@kegg_codes,$config{'dbEngine'} ,$dbh);
 
+print STDERR "Start here ".getLoggingTime()."\n";
+
 my %keggs=();
 # parse $input to know the number of associations of a KEGG group to different proteins
 open (FH, "$input");
@@ -145,6 +147,8 @@ my $pre_upload_kegg = 0;
 if ( $directory ) {
 	$pre_upload_kegg = &preUploadKeggInformation( $dbh, $directory, $config{'dbEngine'} );
 }
+
+print STDERR "Preupload finished here ".getLoggingTime()."\n";
 
 
 #print Dumper( \%keggs );
@@ -566,7 +570,7 @@ sub uploadKeggInformation {
 				# print STDERR "* $ortholog_id\n";
 
 				if ( ! $ortholog_id ) {
-					print STDERR "Major error here";
+					print STDERR "Major error here\n";
 					exit;
 				}
 
@@ -594,6 +598,8 @@ sub uploadKeggInformation {
 				# print STDERR Dumper( \@porthobucket );
 				$dbh->multiple_query( $query, \@porthobucket );
 			}
+
+			print STDERR "Ortholog here ".getLoggingTime()."\n";
 
 			# print "* NUM LINES PORTHO: $#lines\n";
 
@@ -647,6 +653,9 @@ sub uploadKeggInformation {
 			 }#if there was a GO records
 		 }#if defined dbLinks
 	}#foreach protein Item
+
+	print STDERR "Protein finished here ".getLoggingTime()."\n";
+
  }#foreach kegg KO item
 
 	#update protein definition for KEGG source
