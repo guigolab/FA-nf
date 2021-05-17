@@ -609,7 +609,7 @@ process ipscn {
     file("out_interpro_${seq}") into (ipscn_result1, ipscn_result2)
 
     """
-    sed 's/*//' $seq > tmp4ipscn
+    sed 's/*//g' $seq > tmp4ipscn
     interproscan.sh -i tmp4ipscn --goterms --iprlookup --pathways -o out_interpro_${seq} -f TSV -T ${params.ipscantmp}
     """
 }
