@@ -855,6 +855,8 @@ process 'kegg_download'{
 
 process 'kegg_upload'{
 
+ label 'kegg_upload'
+
  maxForks 1
 
  input:
