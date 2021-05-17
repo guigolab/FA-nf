@@ -26,7 +26,7 @@ Note: for the downstream processing of the KO file it is very important to store
 ### Configuration file
 The pipeline require as an input the configuration file with specified parameters, such as path to the input files, specie name, KEGG specie abbreviations used to obtain KO groups, and some more.
 
-The example of configuration file is included into this repository with name params.config
+The example of configuration file is included into this repository with name ```params.config```
 
 ## Running the pipeline
 
@@ -56,7 +56,7 @@ More information can be found in the [Nextflow documentation](https://www.nextfl
 * **signalP**: it performs signalP analyses from input files
 * **targetP**: it performs targetP analyses from input files
 * **blast_annotator**: it retrieves GO terms from BLAST hits
-* **blastDef**: it suggest a definition to input entries based on BLAST hits
+* **blastDef**: it attaches a definition to input entries based on BLAST hits
 * **cdSearchHit**: it performs a NCBI CDSearch Hit query
 * **cdSearchFeat**: it performs a NCBI CDSearch Feature query
 * **initDB**: it initialitzes the Database used for gathering data from different analyses and later generating the reports
@@ -66,14 +66,15 @@ More information can be found in the [Nextflow documentation](https://www.nextfl
 * **CDSearch_hit_upload**: : it uploads NCBI CDSearch Hit analyses into the DB
 * **CDSearch_feat_upload**: it uploads NCBI CDSearch Feature analyses into the DB
 * **blast_annotator_upload**: it uploads GO terms from BLAST hits into the DB
-* **kegg_upload**: it retrieves and uploads KEGG data into the DB
+* **kegg_download**: it downloads KO (Kegg Ortholog) from KEGG
+* **kegg_upload**: it retrieves and uploads KEGG data (either from a KAAS file or KofamKOALA) into the DB
 * **generateResultFiles**: it generates report files
-* **generateGFF3File**: if GFF provided as input, it provides a modified GFF with additional information
+* **generateGFF3File**: if GFF provided as input, it provides a modified GFF with additional information from the previous annotation steps
 
 ### Formatted databases
 
-* For BLAST: ```blastDbPath = "/path/to/db"``` It looks for formatted database files (normally named db.p* for protein type based ones), otherwise it will try to format FASTA file with that name
-* For DIAMOND: ```blastDbPath = "/path/to/db"``` It looks for a single formatted database file (normally named db.dmnd), otherwise it will try to format the FASTA file with that name (gzip compressed files accepted)
+* For NCBI BLAST+: ```blastDbPath = "/path/to/db"``` and ```diamond = "false"```. It looks for formatted database files (normally named db.p* for protein type based ones), otherwise it will try to format FASTA file with that name
+* For DIAMOND: ```blastDbPath = "/path/to/db"``` and ```diamond = "true"```. It looks for a single formatted database file (normally named db.dmnd), otherwise it will try to format the FASTA file with that name (gzip compressed files accepted)
 
 ### About blast_annotator
 
@@ -92,11 +93,17 @@ As written down in ```nextflow.config``` file, whenever possible, we try to prov
 * [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build this)
 * [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build this)
 
-## How to build a container
+### How to build base container
 
+The base container is [available in Docker Hub](https://hub.docker.com/r/guigolab/fa-nf) and Nextflow takes care automatically to retrieve it form there, but you can always decide to generate it yourself.
+
+```
+    # Generate Docker image
     docker build -t fa-nf .
 
+    # Generate Singularity image if preferred
     sudo singularity build fa-nf.sif docker-daemon://fa-nf:latest
+```
 
 ## Running in MySQL mode
 
