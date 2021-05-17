@@ -29,7 +29,7 @@ my $random;
 $random .= @rchars[rand @rchars] for 1..8;
 
 # extra params for cluster queue
-my $extra = "-j y -l virtual_free=2G,h_rt=172800 -N MYSQL_container -m be -cwd -V -q long-sl7";
+my $extra = "-j y -l virtual_free=4G,h_rt=372800 -N MYSQL_container -m be -cwd -V -q long-sl7";
 
 GetOptions(
     "conf=s"=>\$confFile,
