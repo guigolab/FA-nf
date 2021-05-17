@@ -110,6 +110,9 @@ print Dumper( \%config );
 if ( lc( $config{"dbEngine"} ) eq 'mysql' ) {
 
     # Check all MySQL params are there
+    if ( ! $config{"mysqlimg"} || ! -f $config{"mysqlimg"} ) {
+      $config{"mysqlimg"} = "docker://library/mariadb";
+    }
 
     if ( $config{"dbuser"} && $config{"dbpass"} && $config{"dbport"} && $config{"mysqlimg"} ) {
 
