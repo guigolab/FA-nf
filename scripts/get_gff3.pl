@@ -421,6 +421,7 @@ sub createGFF3File {
 
     } #foreach protein item
     close(OUTFILE);
+ }
 }
 
 sub escapeGFF {

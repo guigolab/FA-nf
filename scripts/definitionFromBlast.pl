@@ -13,6 +13,7 @@ use Getopt::Long;
 use Bio::SearchIO;
 use Lingua::EN::Ngram;
 use List::Util qw(max);
+use Text::Trim;
 
 #Usual blast output
 #blast file name
@@ -80,20 +81,20 @@ for(my $i=0; $i<scalar (@data); $i++)
   $key=~s/\[[^\[\]]+\]$//i;
   $key=~s/\[([^\[\]]+)$//i;
 
-  if($key=~/Putative|Predicted|probable|uncharacterized|hypothetical/i)
-  {
+  if($key=~/Putative|Predicted|probable|uncharacterized|hypothetical/i) {
    $probableFlag=1;
    $key=~s/Putative|Predicted|probable|uncharacterized|hypothetical//i;
   }
+
    $key=~s/\sprotein\s/ /i; # Only protein as word removed
-   
+
    # Cleaning some UniProt codes as well: https://www.uniprot.org/news/2008/07/22/release
    $key=~s/RecName\://g;
-   $key=~s/AltName\://g;   
-   $key=~s/SubName\://g;   
-   $key=~s/Full\=//g;   
-   $key=~s/Short\=//g;   
-   
+   $key=~s/AltName\://g;
+   $key=~s/SubName\://g;
+   $key=~s/Full\=//g;
+   $key=~s/Short\=//g;
+
    $key=~s/^[:;,.]+//i;
    $key=~s/^\s+//i;
    $key=~s/\s+$//i;
@@ -193,28 +194,31 @@ while( my $result = $in->next_result ) {
 
   #if($count==3){last;}
   #print Dumper($result)."\n";
-  
+
 	if ( $query_desc ) {
 		$id = $result->query_description();
 	} else {
 		$id = $result->query_name();
 	}
- 
+
   #$id2 = $result->query_accession();
   #print "!$id! !$id2! $id3\n";
   @str=();
   while( my $hit = $result->next_hit ) {
     ## $hit is a Bio::Search::Hit::HitI compliant object
     $def = $hit->description() ;
-    #push(@{$retData{$id}}, $def);
-    push(@str, $def);
+
+    # Toniher: Further process description with Diamond
+    my @def = split("\&gt\;\S+", $def);
+    foreach my $d ( @def ) {
+      push(@str, trim($d) );
+    }
  }
 
  my $bestDefinition;
  #my $bestDefinition = 'NA';
  #print Dumper(@str);
- if(defined $str[0])
- {
+ if(defined $str[0]) {
   #print $id."\n";
   $bestDefinition=&getBestDef(\@str);
   print OUT $id."\t".$bestDefinition."\n";
