@@ -262,8 +262,13 @@ sub createGFF3File {
          my $koGroup = $results->[0]->{'db_id'};
          my $koDefinition = $results->[0]->{'definition'};
          my $koPathway = $results->[0]->{'pathway'};
-         if((defined $koGroup) && ($koGroup ne ''))
-          {$descrField .= "ko_group=$koGroup;ko_definition=".escapeGFF($koDefinition).";ko_pathway=$koPathway;";}
+         if((defined $koGroup) && ($koGroup ne '')) {
+
+           $descrField .= "ko_group=$koGroup;ko_definition=".escapeGFF($koDefinition).";";
+
+           if ( trim( $koPathway ) ne '' ) {
+             $descrField .= "ko_pathway=$koPathway;";
+           }
         }
 
         if ( $protName && $protName ne '' ) {
