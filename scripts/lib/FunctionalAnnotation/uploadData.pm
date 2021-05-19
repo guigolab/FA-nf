@@ -617,10 +617,14 @@ sub uploadInterProResults
 
 #Vlasova A. 16-01-2013
 #insert go information into go_term table and then into protein_go
-  $go =~s/^\s+//;
-  $go =~s/\s+$//;
+  #$go =~s/^\s+//;
+  #$go =~s/\s+$//;
+  $go = trim( $go );
 
   my @goList=split(/\|/, $go);
+  # Ensure only GO codes enter
+  @goList = grep {$_=~/^GO/} @goList;
+
   # Toniher. 2019-01-18. Changed key from go to annot, so it can be imported back
   push(@{$retGOData{$protKey}{'annot'}}, @goList);
 
