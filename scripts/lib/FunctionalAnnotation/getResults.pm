@@ -6,15 +6,15 @@
 
               Anna Vlasova
               anna.vlasova@crg.es
-              
+
 
 =head2 Description
-        
+
              This module is selecting data from different tables from the functional annotation database and creates different output files.
-             
+
 =head2 Example
-  
-            
+
+
 =cut
 
 package FunctionalAnnotation::getResults;
@@ -36,7 +36,7 @@ sub getGOInformation
 
  my %retData=();
  my $numberKeys =scalar @{$protIdList};
- my $condStat= ''; 
+ my $condStat= '';
  if($numberKeys>0)
  {
   foreach my $item(@{$protIdList})
@@ -49,7 +49,7 @@ sub getGOInformation
   my $results =$dbh->select_from_table($sqlSelect);
   #print Dumper($results);
   my ($protein_id, $key, $source);
-  foreach my $result (@{$results}) 
+  foreach my $result (@{$results})
   {
    $protein_id = $result->{'protein_id'};
    #print "$protein_id\n";
@@ -67,9 +67,9 @@ sub printSummaryInfo
 {
  my($protIdList, $dbh,$fileName ) = @_;
 
- 
+
  my $numberKeys =scalar @{$protIdList};
- my $condStat= ''; 
+ my $condStat= '';
  my $condStat2='';
  my($sqlSelect,$result,$resultNumber );
  if($numberKeys>0)
@@ -128,7 +128,7 @@ sub printSummaryInfo
  }
 
  print OUTPUT '#' x40 ."\n". "Annotated features, proteins\n". '#' x40 ."\n";
- 
+
 #Proteins with definition
  $sqlSelect = "select count(distinct protein_id) from definition where (definition is not null or definition not like '') $condStat2";
  $results =$dbh->select_from_table($sqlSelect);
@@ -138,7 +138,7 @@ sub printSummaryInfo
   $propAnnot =sprintf("%.2f",$resultNumber*100/$numberProteins);
   print OUTPUT "Proteins with definition(name): $resultNumber ($propAnnot %)\n";
  }
- 
+
  # TODO: To review all these tables
  #get proteins with domains and other features
  #$sqlSelect = "select protein_id from protein where protein_id in (select distinct protein_id from domain) $condStat2";
@@ -172,26 +172,26 @@ sub printDefinitionInfo
 
  my $numberKeys =scalar @{$listIds};
  my $condStat='';
- if($numberKeys>0)
- {
+ if ($numberKeys>0) {
   foreach my $item(@{$protIdList})
   {$item = "'$item'";}
   my $idString = join(',', @{$protIdList});
   $condStat = "and p.stable_id in ($idString)";
  }
+
  open(OUTPUT, ">$file")||die("Can't open $file for writing $!\n");
  print OUTPUT "#PROTEIN_NAME\tDEFINITION_SOURCE\tSOURCE\n";
  my @defArray=();
 
  my $sqlselect;
- 
+
  if ( $dbEngine eq 'mysql' ){
-  $sqlSelect = "select p.protein_id, p.stable_id, GROUP_CONCAT( d.source SEPARATOR \"; \" ) as src, GROUP_CONCAT( d.definition SEPARATOR \"; \" ) as def from protein p, definition d where d.protein_id=p.protein_id and d.definition is not null and d.definition not like '' $condStat group by p.protein_id order by p.protein_id";
+  $sqlSelect = "select p.protein_id, p.stable_id, GROUP_CONCAT( distinct( d.source ) SEPARATOR \"; \" ) as src, GROUP_CONCAT( distinct( d.definition ) SEPARATOR \"; \" ) as def from protein p, definition d where d.protein_id=p.protein_id and d.definition is not null and d.definition not like '' $condStat group by p.protein_id order by p.protein_id";
  } else {
-  $sqlSelect = "select p.protein_id, p.stable_id, GROUP_CONCAT( d.source, \"; \" ) as src, GROUP_CONCAT( d.definition, \"; \" ) as def from protein p, definition d where d.protein_id=p.protein_id and d.definition is not null and d.definition not like '' $condStat group by p.protein_id order by p.protein_id";
+  $sqlSelect = "select p.protein_id, p.stable_id, GROUP_CONCAT( distinct( d.source ), \"; \" ) as src, GROUP_CONCAT( distinct( d.definition ), \"; \" ) as def from protein p, definition d where d.protein_id=p.protein_id and d.definition is not null and d.definition not like '' $condStat group by p.protein_id order by p.protein_id";
  }
- 
- 
+
+
  my $results =$dbh->select_from_table($sqlSelect);
  foreach my $result (@{$results})
   {
@@ -199,11 +199,11 @@ sub printDefinitionInfo
    my $src=$result->{'src'};
    my $def=$result->{'def'};
    $def=~s/\;$//;
-   
+
    print OUTPUT "$stbId\t$src\t$def\n";
 
-  } 
- 
+  }
+
  close(OUTPUT);
  return 1;
 }
@@ -234,7 +234,7 @@ sub printDomains
     $description =$domainsHash->{$pItem}{$kItem}{'descr'};
     print OUTFILE "$proteinName\t$dbName\tprotein_match\t$domainStart\t$domainEnd\t$evalue\t$proteinHash->{$pItem}{'strand'}\t.\tName=$domainName;Target=$proteinName;Note=$description;\n";
    }
-  
+
   }
  close(OUTFILE);
 }
@@ -246,7 +246,7 @@ sub printGoTerms
  my($protIdList,$fileName, $dbh,$param)=@_;
 
  my $numberKeys =scalar @{$protIdList};
- my $condStat= ''; 
+ my $condStat= '';
  my $condStat2='';
  if($numberKeys>0)
  {
@@ -265,7 +265,7 @@ sub printGoTerms
   print OUTPUT "#PROTEIN_NAME\tGO_ACC\tGO_NAME\tGO_TYPE\tGO_SOURCE\n";
   my $sqlSelect = "select protein.protein_id,protein.stable_id, go_term.go_acc, go_term.go_name, go_term.term_type, group_concat( distinct( protein_go.source ) ) as GO_source from protein,protein_go,go_term where  $condStat protein.protein_id=protein_go.protein_id  and protein_go.go_term_id=go_term.go_term_id group by protein.protein_id, go_term.go_acc order by protein.stable_id;";
   $results =$dbh->select_from_table($sqlSelect);
-  foreach my $result (@{$results}) 
+  foreach my $result (@{$results})
   {
    print OUTPUT "$result->{'stable_id'}\t$result->{'go_acc'}\t$result->{'go_name'}\t$result->{'term_type'}\t$result->{'GO_source'}\n";
   }
@@ -275,11 +275,11 @@ sub printGoTerms
  open(OUTPUT, ">$fileName")||die("Can't opne $fileName for writing! $!\n");
  print OUTPUT "#GENE_NAME\tGO_ACC\tGO_SOURCE\n";
 
-  my $sqlSelect = "select gene_name, GROUP_CONCAT( distinct( go_acc ) ) as GO_acc, GROUP_CONCAT( distinct( protein_go.source ) ) as GO_source from gene,protein,protein_go,go_term where $condStat  protein.protein_id=protein_go.protein_id  and protein_go.go_term_id=go_term.go_term_id and protein.gene_id=gene.gene_id group by gene_name order by gene_name";  
- 
+  my $sqlSelect = "select gene_name, GROUP_CONCAT( distinct( go_acc ) ) as GO_acc, GROUP_CONCAT( distinct( protein_go.source ) ) as GO_source from gene,protein,protein_go,go_term where $condStat  protein.protein_id=protein_go.protein_id  and protein_go.go_term_id=go_term.go_term_id and protein.gene_id=gene.gene_id group by gene_name order by gene_name";
+
   $results =$dbh->select_from_table($sqlSelect);
 
-  foreach my $result (@{$results}) 
+  foreach my $result (@{$results})
   {   print OUTPUT "$result->{'gene_name'}\t$result->{'GO_acc'}\t$result->{'GO_source'}\n";  }
 
  close(OUTPUT);
@@ -294,7 +294,7 @@ sub printBlastHit
  my($protIdList,$fileName, $dbh)=@_;
 
  my $numberKeys =scalar @{$protIdList};
- my $condStat= ''; 
+ my $condStat= '';
  my $condStat2='';
  if($numberKeys>0)
  {
@@ -306,9 +306,9 @@ sub printBlastHit
 
  open(OUTPUT, ">$fileName")||die("Can't open $fileName for writing! $!\n");
  print OUTPUT "PROTEIN_NAME\thit_id\tscore\te-value\tpercent identity\tProtein length\tHit length\tHSP length\thit description\n";
- my $sqlSelect = "select protein.protein_id,stable_id, hit_id,score,evalue, percent_identity, length(sequence), length, hsp_length,description from protein,blast_hit where $condStat  protein.protein_id=blast_hit.protein_id  order by protein.protein_id,score DESC";  
+ my $sqlSelect = "select protein.protein_id,stable_id, hit_id,score,evalue, percent_identity, length(sequence), length, hsp_length,description from protein,blast_hit where $condStat  protein.protein_id=blast_hit.protein_id  order by protein.protein_id,score DESC";
  my  $results =$dbh->select_from_table($sqlSelect);
-  foreach my $result (@{$results}) 
+  foreach my $result (@{$results})
   {
    print OUTPUT "$result->{'stable_id'}\t$result->{'hit_id'}\t$result->{'score'}\t$result->{'evalue'}\t$result->{'percent_identity'}\t$result->{'length(sequence)'}\t$result->{'length'}\t$result->{'hsp_length'}\t$result->{'description'}\n";
   }
@@ -326,9 +326,9 @@ sub makeAnnotatedVsNotAnnotatedPlot
   my $lengthFile3 = $tmpFolder."notannotatedProteins.withLength.txt";
 
  my($sqlSelect, $results);
- my $sqlSelect1 = "select protein_id, stable_id, length(sequence) from protein";   
- my $sqlSelect2 = "select protein_id, stable_id, length(sequence) from protein where status=1";  
- my $sqlSelect3 = "select protein_id, stable_id, length(sequence) from protein where status=0";  
+ my $sqlSelect1 = "select protein_id, stable_id, length(sequence) from protein";
+ my $sqlSelect2 = "select protein_id, stable_id, length(sequence) from protein where status=1";
+ my $sqlSelect3 = "select protein_id, stable_id, length(sequence) from protein where status=0";
 
  my %fileHash=($lengthFile1=>$sqlSelect1,
              $lengthFile2=>$sqlSelect2,
@@ -339,7 +339,7 @@ sub makeAnnotatedVsNotAnnotatedPlot
   open(OUT, ">$item")||die("Can't open $item for writing $!\n");
   $sqlSelect = $fileHash{$item};
   $results =$dbh->select_from_table($sqlSelect);
-  foreach my $result (@{$results}) 
+  foreach my $result (@{$results})
   {
    if ( $result->{protein_id} && $result->{'stable_id'} && $result->{'length(sequence)'} ) {
     print OUT "$result->{protein_id}\t$result->{'stable_id'}\t$result->{'length(sequence)'}\n";
