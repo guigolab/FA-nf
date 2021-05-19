@@ -45,6 +45,7 @@ params.gffstats = false
 params.diamond = null
 params.blastAnnotMode = "common"
 params.oboFile = null
+params.email = ""
 
 //print usage
 if ( params.help ) {
@@ -977,6 +978,30 @@ workflow.onError {
    procfile.delete()
  }
 
+}
+
+
+if (params.email == "yourmail@yourdomain" || params.email == "") {
+    log.info 'Skipping email\n'
+} else {
+    log.info "Sending email to ${params.email}\n"
+
+    workflow.onComplete {
+
+    def msg = """\
+        Pipeline execution summary
+        ---------------------------
+        Completed at: ${workflow.complete}
+        Duration    : ${workflow.duration}
+        Success     : ${workflow.success}
+        workDir     : ${workflow.workDir}
+        exit status : ${workflow.exitStatus}
+        Error report: ${workflow.errorReport ?: '-'}
+        """
+        .stripIndent()
+
+        sendMail(to: params.email, subject: "[FA-nf] Execution finished", body: msg)
+    }
 }
 
 signalP_result2
