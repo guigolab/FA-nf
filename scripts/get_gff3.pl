@@ -326,7 +326,7 @@ sub createGFF3File {
          if ( $descfield && $descfield ne '' ) {
          		push( @descarr, escapeGFF( $descfield ) );
          }
-         if ( $ipdesc && $ipdesc ne '' ) {
+         if ( $ipdesc && $ipdesc ne '' && $ipdesc ne '-' ) {
         		push( @descarr, escapeGFF( $ipdesc ) );
          }
 
@@ -339,7 +339,7 @@ sub createGFF3File {
          if ( $protName && $protName ne '' ) {
 
           print OUTFILE "$protName\t$dbName\tprotein_match\t$domainStart\t$domainEnd\t$evalue\t$strand\t.\tName=$domainName;ID=InterProScan$idInterPro;";
-          if( $ipID && $ipID ne '' ) {
+          if( $ipID && $ipID ne '' && $ipID ne '-' ) {
         		print OUTFILE "interpro_id=$ipID;";
         	}
         	if($description && $description ne '') {
