@@ -209,7 +209,7 @@ while( my $result = $in->next_result ) {
     $def = $hit->description() ;
 
     # Toniher: Further process description with Diamond
-    my @def = split("\>\S+", $def);
+    my @def = split(/\>\S+/, $def);
     foreach my $d ( @def ) {
       push(@str, trim($d) );
     }
