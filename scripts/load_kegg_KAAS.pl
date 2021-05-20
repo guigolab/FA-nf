@@ -614,8 +614,6 @@ sub uploadKeggInformation {
 			# add GO terms info into go_term and protein_go table.
 			# TODO Consider in the future other annotations, such as COG
 			if(defined $hash->{'DBLINKS'}) {
-			 # TODO: Multiple GOs here, need to consider all maybe
-			 # DBLINKS     GO: 0016279 0030544
 
 			 my @goIds = &parseKEGGDBLinks($hash->{'DBLINKS'});
 
@@ -666,6 +664,8 @@ sub uploadKeggInformation {
 
 }#sub
 
+
+# DBLINKS     GO: 0016279 0030544
 
 sub parseKEGGDBLinks {
 	my $dbLinks = shift;
