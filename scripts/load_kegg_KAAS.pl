@@ -137,8 +137,6 @@ close FH;
 
 if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {print STDOUT "Number of unique KEGG groups:",scalar(keys %keggs),"\n";}
 
-# TODO: upload KEGG group information into DB - this will speed-up uploading process.. There are usually fewer groups then proteins assigned to them
-
 #print Dumper( \%keggs );
 #print Dumper( \%organisms );
 
@@ -428,7 +426,6 @@ sub uploadKeggInformation {
 
 			print "NUM LINES: $#lines\n";
 
-			# TODO: Converge sqlite case to MySQL approach if possible
 			foreach my $l (@lines) {
 
 				# insert each ortholog
@@ -619,8 +616,10 @@ sub uploadKeggInformation {
 			if(defined $hash->{'DBLINKS'}) {
 			 # TODO: Multiple GOs here, need to consider all maybe
 			 # DBLINKS     GO: 0016279 0030544
-			 my $goId = parseKEGGDBLInks($hash->{'DBLINKS'});
-			 if($goId ne '') {
+
+			 my @goIds = &parseKEGGDBLinks($hash->{'DBLINKS'});
+
+			 foreach my $goId ( @goIds ) {
 			     #insert go term, associated with this protein into go_term table, and then into protein_go
 			     my $sqlSelect = "SELECT go_term_id from go_term where go_acc like '$goId'";
 			     my $sqlUpdate ="";
@@ -668,18 +667,17 @@ sub uploadKeggInformation {
 }#sub
 
 
-sub parseKEGGDBLInks {
+sub parseKEGGDBLinks {
 	my $dbLinks = shift;
 
-	my $retGO='';
+	my @retGO=();
 
 	$dbLinks=~s/\n//g;
-	if($dbLinks =~/(GO\:\s*\d+)\s*/) {
-	 $retGO = $1;
-	 $retGO=~s/\s+//g;
+	while ($dbLinks=~/(\d+)/g) {
+		push( @retGO, "GO:".$1 );
 	}
 
-	return $retGO;
+	return @retGO;
 }
 
 # subroutine to retrieve KEGG record from DB
