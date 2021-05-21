@@ -7,21 +7,21 @@ use warnings;
 annotation_main.pl
 
 =head1 SYNOPSIS
-	
-  perl annotation_main  <command> 
+
+  perl annotation_main  <command>
 
 This is main script for functional annotation pipeline, that runs different annotation steps by specified command. Each function has its own parameteres
 
 =head1 DESCRIPTION
 
 Usage:  annotation_main.pl <command> [options]
-Commands: 
+Commands:
           init
           upload_kegg
           program
           get_results
-          
-Dependency: 
+
+Dependency:
  DBI;
  Getopt::Long;
  Data::Dumper;
@@ -73,24 +73,24 @@ exit(0);
 sub usage
 {
  print <<EOF;
-Usage    : fnan_main.pl <command_name> 
+Usage    : fnan_main.pl <command_name>
 Commands : init               : This is the first step of the pipeline - it creates DB and fulfill it with initial information about sequences.
 
            program            : Run on of the specified program: Blast, Blast2Go, SignalP, InterProScan. This module can be used also to upload pre-calculated results into DB
-           
-           upload_kegg_KAAS   : Upload information from KEGG databases using previously obtained KO annotation through KAAS server 
+
+           upload_kegg_KAAS   : Upload information from KEGG databases using previously obtained KO annotation through KAAS server
 
            get_results        : This step will extract all annotation information from the DB and create summary file.
-           
+
 Note    : All pipeline scripts uses its own parameters and configuration file.
           Pipeline uses external software: SQLite [ Mandatory ]
                                            R      [ Mandatory for creating resulting plots]
           Pipeline may use also local installations of:
-                                           BLAST 
+                                           BLAST
                                            Blast2Go
                                            InterProScan
                                            SignalP
-                       
+
 EOF
  exit(0);
 }
@@ -102,7 +102,7 @@ EOF
 # Name : loadDataToDB == init
 # Description: This subroutine upload initital data into DB - sequences and their annotation
 # Requirements : DBI
-# Variables : 
+# Variables :
 #     fastaFile  -  sequence file
 #     gffFile -  annotation file
 #
@@ -110,11 +110,11 @@ EOF
 # because there were two conflicting versions developed at the same time.
 #11/08/2014
 #
-# Author : Vlasova AV 
+# Author : Vlasova AV
 
 sub loadDataToDB
 {
- my ($updateFlag, $newVersion, $listIds,$confFile,$comment,$show_help,$o_annt_file,$o_fasta_file);
+ my ($updateFlag, $newVersion, $listIds,$confFile,$comment,$show_help,$o_annt_file,$o_fasta_file,$rm_version);
 
  ($updateFlag, $newVersion) =(0,0);
 
@@ -125,15 +125,16 @@ sub loadDataToDB
            "conf=s"=>\$confFile,
            "comm=s"=>\$comment,
            "gff=s"=>\$o_annt_file,
-           "fasta=s"=>\$o_fasta_file,	
-           "help|h" => \$show_help
+           "fasta=s"=>\$o_fasta_file,
+           "help|h" => \$show_help,
+           "rmversion" => \$rm_version
            );
 
-if(!defined $confFile || $show_help) 
+if(!defined $confFile || $show_help)
 {
 die(qq/
  Usage:   fa_main.pl init  [options]
- Options 
+ Options
        -h || help 		 : This message
        -conf    		 : Configuration file; by default 'main_configuration.ini' in the current folder
        -comm    		 : Comment, description. This record will be stored in the protein.comment field
@@ -142,9 +143,9 @@ die(qq/
 				   of the existing annotation, and the old one is present in DB, this flag should go
 				   with -u flag specified. Default is 0
 
- Note: Don't forget to specify mandatory options in the main configuration file : 
-             File with the protein sequences in fasta format; 
-             File with the corresponding annotation in gff3 or gtf formats; 
+ Note: Don't forget to specify mandatory options in the main configuration file :
+             File with the protein sequences in fasta format;
+             File with the corresponding annotation in gff3 or gtf formats;
              Database name and path;
 
        All files must be specified with the full paths!
@@ -155,7 +156,7 @@ die(qq/
 
  #redirect standart output and standart error into log files
  my $cfg = new Config::Simple($confFile);
- #put config parameters into %config                                             
+ #put config parameters into %config
  my %config = $cfg->vars();
  my $logFile = $config{'stdoutLog'};
  my $errFile = $config{'stderrLog'};
@@ -172,14 +173,14 @@ if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
  print '#' x35 ."\n";
  print '#' x5 . 'Init, '.$date.' '.'#' x5 ."\n";
  print '#' x35 ."\n";
- print "Check DB presence...\n"; 
+ print "Check DB presence...\n";
 }
- 
+
  &createSQLDB($confFile);
 
 if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
 {
-  print "Data uploading..\n"; 
+  print "Data uploading..\n";
 }
 
  my $commandString='';
@@ -190,18 +191,23 @@ if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
 
  if(defined $comment)
   {$commandString .="-comm $comment ";}
- 
+
  	# Override if specified explicitly
 	if (defined $o_annt_file ) {
 		$commandString .="-gff $o_annt_file ";
 	}
-	
+
 	if (defined $o_fasta_file ) {
 		$commandString .="-fasta $o_fasta_file ";
  }
- 
+
+ if (defined $rm_version ) {
+   $commandString .="-rmversion ";
+ }
+
+
  if($newVersion =='1')
-  { 
+  {
 ##4/12/2013 I did not check this option for the moment!!
     my $fastaFile=$config{'proteinFile'};
     my $outFile  = $fastaFile.'.stat';
@@ -211,35 +217,35 @@ if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
  {
   $commandString = "perl $RealBin/import_data.pl ".$commandString;
  }
- 
+
 if($config{'loglevel'} eq 'debug')
-{ 
+{
   my $cwd=getcwd();
   print "Folder: $cwd\n";
-  print "$commandString\n"; 
+  print "$commandString\n";
 }
 
  system($commandString)==0 or die("Error running system command: < $commandString >\n $!");
 
-} 
+}
 
 
 #
 # Name : uploadKegg
-# Description: This subroutine upload infromation from KEGG DB using BioMart modules and list of KO groups 
+# Description: This subroutine upload infromation from KEGG DB using BioMart modules and list of KO groups
 # Requirements : DBI, BioMart (for taxonomy)
-# Variables : 
+# Variables :
 # Note:
 #    User needs to analyse its proteins in the KAAS server first, and then use result list of KO elements as input.
-#    
+#
 # Last edited: 11/08/2014
-# Author : Vlasova AV 
+# Author : Vlasova AV
 
 sub uploadKEGG
 {
  my ($do_update, $input, $kegg_release, $show_help,$configurationFile);
 
- 
+
  GetOptions(	'update|u=s'	=> \$do_update,
                 'input|i=s'     => \$input,
                 'rel=s'       => \$kegg_release,
@@ -247,11 +253,11 @@ sub uploadKEGG
 		'help|h'        => \$show_help
              );
 
- if((!defined $input) || (!defined $kegg_release) || ($show_help)) 
+ if((!defined $input) || (!defined $kegg_release) || ($show_help))
 {
 die(qq/
  upload_kegg_KAAS           : Upload information from KEGG databases using previously obtained KO annotation
-                              through KAAS server 
+                              through KAAS server
 
  Usage:   fa_main.pl upload_kegg  [options]
  Options  -input : Input file, obtained from KAAS server  [Mandatory]
@@ -261,7 +267,7 @@ die(qq/
           -update: Flag that indicates to re-write existing record in the DB, or not. Default value is 0.
           -conf  : configuration file.
 
-Note: Don't forget to specify mandatory options in the main configuration file : 
+Note: Don't forget to specify mandatory options in the main configuration file :
              Database name and path;
              Species 3 letters codes used for annotation via KAAS;
 \n/)};
@@ -269,7 +275,7 @@ Note: Don't forget to specify mandatory options in the main configuration file :
  #redirect standart output and standart error into log files
 
  my $cfg = new Config::Simple($configurationFile);
- #put config parameters into %config                                             
+ #put config parameters into %config
  my %config = $cfg->vars();
  my $logFile =$config{'resultPath'}.$config{'stdoutLog'};
  my $errFile =$config{'resultPath'}.$config{'stderrLog'};
@@ -281,7 +287,7 @@ Note: Don't forget to specify mandatory options in the main configuration file :
  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
  $year += 1900;
  my $date = "$year/$mon/$mday $hour:$min:$sec";
- 
+
 if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
 {
  print '#' x40 ."\n";
@@ -301,12 +307,12 @@ if(($config{'loglevel'} eq 'debug'))
 {
   my $cwd=getcwd();
   print "Folder: $cwd\n";
-  print "$commandString\n"; 
+  print "$commandString\n";
 }
 
  system($commandString)==0 or die("Error running system command: <$commandString>\n");
 
-} 
+}
 
 
 #
@@ -314,12 +320,12 @@ if(($config{'loglevel'} eq 'debug'))
 # Description: This subroutine runs local version of specified programs and upload its results into DB
 #            Or, alternatively, it can be used to upload pre-calculated results into DB
 # Requirements : DBI
-# Variables : 
+# Variables :
 # Note:
 #   For majority of the programs this step is very time consuming!
-#    
+#
 # Last edited: 13/08/2014
-# Author : Vlasova AV 
+# Author : Vlasova AV
 
 
 sub launchProgram
@@ -336,7 +342,7 @@ sub launchProgram
                 'list|l=s'=>\$list,
              );
 
- if($show_help) 
+ if($show_help)
 {
 die(qq/
  program   : Launch local installation of specified program and upload its results into DB, or just upload pre-calculated results into DB
@@ -351,14 +357,14 @@ die(qq/
                            By default it is 0
            -help      : This documentation
 
-Note: Don't forget to specify mandatory options in the main configuration file : 
+Note: Don't forget to specify mandatory options in the main configuration file :
              Database name and path;
              Software path and parameters;
              Additional important parameteres for software, such as Blast DB paths;
-             Chunk size;  
+             Chunk size;
 
 Input results files are acepted in following formats:
- Blast         - in classical NCBI-like, xml and tabular separated (-m 8). 
+ Blast         - in classical NCBI-like, xml and tabular separated (-m 8).
                  Important! Its require xml-formatted blast result file in order to use it as input to blast2go local installation.
  InterProScan - in tsv format
  Blast2Go     - in 3 column tabular separated format.
@@ -368,7 +374,7 @@ Input results files are acepted in following formats:
 In running mode this is very time consuming step!
 
 \n/)};
- 
+
 if(!defined $soft)
  {die("Please specify correct program to execute!\nLaunch 'fa_main program -h' to see parameters description\n ");}
 
@@ -381,7 +387,7 @@ if(!defined $confFile)
 
 #redirect standart output and standart error into log files
  my $cfg = new Config::Simple($confFile);
- #put config parameters into %config                                             
+ #put config parameters into %config
  my %config = $cfg->vars();
  my $logFile =$config{'resultPath'}.$config{'stdoutLog'};
  my $errFile =$config{'resultPath'}.$config{'stderrLog'};
@@ -393,7 +399,7 @@ if(!defined $confFile)
  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
  $year += 1900;
  my $date = "$year/$mon/$mday $hour:$min:$sec";
- 
+
 if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
 {
  print '#' x40 ."\n";
@@ -401,7 +407,7 @@ if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
  print '#' x40 ."\n";
 }
 
- my $commandString=""; 
+ my $commandString="";
 
 if($soft eq 'blast')
  {$commandString .="perl $RealBin/bin/run_blast.pl -mode $mode ";}
@@ -434,11 +440,11 @@ if(($config{'loglevel'} eq 'debug'))
 {
   my $cwd=getcwd();
   print "Folder: $cwd\n";
-  print "$commandString\n"; 
+  print "$commandString\n";
 }
  system($commandString)==0 or die("Error running system command: <$commandString>\n$!\n");
 
-} 
+}
 
 
 
@@ -449,9 +455,9 @@ if(($config{'loglevel'} eq 'debug'))
 # Variables : configuration file
 # Note:
 #   Creates banch of files in resulting folder
-#    
+#
 # Last edited:
-# Author : Vlasova AV 
+# Author : Vlasova AV
 
 sub getResults
 {
@@ -463,23 +469,23 @@ sub getResults
                 'list|l=s'=>\$list,
              );
 
- if($show_help) 
+ if($show_help)
 {
 die(qq/
- get_results   : This part extract all available information from DB (from collected sources) and create banch of result files in result folder. 
-      
+ get_results   : This part extract all available information from DB (from collected sources) and create banch of result files in result folder.
+
 
  Usage:   fa_main.pl get_results  [options]
  Options  -conf      : Configuration file. [Mandatory]
           -list | -l     : File with selected protein IDs - script will process only those seqences
           -help      : This documentation
 
-Note: Don't forget to specify mandatory options in the main configuration file : 
+Note: Don't forget to specify mandatory options in the main configuration file :
              Database name and path;
              Results folder name and path
 
 Result folder should contain following files:
-  summary.txt		  Functional annotation summary - number of input proteins, number of proteins with annotaion features and so on. 
+  summary.txt		  Functional annotation summary - number of input proteins, number of proteins with annotaion features and so on.
   summary.gff3 	          Resulting annotation in gff3 format
   prot_definition.txt     Possible protein definition given by blast2go or kegg ortholog
   go_terms.txt 		  GO terms associated with the sequences
@@ -493,7 +499,7 @@ if(!defined $confFile)
 
  #redirect standart output and standart error into log files
  my $cfg = new Config::Simple($confFile);
- #put config parameters into %config                                             
+ #put config parameters into %config
  my %config = $cfg->vars();
  my $logFile =$config{'resultPath'}.$config{'stdoutLog'};
  my $errFile =$config{'resultPath'}.$config{'stderrLog'};
@@ -505,7 +511,7 @@ if(!defined $confFile)
  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
  $year += 1900;
  my $date = "$year/$mon/$mday $hour:$min:$sec";
- 
+
 if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
 {
  print '#' x40 ."\n";
@@ -513,7 +519,7 @@ if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
  print '#' x40 ."\n";
 }
 
- my $commandString=""; 
+ my $commandString="";
 
 #create all result files, but without gff3 -fast step
  $commandString .="perl $RealBin/get_results.pl -conf $confFile ";
@@ -521,7 +527,7 @@ if(($config{'loglevel'} eq 'debug')||($config{'loglevel'} eq 'info'))
 if(defined $list)
  {$commandString = "-l $list ";}
 
- print "$commandString\n"; 
+ print "$commandString\n";
  system($commandString)==0 or die("Error running system command: <$commandString>\n$!\n");
 
 #create gff3 file - this is a longest step
@@ -535,11 +541,9 @@ if(($config{'loglevel'} eq 'debug'))
 {
   my $cwd=getcwd();
   print "Folder: $cwd\n";
-  print "$commandString\n"; 
+  print "$commandString\n";
 }
 
  system($commandString)==0 or die("Error running system command: <$commandString>\n$!\n");
 
 }
-
-

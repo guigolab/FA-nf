@@ -51,7 +51,7 @@ my $confFile = 'main_configuration.ini';
 
 
 my $usage = "perl import_data.pl [-l listfile] [-u update] [-h help] [-conf configuration_file] [-comm comment_string]\n";
-my ( $annt_file, $show_help,$fasta_file, $list_file, $do_update, $comment, $o_annt_file, $o_fasta_file );
+my ( $annt_file, $show_help, $fasta_file, $list_file, $do_update, $comment, $o_annt_file, $o_fasta_file, $rm_version );
 
 &GetOptions(
     'l=s'	=>\$list_file,
@@ -61,6 +61,7 @@ my ( $annt_file, $show_help,$fasta_file, $list_file, $do_update, $comment, $o_an
     'conf=s'=>\$confFile,
 		'gff=s'=>\$o_annt_file,
 		'fasta=s'=>\$o_fasta_file,
+    'rmversion' => \$rm_version
 	  )
   or pod2usage(-verbose=>2);
 pod2usage(-verbose=>2) if $show_help;
@@ -145,7 +146,7 @@ if(($loglevel eq 'debug')||($loglevel eq 'info'))
 
 if(! defined $fasta_file){print STDOUT "The fasta file was not specified, skipped.\n";}
 else
- {&uploadFastaData($fasta_file, $dbh,\%IdsList,1,$comment, $config{'dbEngine'}, $loglevel);}
+ {&uploadFastaData($fasta_file, $dbh, \%IdsList, 1, $comment, $rm_version, $config{'dbEngine'}, $loglevel);}
 
 if(($loglevel eq 'debug')||($loglevel eq 'info'))
  {print "done.";}

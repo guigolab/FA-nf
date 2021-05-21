@@ -42,6 +42,7 @@ params.evalue = 0.00001
 params.dbEngine = "mysql"
 params.gffclean = false
 params.gffstats = false
+params.rmversion = false
 params.diamond = null
 params.blastAnnotMode = "common"
 params.oboFile = null
@@ -569,6 +570,11 @@ process initDB {
  if ( params.debug=="TRUE"||params.debug=="true" ) {
    // If in debug mode, we restrict de seq entries we process
    command += " -fasta ${seq}"
+ }
+
+ if ( params.rmversion=="TRUE"||params.rmversion=="true" ) {
+   // If remove versioning in protein sequences (for cases like ENSEMBL)
+   command += " -rmversion"
  }
 
  command

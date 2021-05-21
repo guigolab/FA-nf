@@ -57,7 +57,7 @@ return %returnData;
 #
 sub uploadFastaData
 {
- my($inFile, $dbh, $idList, $do_update,$comment, $engine, $loglevel) =@_;
+ my($inFile, $dbh, $idList, $do_update, $comment, $rm_version, $engine, $loglevel) =@_;
 
   if(!defined $engine){$engine ='mysql'};
  my $numberElements = scalar keys %{$idList}||'';
@@ -79,6 +79,12 @@ sub uploadFastaData
       if($line=~/^\>(\S+)/)
       {
         $header=$1;
+
+        # Remove versioning if needed
+        if ( $rm_version ){
+          $header=~s/\.\d+$//;
+        }
+
         if($prevSeq ne ''){
           $seqData{$prevHeader} = $prevSeq;
           $prevSeq='';
@@ -193,7 +199,9 @@ open FH,"$inFile";
    next if /^#/;
     chomp;
     my $line=$_;
+    #print STDERR $line, "\n";
     #@elms=split/\t/,$line;
+    # Allow handling more variability below
     @elms=split/\s+/,$line;
   if($elms[$type_ix] eq 'gene')
    {
@@ -205,12 +213,11 @@ open FH,"$inFile";
      }
 
     # Toniher: Handling IDs more in detail since no always only words. Notice TransDecoder output
-    my (@sids) = split( /\;/, $elms[$ids_ix] );
 
-    if ( $#sids >= 0 && $sids[0]=~/ID\=(\S+)\s*$/ ) {
-     $gene_name=$1;
-    }
+    $gene_name = &getGeneName( $elms[$ids_ix], $elms[$annot_ix] );
 
+    #print STDERR Dumper( \@elms );
+    #print STDERR $gene_name, "\n";
  #patch for pc2127 isolate, p.cucumerina project - gene name contains . symbol in the name
   #if( $elms[$ids_ix]=~/ID=(PCUC.+)$/)
   #  {$gene_name=$1;}
@@ -266,49 +273,14 @@ open FH,"$inFile";
 # I need to check with CDs, if the prot_id is already present - just skip it.
 #14/09/2016 - new Francisco's annotation contains mRNA field in combination with Name attribute
 
- # TODO: All this stuff below should be better rationalized for different cases
+  # Here we prioritize transcript and mRNA
+  # Toniher: Removed transcript option
+  elsif ( ( $elms[$type_ix] eq 'mRNA' ) || ( ( $elms[$type_ix] eq 'CDS' ) && ( !$c_prot_id || $c_prot_id eq '') ) ) {
 
-  elsif (($elms[$type_ix] eq 'transcript' )||($elms[$type_ix] eq 'mRNA' )||(($elms[$type_ix] eq 'CDS') && ( !$c_prot_id || $c_prot_id eq ''))) {
+    my $prot_id= &parseGFFProduct( $elms[$type_ix], $elms[$ids_ix], $elms[$annot_ix] );
 
-   my $prot_id='';
 
-   # Toniher: allowing more flexibility for parsing
-   my $sid = $elms[$ids_ix];
-   if ( $sid ne '' ) {
-
-     # TransDecoder. Added by Toniher
-     if($prot_id eq '' && $elms[$annot_ix] eq 'transdecoder') {
-      #if(($loglevel eq 'debug')) { print "TRANSID\n"; }
-      $prot_id=$1 if $sid=~/ID=([^\;]+)/;
-      }
-
-     # Priority one
-     if($prot_id eq '') {
-      #if(($loglevel eq 'debug')) { print "TARGET\n"; }
-      $prot_id=$1 if $sid=~/Target=([^\;]+)/;
-      }
-
-    #update 18/11/2015
-    #In some annotation versions, provided by Tyler he added 'product' instead of Target... Parent is also exists, but it refer to the transcripts, not proteins
-    if($prot_id eq '') {
-     #if(($loglevel eq 'debug')) { print "PRODUCT\n"; }
-     $prot_id=$1 if $sid=~/product\=([^\;]+)/;
-     }
-
-    if($prot_id eq '') {
-     #if(($loglevel eq 'debug')) { print "NAME\n"; }
-     $prot_id=$1 if $sid=~/Name\=([^\;]+)/;
-     }
-
-    #In some annotation versions, provided by Tyler, Target field is absent and only present Parent transcript id.
-     if($prot_id eq '') {
-      #if(($loglevel eq 'debug')) { print "PARENT\n"; }
-      $prot_id=$1 if $sid=~/Parent\=([^\;]+)/;
-      }
-
-   }
-
-     if(($loglevel eq 'debug')) {
+    if(($loglevel eq 'debug')) {
       #print "PROTNE: ". Dumper( \@elms );
       print "PROTNE: $c_prot_id vs $prot_id\n";
     }
@@ -344,7 +316,91 @@ close FH;
 } #end sub
 
 
-#
+sub getGeneName {
+
+  my $sid = shift;
+  my $annotation = shift;
+
+  my $gene_name = "";
+
+  my (@sids) = split( /\;/, $sid );
+
+  if ( $#sids >= 0 && $sids[0]=~/ID\=(\S+)\s*$/ ) {
+    $gene_name = $1;
+  }
+
+  # Casuistics for ENSEMBL
+  $gene_name=~s/gene\://g;
+  # Casuistics for NCBI
+  $gene_name=~s/gene\-//g;
+
+  return $gene_name;
+
+}
+
+# Parser function for GFF. A lot of diversity may be here
+# TODO: In the future allow user specific mapping from configuration to avoid it to become too bloated
+sub parseGFFProduct {
+
+  my $type = shift;
+  my $sid = shift;
+  my $annotation = shift;
+
+  my $prot_id = "";
+
+  # Toniher: allowing more flexibility for parsing
+  # print STDERR "SID:", $sid, "\n";
+  if ( $sid ne '' ) {
+
+    # TransDecoder. Added by Toniher
+    if ( $prot_id eq '' && $annotation eq 'transdecoder' ) {
+      $prot_id=$1 if $sid=~/ID=([^\;]+)/;
+    }
+
+    # Allowing different types for PASA
+    elsif ( $prot_id eq '' && $annotation eq 'EVM_PASA' ) {
+      if ( $type eq "mRNA" ) {
+        # Recent PASA
+        $prot_id=$1 if $sid=~/Name\=([^\;]+)/;
+      } else {
+        if ( $type eq "CDS" ) {
+          # Older PASA
+          $prot_id=$1 if $sid=~/Target=([^\;]+)/;
+        }
+      }
+    }
+
+    # Below we handle most cases, such as NCBI and ENSEMBL
+    else {
+
+      # Protein meaningful information is kept here
+      if ( $type eq "CDS" ) {
+
+        if( $prot_id eq '' ) {
+          $prot_id=$1 if $sid=~/protein_id\=([^\;]+)/;
+        }
+
+        if($prot_id eq '') {
+          #if(($loglevel eq 'debug')) { print "NAME\n"; }
+          $prot_id=$1 if $sid=~/Name\=([^\;]+)/;
+        }
+
+        #update 18/11/2015
+        #In some annotation versions, provided by Tyler he added 'product' instead of Target... Parent is also exists, but it refer to the transcripts, not proteins
+        if($prot_id eq '') {
+          #if(($loglevel eq 'debug')) { print "PRODUCT\n"; }
+          $prot_id=$1 if $sid=~/product\=([^\;]+)/;
+        }
+
+      }
+    }
+  }
+
+  return $prot_id;
+
+}
+
+
 #
 sub insertProtein
 {
