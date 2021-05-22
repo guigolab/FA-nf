@@ -722,10 +722,6 @@ process 'targetP' {
     """
 }
 
-/*
-Upload results into DB -- in current version of the pipeline DB is implemented with SQLite, but mySQL is also supported
-*/
-
 process 'signalP_upload'{
 
  maxForks 1
