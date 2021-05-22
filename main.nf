@@ -33,19 +33,32 @@
 // default parameters
 params.help = false
 params.debug="false"
+params.dbEngine = "mysql" // SQLite otherwise
+
+// Sizes for different programs
 params.chunkIPSSize = null
 params.chunkBlastSize = null
 params.chunkKoalaSize = null
 params.chunkWebSize = null
 params.debugSize = 2
+
+// Blast related params
 params.evalue = 0.00001
-params.dbEngine = "mysql"
+params.diamond = null
+params.blastAnnotMode = "common"
+
+// Params for dealing with GFF
 params.gffclean = false
 params.gffstats = false
 params.rmversion = false
-params.diamond = null
-params.blastAnnotMode = "common"
+
+// File with GO information, otherwise is downloaded
 params.oboFile = null
+
+// Skip params
+params.skip_cdSearch = false
+
+// Mail for sending reports
 params.email = ""
 
 //print usage
@@ -78,6 +91,8 @@ boolean exists = false
 boolean mysql = false
 gffclean = false
 gffstats = false
+// Skip cdSearch
+skip_cdSearch = false
 
 if( params.dbEngine.toLowerCase()=="mysql" ) {
  mysql = true
@@ -89,6 +104,10 @@ if ( params.gffclean && ( params.gffclean=="TRUE" || params.gffclean=="true" ) )
 
 if ( params.gffstats && ( params.gffstats=="TRUE" || params.gffstats=="true" ) ) {
  gffstats = true
+}
+
+if ( params.skip_cdSearch && ( params.skip_cdSearch=="TRUE" || params.skip_cdSearch=="true" ) ) {
+ skip_cdSearch = true
 }
 
 // Handling MySQL in a cleaner way
@@ -132,6 +151,11 @@ if ( mysql ) {
 } else {
   log.info "FA database 		       : $dbFileName"
 }
+
+if ( skip_cdSearch ) {
+  log.info "CD Search queries will be skipped."
+}
+
 
 // split protein fasta file into chunks and then execute annotation for each chunk
 // chanels for: interpro, blast, signalP, targetP, cdsearch_hit, cdsearch_features
@@ -633,9 +657,15 @@ process 'cdSearchHit' {
     output:
     file("out_hit_${seq}") into cdSearch_hit_result
 
-    """
-    submitCDsearch.pl -o out_hit_${seq} -in $seq
-    """
+    script:
+    if ( skip_cdSearch ) {
+      // Dummy content
+      command = "touch out_hit_${seq}"
+    } else {
+      command = "submitCDsearch.pl -o out_hit_${seq} -in $seq"
+    }
+
+    command
 }
 
 process 'cdSearchFeat' {
@@ -650,9 +680,15 @@ process 'cdSearchFeat' {
     output:
     file("out_feat_${seq}") into cdSearch_feat_result
 
-    """
-    submitCDsearch.pl -t feats -o out_feat_${seq} -in $seq
-    """
+    script:
+    if ( skip_cdSearch ) {
+      // Dummy content
+      command = "touch out_feat_${seq}"
+    } else {
+      command = "submitCDsearch.pl -t feats -o out_feat_${seq} -in $seq"
+    }
+
+    command
 }
 
 
@@ -924,19 +960,6 @@ process 'generateGFF3File'{
 }
 
 }
-
-/*
-process 'generateReport'{
- input:
-
- output:
-
- """
-  pdflatex bin\/report_template
-"""
-
-}
-*/
 
 // Check MySQL IP
 def checkMySQL( mysql, mysqllog )  {
