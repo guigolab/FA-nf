@@ -405,7 +405,7 @@ sub createGFF3File {
         }
 
          #signalP, chloroP features
-        my @list=('signalP', 'targetP', 'chloroP');
+        my @list=('signalP', 'chloroP');
         foreach my $lItem (@list) {
           $selectString =  "SELECT start, end, score FROM $lItem where protein_id=$idItem";
           #print STDERR "F:".$selectString."\n";
