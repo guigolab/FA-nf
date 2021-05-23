@@ -84,6 +84,22 @@ Predictions of the KEGG orthology groups (KO) can be obtained outside of the pip
 
 Note: in the first case for the downstream processing of the KO file it is very important to store information about species used for predictions. Species are encoded in three lellters abbreviations, and the list can be copied from the 'Selected organisms' field in the kaas_main form.
 
+## Result files
+
+* **«myorg».gff**:
+* **annot.gff**:
+* **annot.gff.clean.txt**:
+* **annot.gff.stats.txt**:
+* **annotatedVsnot.png**:
+* **go_terms_byGene.txt**:
+* **go_terms.txt**:
+* **interProScan.res.tsv**:
+* **protein_definition.txt**:
+* **signalP.res.tsv**:
+* **targetP.res.tsv**:
+* **total_stats.txt**:
+
+
 ## Running in MySQL mode
 
 Running in MySQL mode improves the speed of the pipeline, but some care must be taken for including connection details in the configuration.
