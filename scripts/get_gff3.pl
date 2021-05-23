@@ -226,11 +226,12 @@ sub createGFF3File {
   	  }
 
       if (scalar @goTermId >0) {
-        my $goTermIdString = join(',',@goTermId);
-        $selectString =  "select go_acc from go_term where go_term_id in ($goTermIdString)";
-        $results =$dbh->select_from_table($selectString);
-        foreach my $item(@{$results}) {
-          push(@ontologyData, $item->{'go_acc'});}
+          my $goTermIdString = join(',',@goTermId);
+          $selectString =  "select go_acc from go_term where go_term_id in ($goTermIdString)";
+          $results =$dbh->select_from_table($selectString);
+          foreach my $item(@{$results}) {
+            push(@ontologyData, $item->{'go_acc'});
+          }
           my $ontologyList = join(',', @ontologyData);
 
           if($ontologyList ne ''){
@@ -247,14 +248,16 @@ sub createGFF3File {
   			  }
         }
 
+
         #KEGG KO groups
         #The same thing here - protein_ortholog is quite big, so I will select kegg_groups first and then do select information about them.
         $selectString ="select distinct kegg_group_id from protein_ortholog where protein_id=$idItem";
         #print STDERR "G:".$selectString."\n";
         $results =$dbh->select_from_table($selectString);
         my @keggGroupId=();
-        foreach my $item(@{$results})
-        { push(@keggGroupId , $item->{'kegg_group_id'});}
+        foreach my $item(@{$results}){
+          push(@keggGroupId , $item->{'kegg_group_id'});
+        }
         if(scalar @keggGroupId >0) {
          my $keggGroupString = join(',',@keggGroupId);
          $selectString =  "select db_id, definition, pathway from kegg_group where kegg_group_id in ($keggGroupString)";
@@ -361,26 +364,26 @@ sub createGFF3File {
         #print STDERR "C:".$selectString."\n";
         $results =$dbh->select_from_table($selectString);
         foreach my $result (@{$results}) {
-         my $access = $result->{'accession'};
-         my $superfamily =$result->{'Superfamily'};
-         my $CDEnd = $result->{'coordinateTo'};
-         my $CDStart = $result->{'coordinateFrom'};
-         #my  $evalue = sprintf("%.1e", $result->{'E_Value'});
-         my $evalue = $result->{'E_Value'};
-         my $CDType =$result->{'Hit_type'};
-         my $PSS =$result->{'PSSM_ID'};
-         my $shortName =$result->{'Short_name'};
-         my $Incomplete =$result->{'Incomplete'};
+           my $access = $result->{'accession'};
+           my $superfamily =$result->{'Superfamily'};
+           my $CDEnd = $result->{'coordinateTo'};
+           my $CDStart = $result->{'coordinateFrom'};
+           #my  $evalue = sprintf("%.1e", $result->{'E_Value'});
+           my $evalue = $result->{'E_Value'};
+           my $CDType =$result->{'Hit_type'};
+           my $PSS =$result->{'PSSM_ID'};
+           my $shortName =$result->{'Short_name'};
+           my $Incomplete =$result->{'Incomplete'};
 
-         #updt 29/06/17 added ID record and remove \" characters from fields
-         $idCDSearchHit++;
-         $CDStart=~s/\"//gi;
-         $CDEnd=~s/\"//gi;
-         $evalue=~s/\"//gi;
+           #updt 29/06/17 added ID record and remove \" characters from fields
+           $idCDSearchHit++;
+           $CDStart=~s/\"//gi;
+           $CDEnd=~s/\"//gi;
+           $evalue=~s/\"//gi;
 
-         if ( $protName && $protName ne '' ) {
-           print OUTFILE "$protName\tCDsearch\tdomain_match\t$CDStart\t$CDEnd\t$evalue\t.\t.\tID=CDSearchHit$idCDSearchHit;Accession=$access;Superfamily=$superfamily;Short_name=$shortName;PSSM_ID=$PSS;Hit_type=$CDType;\n";
-         }
+           if ( $protName && $protName ne '' ) {
+             print OUTFILE "$protName\tCDsearch\tdomain_match\t$CDStart\t$CDEnd\t$evalue\t.\t.\tID=CDSearchHit$idCDSearchHit;Accession=$access;Superfamily=$superfamily;Short_name=$shortName;PSSM_ID=$PSS;Hit_type=$CDType;\n";
+           }
         }
         #features
         $selectString =  "SELECT title, Type, coordinates,source_domain FROM cd_search_features where protein_id=$idItem";
@@ -388,22 +391,22 @@ sub createGFF3File {
         $results =$dbh->select_from_table($selectString);
         foreach my $result (@{$results}) {
 
-         my $title = $result->{'title'};
-         my $coordinates =$result->{'coordinates'};
-         my $Type = $result->{'Type'};
-         my $sourceDomain = $result->{'source_domain'};
+          my $title = $result->{'title'};
+          my $coordinates =$result->{'coordinates'};
+          my $Type = $result->{'Type'};
+          my $sourceDomain = $result->{'source_domain'};
 
-         #updt 29/06/17 added ID record
+          #updt 29/06/17 added ID record
 
-         $idCDSearchFeat++;
-         if ( $protName && $protName ne '' ) {
+          $idCDSearchFeat++;
+          if ( $protName && $protName ne '' ) {
            print OUTFILE "$protName\tCDsearch\tfeature_match\t$start\t$stop\t.\t+\t.\tID=CDSeachFeat$idCDSearchFeat;Title=$title;Type=$Type;Coordinates=$coordinates;Source_domain=$sourceDomain;\n";
-         }
+          }
         }
 
          #signalP, chloroP features
-        my @list=('signalP','chloroP');
-        foreach my $lItem(@list) {
+        my @list=('signalP', 'targetP', 'chloroP');
+        foreach my $lItem (@list) {
           $selectString =  "SELECT start, end, score FROM $lItem where protein_id=$idItem";
           #print STDERR "F:".$selectString."\n";
           $results =$dbh->select_from_table($selectString);
@@ -414,14 +417,15 @@ sub createGFF3File {
            $start=~s/\"//gi;
 
            if ( $protName && $protName ne '' ) {
-             print OUTFILE "$protName\t$lItem\tSIGNAL\t1\t$end\t$score\t.\t.\tID=SignalP_$protName;match=YES;\n";
+             print OUTFILE "$protName\t$lItem\tSIGNAL\t1\t$end\t$score\t.\t.\tID=".ucfirst($lItem)."_$protName;match=YES;\n";
            }
           }
-        } #signalP,chloroP
+        } #signalP, targetP, chloroP
 
     } #foreach protein item
-    close(OUTFILE);
  }
+ close(OUTFILE);
+
 }
 
 sub escapeGFF {
