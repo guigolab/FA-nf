@@ -32,7 +32,7 @@
 
 // default parameters
 params.help = false
-params.debug="false"
+params.debug = false
 params.dbEngine = "mysql" // SQLite otherwise
 
 // Sizes for different programs
@@ -43,13 +43,15 @@ params.chunkWebSize = null
 params.debugSize = 2
 
 // Blast related params
+params.blastFile = null
 params.evalue = 0.00001
 params.diamond = null
-params.blastAnnotMode = "common"
+params.blastAnnotMode = "common" // common, most, all available so far
 
 // Params for dealing with GFF
-params.gffclean = false
-params.gffstats = false
+params.gffclean = true
+params.gffstats = true
+// Remove version from protein entries (e.g. X5543AP.2)
 params.rmversion = false
 
 // File with GO information, otherwise is downloaded
@@ -66,10 +68,10 @@ if ( params.help ) {
   log.info ''
   log.info 'Functional annotation pipeline'
   log.info '----------------------------------------------------'
-  log.info 'Run functional annotation for a given specie.'
+  log.info 'Run functional annotation for a given species.'
   log.info ''
   log.info 'Usage: '
-  log.info "  ./nextflow run  pipeline.nf --config main_configuration.config [options]"
+  log.info "  ./nextflow run main.nf --config params.config [options]"
   log.info ''
   log.info 'Options:'
   log.info '-resume		resume pipeline from the previous step, i.e. in case of error'
@@ -98,15 +100,15 @@ if( params.dbEngine.toLowerCase()=="mysql" ) {
  mysql = true
 }
 
-if ( params.gffclean && ( params.gffclean=="TRUE" || params.gffclean=="true" ) ) {
+if ( params.gffclean ) {
  gffclean = true
 }
 
-if ( params.gffstats && ( params.gffstats=="TRUE" || params.gffstats=="true" ) ) {
+if ( params.gffstats ) {
  gffstats = true
 }
 
-if ( params.skip_cdSearch && ( params.skip_cdSearch=="TRUE" || params.skip_cdSearch=="true" ) ) {
+if ( params.skip_cdSearch ) {
  skip_cdSearch = true
 }
 
@@ -137,9 +139,9 @@ log.info ""
 log.info "General parameters"
 log.info "------------------"
 log.info "Protein sequence file        : ${params.proteinFile}"
-log.info "Annotation file              : ${params.gffFile}"
+log.info "GFF Annotation file              : ${params.gffFile}"
 
-if ( params.blastFile != "" ) {
+if ( params.blastFile ) {
   log.info "BLAST results file           : ${params.blastFile}"
 }
 
@@ -153,7 +155,7 @@ if ( mysql ) {
 }
 
 if ( skip_cdSearch ) {
-  log.info "CD Search queries will be skipped."
+  log.info "CD-Search queries will be skipped."
 }
 
 
@@ -202,11 +204,13 @@ seqWebData = Channel
  .from(protein)
  .splitFasta( by: chunkWebSize )
 
-iscan_properties = file("/usr/local/interproscan/interproscan.properties")
+// TODO: This may be changed as paremeter
+ipscan_properties = file("/usr/local/interproscan/interproscan.properties")
 
-if ( params.debug == "TRUE" || params.debug =="true" ) {
- println("Debugging.. only the first $params.debugSize chunks will be processed")
- // Diferent parts for different processes. TODO: Change numbers for processes
+if ( params.debug ) {
+ println("Debugging... only the first $params.debugSize chunks will be processed")
+ // Diferent parts for different processes.
+ // TODO: With DSL2 this is far simpler
  (seq_file1, seq_file2) = seqData.take(params.debugSize).into(2)
  (seq_file_blast) = seqBlastData.take(params.debugSize).into(1)
  (seq_file_koala) = seqKoalaData.take(params.debugSize).into(1)
@@ -247,7 +251,7 @@ if( params.oboFile == "" || params.oboFile == null ) {
 // TODO: To change for different aligners
 diamond = false
 
-if( params.diamond == "TRUE" || params.diamond =="true" ) {
+if( params.diamond ) {
  diamond = true
 }
 
@@ -257,7 +261,7 @@ if( params.blastAnnotMode != "" && params.blastAnnotMode != null ) {
   blastAnnotMode = params.blastAnnotMode
 }
 
-if (params.blastFile == "" ||  params.blastFile == null ){
+if ( params.blastFile == "" ||  params.blastFile == null ){
 
  // program-specific parameters
  db_name = file(params.blastDbPath).name
@@ -512,6 +516,8 @@ if ( gffclean ) {
 
  process copyGFF {
 
+  publishDir params.resultPath, mode: 'copy'
+
   label 'gffcheck'
 
   input:
@@ -519,12 +525,13 @@ if ( gffclean ) {
 
   output:
    file "annot.gff" into gff_file
+   file "annot.gff.clean.txt" into gff_file_log
 
    """
     # get annot file
     export escaped=\$(echo '$baseDir')
     export basedirvar=\$(echo '\\\$\\{baseDir\\}')
-    cp `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` annot.gff
+    cp `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` annot.gff > annot.gff.clean.txt
    """
 
  }
@@ -634,7 +641,7 @@ process ipscn {
 
     input:
     file seq from seq_file_ipscan
-    file ("interproscan.properties") from file( iscan_properties )
+    file ("interproscan.properties") from file( ipscan_properties )
 
     output:
     file("out_interpro_${seq}") into (ipscn_result1, ipscn_result2)
