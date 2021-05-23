@@ -136,23 +136,23 @@ for further options or details, run:
 
 ## Associated containers
 
-    We recommend installing either [Docker](https://www.docker.com/) or [Singularity](https://sylabs.io/singularity/) (the latter preferred).
+We recommend installing either [Docker](https://www.docker.com/) or [Singularity](https://sylabs.io/singularity/) (the latter preferred).
 
-    The software used all along this pipeline is encapsulated in, at least, 4 containers:
+The software used all along this pipeline is encapsulated in, at least, 4 containers:
 
-    As written down in ```nextflow.config``` file, whenever possible, we try to provide necessary images in a public repository (e.g. [Docker hub](https://hub.docker.com/) or quay.io from [Biocontainers](https://biocontainers.pro/)). However, for some software that includes privative components, we suggest to build the container image by yourself.
+As written down in ```nextflow.config``` file, whenever possible, we try to provide necessary images in a public repository (e.g. [Docker hub](https://hub.docker.com/) or quay.io from [Biocontainers](https://biocontainers.pro/)). However, for some software that includes privative components, we suggest to build the container image by yourself.
 
-    * [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build this)
-    * [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build this)
+* [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build this)
+* [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build this)
 
-    ### How to build base container
+### How to build base container
 
-    The base container is [available in Docker Hub](https://hub.docker.com/r/guigolab/fa-nf) and Nextflow takes care automatically to retrieve it form there, but you can always decide to generate it yourself.
+The base container is [available in Docker Hub](https://hub.docker.com/r/guigolab/fa-nf) and Nextflow takes care automatically to retrieve it form there, but you can always decide to generate it yourself.
 
-    ```
-        # Generate Docker image
-        docker build -t fa-nf .
+```
+    # Generate Docker image
+    docker build -t fa-nf .
 
-        # Generate Singularity image if preferred
-        sudo singularity build fa-nf.sif docker-daemon://fa-nf:latest
-    ```
+    # Generate Singularity image if preferred
+    sudo singularity build fa-nf.sif docker-daemon://fa-nf:latest
+```
