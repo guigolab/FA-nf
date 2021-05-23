@@ -494,28 +494,6 @@ if ( gffclean ) {
 
  process cleanGFF {
 
-  label 'gffcheck'
-
-  input:
-   file config_file
-
-  output:
-   file "annot.gff" into gff_file
-
-   """
-    # get annot file
-    export escaped=\$(echo '$baseDir')
-    export basedirvar=\$(echo '\\\$\\{baseDir\\}')
-    agat_sp_gxf_to_gff3.pl --gff `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` -o annot.gff
-   """
-
- }
-
-
-} else {
-
- process copyGFF {
-
   publishDir params.resultPath, mode: 'copy'
 
   label 'gffcheck'
@@ -531,7 +509,29 @@ if ( gffclean ) {
     # get annot file
     export escaped=\$(echo '$baseDir')
     export basedirvar=\$(echo '\\\$\\{baseDir\\}')
-    cp `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` annot.gff > annot.gff.clean.txt
+    agat_sp_gxf_to_gff3.pl --gff `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` -o annot.gff > annot.gff.clean.txt
+   """
+
+ }
+
+
+} else {
+
+ process copyGFF {
+
+  label 'gffcheck'
+
+  input:
+   file config_file
+
+  output:
+   file "annot.gff" into gff_file
+
+   """
+    # get annot file
+    export escaped=\$(echo '$baseDir')
+    export basedirvar=\$(echo '\\\$\\{baseDir\\}')
+    cp `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` annot.gff
    """
 
  }
