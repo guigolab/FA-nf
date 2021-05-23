@@ -124,6 +124,8 @@ sub createGFF3File {
 
   my($dbh, $protIdList, $outFile, $engine)=@_;
 
+  my %geneStore;
+
   my $numberKeys = scalar @{$protIdList};
   my $condStat='';
 
@@ -279,7 +281,11 @@ sub createGFF3File {
         }
 
         if( $geneName ne '' ) {
-          print OUTFILE "$genomicLocation\t.\tgene\t$genomicStart\t$genomicEnd\t.\t$strand\t.\tID=$geneName;\n";
+          if ( ! $geneStore{$geneName} ) {
+            # Avoid duplication of genes
+            print OUTFILE "$genomicLocation\t.\tgene\t$genomicStart\t$genomicEnd\t.\t$strand\t.\tID=$geneName;\n";
+            $geneStore{$geneName} = 1;
+          }
         }
         ####### update 29/06/2017
         ### in the protein-based coordinates it should be plus strand, if other not specified.
