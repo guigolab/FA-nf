@@ -417,7 +417,9 @@ sub createGFF3File {
            $start=~s/\"//gi;
 
            if ( $protName && $protName ne '' ) {
-             print OUTFILE "$protName\t$lItem\tSIGNAL\t1\t$end\t$score\t.\t.\tID=".ucfirst($lItem)."_$protName;match=YES;\n";
+             # Toniher: Changed from SIGNAL to protein_match and also start despite it must be 1
+             #print OUTFILE "$protName\t$lItem\tSIGNAL\t1\t$end\t$score\t.\t.\tID=".ucfirst($lItem)."_$protName;match=YES;\n";
+             print OUTFILE "$protName\t$lItem\tprotein_match\t$start\t$end\t$score\t.\t.\tID=".ucfirst($lItem)."_$protName;match=YES;\n";
            }
           }
         } #signalP, targetP, chloroP
