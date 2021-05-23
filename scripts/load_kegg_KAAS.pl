@@ -137,8 +137,6 @@ close FH;
 
 if(($loglevel eq 'debug' )||($loglevel eq 'info' )) {print STDOUT "Number of unique KEGG groups:",scalar(keys %keggs),"\n";}
 
-# TODO: upload KEGG group information into DB - this will speed-up uploading process.. There are usually fewer groups then proteins assigned to them
-
 #print Dumper( \%keggs );
 #print Dumper( \%organisms );
 
@@ -397,7 +395,10 @@ sub uploadKeggInformation {
 	# Number limit names
 	my $limnames = 9;
 
-  foreach my $proteinItem(@proteinList) {
+	# We store mapping of proteins and GO for making it faster
+	my %gomap;
+
+  foreach my $proteinItem ( @proteinList ) {
 
 			#select protein_id infor (because items are stable_ids in protein table)
 			my $protein_sql_select= qq{ SELECT d.protein_id,d.definition d FROM definition d, protein p WHERE p.protein_id=d.protein_id and p.stable_id=\"$proteinItem\"};
@@ -428,7 +429,6 @@ sub uploadKeggInformation {
 
 			print "NUM LINES: $#lines\n";
 
-			# TODO: Converge sqlite case to MySQL approach if possible
 			foreach my $l (@lines) {
 
 				# insert each ortholog
@@ -617,10 +617,13 @@ sub uploadKeggInformation {
 			# add GO terms info into go_term and protein_go table.
 			# TODO Consider in the future other annotations, such as COG
 			if(defined $hash->{'DBLINKS'}) {
-			 # TODO: Multiple GOs here, need to consider all maybe
-			 # DBLINKS     GO: 0016279 0030544
-			 my $goId = parseKEGGDBLInks($hash->{'DBLINKS'});
-			 if($goId ne '') {
+
+			 my @goIds = &parseKEGGDBLinks($hash->{'DBLINKS'});
+
+			 # Define storage
+			 $gomap{$protein_id} = ();
+
+			 foreach my $goId ( @goIds ) {
 			     #insert go term, associated with this protein into go_term table, and then into protein_go
 			     my $sqlSelect = "SELECT go_term_id from go_term where go_acc like '$goId'";
 			     my $sqlUpdate ="";
@@ -638,6 +641,7 @@ sub uploadKeggInformation {
 			        my $results = $dbh->select_from_table($select);
 			        $goTermId=$results->[0]->{'id'};
 			     }
+
 			     #select protein_go_id if there is one, and add 'KEGG' to the source field
 					 # TODO: Change INSERT or IGNORE here
 			     $sqlSelect = "SELECT protein_go_id, source FROM protein_go where protein_id = $protein_id and go_term_id=$goTermId and source='KEGG'";
@@ -654,6 +658,8 @@ sub uploadKeggInformation {
 		 }#if defined dbLinks
 	}#foreach protein Item
 
+	# TODO: Process gomap here
+
 	print STDERR "Protein finished here ".getLoggingTime()."\n";
 
  }#foreach kegg KO item
@@ -668,18 +674,19 @@ sub uploadKeggInformation {
 }#sub
 
 
-sub parseKEGGDBLInks {
+# DBLINKS     GO: 0016279 0030544
+
+sub parseKEGGDBLinks {
 	my $dbLinks = shift;
 
-	my $retGO='';
+	my @retGO=();
 
 	$dbLinks=~s/\n//g;
-	if($dbLinks =~/(GO\:\s*\d+)\s*/) {
-	 $retGO = $1;
-	 $retGO=~s/\s+//g;
+	while ($dbLinks=~/(\d+)/g) {
+		push( @retGO, "GO:".$1 );
 	}
 
-	return $retGO;
+	return @retGO;
 }
 
 # subroutine to retrieve KEGG record from DB
