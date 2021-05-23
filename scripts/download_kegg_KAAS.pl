@@ -113,6 +113,10 @@ foreach my $kegg_id ( keys %keggs ) {
 
 }
 
+if ( $#queue >= 0 ) {
+  &processByAPI( \@queue, $down_kegg_dir, $iter );
+}
+
 sub processByAPI {
 
   my $arr = shift;
