@@ -983,7 +983,7 @@ def checkMySQL( mysql, mysqllog )  {
 
 def downloadURL( address, filename ) {
   downFile = new File( filename ) << new URL (address).getText()
-  return downFile
+  return downFile.absolutePath
 }
 
 
