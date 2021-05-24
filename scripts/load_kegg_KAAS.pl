@@ -674,19 +674,25 @@ sub uploadKeggInformation {
 }#sub
 
 
-# DBLINKS     GO: 0016279 0030544
 
 sub parseKEGGDBLinks {
 	my $dbLinks = shift;
 
-	my (@retGO)=();
+	my ( @retGO ) = ();
 
-	$dbLinks=~s/\n//g;
+	my ( @dblines ) = split(/\n/, $dbLinks);
 
-	# Let's restrict GO here. Future others
-	if ( $dbLinks=~/\bGO\:/ ) {
-		while ( $dbLinks=~/(\d+)/g ) {
-			push( @retGO, "GO:".$1 );
+	# DBLINKS     GO: 0016279 0030544
+
+	foreach my $dbline ( @dblines ) {
+
+		if ( $dbline=~/\bGO\:/ ) {
+
+			# Let's restrict GO here. Future others
+			while ( $dbline=~/(\d+)/g ) {
+				push( @retGO, "GO:".$1 );
+			}
+
 		}
 	}
 
