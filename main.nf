@@ -244,7 +244,7 @@ else {
 if( params.oboFile == "" || params.oboFile == null ) {
   oboFile = downloadURL( "http://www.geneontology.org/ontology/gene_ontology.obo", "gene_ontology.obo" )
 } else {
-  oboFile = file(params.oboFile)
+  oboFile = params.oboFile
 }
 
 
@@ -929,14 +929,13 @@ process 'generateResultFiles'{
  input:
   file config from config4perl10
   file all_done from last_step1
-  file obofile from oboFile
 
  script:
 
   command = checkMySQL( mysql, params.mysqllog )
 
   command += " \
-   get_results.pl -conf \$config -obo $obofile ; \
+   get_results.pl -conf \$config -obo ${obofile} ; \
   "
 
   command
@@ -983,7 +982,7 @@ def checkMySQL( mysql, mysqllog )  {
 
 def downloadURL( address, filename ) {
   downFile = new File( filename ) << new URL (address).getText()
-  return file( downFile.absolutePath )
+  return downFile.absolutePath
 }
 
 
