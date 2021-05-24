@@ -680,7 +680,7 @@ sub parseKEGGDBLinks {
 
 	my ( @retGO ) = ();
 
-	my ( @dblines ) = split(/\n/, $dbLinks);
+	my ( @dblines ) = split(/\,/, $dbLinks);
 
 	# DBLINKS     GO: 0016279 0030544
 
