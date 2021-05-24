@@ -682,8 +682,12 @@ sub parseKEGGDBLinks {
 	my @retGO=();
 
 	$dbLinks=~s/\n//g;
-	while ($dbLinks=~/(\d+)/g) {
-		push( @retGO, "GO:".$1 );
+
+	# Let's restrict GO here. Future others
+	if ( $dbLinks=~/\bGO\:/ ) {
+		while ( $dbLinks=~/(\d+)/g ) {
+			push( @retGO, "GO:".$1 );
+		}
 	}
 
 	return @retGO;
