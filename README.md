@@ -6,7 +6,7 @@ A pipeline for **functional annotation** of proteins from non-model organisms im
 
 The pipeline uses a set of well characterised software to assign functional information to the proteins of interests, i.e. domains, GO terms annotation, putative name and some other features.
 
-The software used in this pipeline is free software for academic users. For the software from the Center for Biological Sequence (CBS), i.e. signalP, a suitable license agreement should be obtained.
+The software used in this pipeline is mostly free software for academic users. For the software from the Center for Biological Sequence (CBS), i.e. signalP, a suitable license agreement should be obtained. More details about how to use this software in the *Associated containers* section at the end of this page.
 
 ## Installation
 The pipeline is build on Nextflow as a woking engine, so it need to be installed first
@@ -39,10 +39,45 @@ The pipeline require as an input the configuration file with specified parameter
 
 The example of configuration file is included into this repository with name ```params.config```
 
+Most parameters are self-explanatory. We highlight some below and in upcoming sections:
+
+```
+  # Protein fasta input
+  proteinFile = "${baseDir}/dataset/P.vulgaris.proteins.fa"
+  # GFF input
+  gffFile = "${baseDir}/dataset/P.vulgaris.gff3"
+```
+
+When approaching a new dataset, we suggest to run first the pipeline in **debug** mode (provided as such in example params config). This will analyze a limited number of protein entries. This way you may save time and troubleshoot some potential problems in your input files.
+
+```
+  # Whether to run pipeline in debug mode or not
+  debug = "true"
+```
+
+One of the strenghts of Nextflow is allowing the parallelization and merging of several processes. In our case, input protein FASTA file is split and its sequences are delievered to the different used applications in chunks. For a quick processing, the optimal size of these chunks is not the same for each target application, and it can also depend on the setup of your HPC environment or network health. This can be tuned using the parameters below:
+
+```
+  # Number of protein sequences per chunk (used as fallback)
+  chunkSize = 25
+  # Number of protein sequences per chunk when using BLAST (or DIAMOND)
+  chunkBlastSize = 50
+  # Number of protein sequences per chunk when using InterProScan
+  chunkIPSSize = 25
+  # Number of protein sequences per chunk when using KofamKOALA
+  chunkKoalaSize = 50
+  # Number of protein sequences per chunk when submitting to web processes (CD-Search for now)
+  chunkWebSize = 100
+  # Number of chunks to be used when running in debug mode (e.g., for facllback processes this would be 5*25=125 protein sequences)
+  debugSize = 5
+```
+
 ## Pipeline steps
 
 ![Pipeline flow chart](./flowchart.png "Pipeline flow chart")
 
+* **cleanGFF**: it cleans input GFF if enabled
+* **statsGFF**: it provides some general statistics on the GFF input
 * **blast**: it perfoms BLAST search against defined database from input files
 * **diamond**: the same as above but using DIAMOND ( ```diamond = "true"``` in config file )
 * **ipscn**: it performs InterProScan analyses from input files
@@ -52,7 +87,7 @@ The example of configuration file is included into this repository with name ```
 * **blastDef**: it attaches a definition to input entries based on BLAST hits
 * **cdSearchHit**: it performs a NCBI CDSearch Hit query
 * **cdSearchFeat**: it performs a NCBI CDSearch Feature query
-* **initDB**: it initialitzes the Database used for gathering data from different analyses and later generating the reports
+* **initDB**: it initialitzes the database used for gathering data from different analyses and later generating the reports. Starting inputs are FASTA and GFF files
 * **definition_upload**: it uploads definitions derived from BLAST into the DB
 * **signalP_upload**: it uploads signalP analyses into the DB
 * **targetP_upload**: it uploads targetP analyses into the DB
@@ -64,9 +99,11 @@ The example of configuration file is included into this repository with name ```
 * **generateResultFiles**: it generates report files
 * **generateGFF3File**: if GFF provided as input, it provides a modified GFF with additional information from the previous annotation steps
 
-### GFF cleaning
+### GFF preparation
 
-...
+Despite [some existing recommendations](https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md), there is a huge diversity of GFF formats in the wild. For safety reasons, we introduce an initial step, thanks to [AGAT toolkit](https://github.com/NBISweden/AGAT), (which can be disabled with ```gffclean = "false" ```) for ensuring that GFF input files will be properly processed.
+
+We suggest to check **annot.gff**, **annot.gff.clean.txt** and **annot.gff.stats.txt** files in results directory and generated during the first steps of the pipeline, for checking that used GFF files are OK.
 
 ### Formatted databases
 
@@ -82,11 +119,11 @@ As an example, in our case we are using a [web API](https://github.com/toniher/g
 ### KEGG orthology groups
 Predictions of the KEGG orthology groups (KO) can be obtained outside of the pipeline, i.e. via [KAAS server](http://www.genome.jp/tools/kaas/) or using a previously set-up version of [KofamKOALA](https://www.genome.jp/tools/kofamkoala/).
 
-Note: in the first case for the downstream processing of the KO file it is very important to store information about species used for predictions. Species are encoded in three lellters abbreviations, and the list can be copied from the 'Selected organisms' field in the kaas_main form.
+**Note**: using KAAS, for the downstream processing of the KO file it is very important to store information about species used for predictions. Species are encoded in three letters abbreviations, and the list can be copied from the 'Selected organisms' field in the kaas_main form.
 
 ## Result files
 
-Below you can check all the possibly available files in results directory (defined in ```resultPath``` parameter) at the end of the pipeline execution. Some files may not be there if certain options are switched (e.g., if GFF cleaning is skipped with ```gffclean = "false"```).
+Below you can check all the possibly available files in results directory (defined with ```resultPath``` parameter) at the end of the pipeline execution. Some files may not be there if certain options are switched (e.g., if GFF cleaning is skipped with ```gffclean = "false"```).
 
 * **«myorg».gff**: final outcome GFF that adds retrieved annotation information to the provided GFF. Filename matches the ```dbname``` parameter
 * **annot.gff**: input GFF file after being cleaned at the beginning of the pipeline and used in downstream processes
@@ -99,7 +136,7 @@ Below you can check all the possibly available files in results directory (defin
 * **protein_definition.tsv**: TSV file with assigned protein definition and the method uses (e.g., using BLAST matches)
 * **signalP.res.tsv**: TSV file with all SignalP predictions
 * **targetP.res.tsv**: TSV file with all TargetP predictions
-* **total_stats.txt**: Annotation coverage provided at the end of the pipeline execution 
+* **total_stats.txt**: Annotation coverage provided at the end of the pipeline execution
 
 
 ## Running in MySQL mode
@@ -124,10 +161,12 @@ The relevant paremetres below:
     # If using the wrapper below, where MySQL data will be stored
     mysqldata = "${baseDir}/mysql/"
     # If using the wrapper below, where MySQL instance logs will be stored
-    mysqllog = "${baseDir}/tmp"
+    mysqllog = "${baseDir}/tmp/"
     # If using the wrapper below, which Singularity image will be used
     mysqlimg = "/software/bi/biocore_tools/git/singularity/mariadb-10.3.simg"
 ```
+
+**Note**: when running a different analysis, take care to use a different ```dbname``` for avoiding unexpected problems.  
 
 ### Execution without an ad-hoc database
 
@@ -156,7 +195,7 @@ for further options or details, run:
 
 We recommend installing either [Docker](https://www.docker.com/) or [Singularity](https://sylabs.io/singularity/) (the latter preferred).
 
-The software used all along this pipeline is encapsulated in, at least, 4 containers:
+The software used all along this pipeline is encapsulated in several containers:
 
 As written down in ```nextflow.config``` file, whenever possible, we try to provide necessary images in a public repository (e.g. [Docker hub](https://hub.docker.com/) or quay.io from [Biocontainers](https://biocontainers.pro/)). However, for some software that includes privative components, we suggest to build the container image by yourself.
 
