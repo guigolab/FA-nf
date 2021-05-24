@@ -105,21 +105,42 @@ Despite [some existing recommendations](https://github.com/The-Sequence-Ontology
 
 We suggest to check **annot.gff**, **annot.gff.clean.txt** and **annot.gff.stats.txt** files in results directory and generated during the first steps of the pipeline, for checking that used GFF files are OK.
 
-### Formatted databases
+### BLAST databases
 
-* For NCBI BLAST+: ```blastDbPath = "/path/to/db"``` and ```diamond = "false"```. It looks for formatted database files (normally named db.p* for protein type based ones), otherwise it will try to format FASTA file with that name
-* For DIAMOND: ```blastDbPath = "/path/to/db"``` and ```diamond = "true"```. It looks for a single formatted database file (normally named db.dmnd), otherwise it will try to format the FASTA file with that name (gzip compressed files accepted)
+* For NCBI BLAST+: ```blastDbPath = "/path/to/db"``` and ```diamond = "false"```. It looks for formatted database files (normally named ``db.p*`` for protein type based ones), otherwise it will try to format FASTA file with that name
+* For DIAMOND: ```blastDbPath = "/path/to/db"``` and ```diamond = "true"```. It looks for a single formatted database file (normally named ``db.dmnd``), otherwise it will try to format the FASTA file with that name (gzip compressed files accepted)
 
 ### Retrieval of GO terms from BLAST results
 
 Retrieval of GO terms from BLAST results can be performed either from [BLAST2GO](https://www.blast2go.com/) results or from other methods as far as a BLAST2GO-compatible output format is provided.
 
-As an example, in our case we are using a [web API](https://github.com/toniher/gogoAPI) providing this information from [UniProt GOA](https://www.ebi.ac.uk/GOA) database imported into a MySQL and/or [Neo4j](https://github.com/toniher/neo4j-biorelation).
+Moreover, we are also providing a web API for retrieving protein-GO mapping from [UniProt GOA](https://www.ebi.ac.uk/GOA) and other resources. More details for [for setting an own instance here](https://github.com/toniher/gogoAPI).
+
+When using the second option, you can tune it with the parameters below:
+
+```
+  # Instance from where to retrieve GO mappings
+  params.gogourl = "http://myinstance.example.com/api"
+  # Maximum number of hits to consider (up to 30 by default))
+  params.gogohits = 30
+  # Modes of retrieval from BLAST matches
+    * Common: Only GO entries appearing in all matches
+    * Most: Only GO entries appearing in more than half of matches
+    * All: All GO entries appearing in all matches
+  params.blastAnnotMode = "common"
+```
 
 ### KEGG orthology groups
 Predictions of the KEGG orthology groups (KO) can be obtained outside of the pipeline, i.e. via [KAAS server](http://www.genome.jp/tools/kaas/) or using a previously set-up version of [KofamKOALA](https://www.genome.jp/tools/kofamkoala/).
 
-**Note**: using KAAS, for the downstream processing of the KO file it is very important to store information about species used for predictions. Species are encoded in three letters abbreviations, and the list can be copied from the 'Selected organisms' field in the kaas_main form.
+For KofamKOLA, adjust the parameters below to match the location in your system ([FTP source](ftp://ftp.genome.jp/pub/db/kofam/))
+
+```
+  kolist = "/nfs/db/kegg/ko_list"
+  koprofiles = "/nfs/db/kegg/profiles"
+```
+
+**Note**: when using KAAS, for the downstream processing of the KO file it is very important to store information about species used for predictions. Species are encoded in three letters abbreviations, and the list can be copied from the 'Selected organisms' field in the kaas_main form.
 
 ## Result files
 

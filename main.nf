@@ -46,7 +46,17 @@ params.debugSize = 2
 params.blastFile = null
 params.evalue = 0.00001
 params.diamond = null
+
+// GO retrieval params
+params.gogourl = ""
+params.gogohits = 30
 params.blastAnnotMode = "common" // common, most, all available so far
+
+// Params for InterProScan
+//  Temporary location for InterproScan intermediary files. This can be huge
+params.ipscantmp = "${baseDir}/tmp/"
+//  Location of InterproScan properties. Do not modify unless it matches your container
+params.ipscanproperties = "/usr/local/interproscan/interproscan.properties"
 
 // Params for dealing with GFF
 params.gffclean = true
@@ -205,7 +215,7 @@ seqWebData = Channel
  .splitFasta( by: chunkWebSize )
 
 // TODO: This may be changed as paremeter
-ipscan_properties = file("/usr/local/interproscan/interproscan.properties")
+ipscan_properties = file(params.ipscanproperties)
 
 if ( params.debug ) {
  println("Debugging... only the first $params.debugSize chunks will be processed")
@@ -453,22 +463,22 @@ keggfile = koala_parsed
 
 }
 
-if(params.gogourl != ""){
+if (params.gogourl != "") {
 
-process blast_annotator {
+  process blast_annotator {
 
- label 'blastannotator'
+   label 'blastannotator'
 
- input:
- file blastXml from blastXmlResults2.flatMap()
+   input:
+   file blastXml from blastXmlResults2.flatMap()
 
- output:
- file "blastAnnot" into blast_annotator_results
+   output:
+   file "blastAnnot" into blast_annotator_results
 
-"""
- blast-annotator.pl -in $blastXml -out blastAnnot --url  $params.gogourl -t $blastAnnotMode -q --format blastxml
-"""
-}
+  """
+   blast-annotator.pl -in $blastXml -out blastAnnot --hits $params.gogohits --url $params.gogourl -t $blastAnnotMode -q --format blastxml
+  """
+  }
 
 }
 
