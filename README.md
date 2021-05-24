@@ -86,18 +86,20 @@ Note: in the first case for the downstream processing of the KO file it is very 
 
 ## Result files
 
-* **«myorg».gff**:
-* **annot.gff**:
-* **annot.gff.clean.txt**:
-* **annot.gff.stats.txt**:
-* **annotatedVsnot.png**:
-* **go_terms_byGene.txt**:
-* **go_terms.txt**:
-* **interProScan.res.tsv**:
-* **protein_definition.txt**:
-* **signalP.res.tsv**:
-* **targetP.res.tsv**:
-* **total_stats.txt**:
+Below you can check all the possibly available files in results directory (defined in ```resultPath``` parameter) at the end of the pipeline execution. Some files may not be there if certain options are switched (e.g., if GFF cleaning is skipped with ```gffclean = "false"```).
+
+* **«myorg».gff**: final outcome GFF that adds retrieved annotation information to the provided GFF. Filename matches the ```dbname``` parameter
+* **annot.gff**: input GFF file after being cleaned at the beginning of the pipeline and used in downstream processes
+* **annot.gff.clean.txt**: GFF cleaning log information
+* **annot.gff.stats.txt**: GFF input file statistics
+* **annotatedVsnot.png**: summary chart with protein length distribution and annotation coverage
+* **go_terms_byGene.tsv**: TSV file containing a list of genes, and all the GO codes assigned to the proteins associated to that gene and the different methods (e.g., KEGG)
+* **go_terms.tsv**: TSV file containing a list of proteins with their assigned GO codes with the used methods
+* **interProScan.res.tsv**: TSV file with all protein domain and signature matches using InterproScan
+* **protein_definition.tsv**: TSV file with assigned protein definition and the method uses (e.g., using BLAST matches)
+* **signalP.res.tsv**: TSV file with all SignalP predictions
+* **targetP.res.tsv**: TSV file with all TargetP predictions
+* **total_stats.txt**: Annotation coverage provided at the end of the pipeline execution 
 
 
 ## Running in MySQL mode

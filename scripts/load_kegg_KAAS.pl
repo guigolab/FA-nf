@@ -679,7 +679,7 @@ sub uploadKeggInformation {
 sub parseKEGGDBLinks {
 	my $dbLinks = shift;
 
-	my @retGO=();
+	my (@retGO)=();
 
 	$dbLinks=~s/\n//g;
 

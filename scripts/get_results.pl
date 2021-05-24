@@ -127,14 +127,14 @@ my $summaryFile = $outputFolder.'/'.'total_stats.txt';
 &printSummaryInfo(\@listIds, $dbh, $summaryFile);
 
 #print protein definition
-my $definitionFile = $outputFolder.'/'.'protein_definition.txt';
+my $definitionFile = $outputFolder.'/'.'protein_definition.tsv';
 &printDefinitionInfo(\@listIds, $dbh, $definitionFile, lc( $config{'dbEngine'} ));
 
 
 #get GO terms info
-my $goFile=$outputFolder .'/'.'go_terms.txt';
+my $goFile=$outputFolder .'/'.'go_terms.tsv';
 &printGoTerms(\@listIds, $goFile, $dbh, 'protein');
-my $goFile2=$outputFolder .'/'.'go_terms_byGene.txt';
+my $goFile2=$outputFolder .'/'.'go_terms_byGene.tsv';
 &printGoTerms(\@listIds, $goFile2, $dbh, 'gene');
 
 
