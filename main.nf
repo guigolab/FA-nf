@@ -945,7 +945,7 @@ process 'generateResultFiles'{
   command = checkMySQL( mysql, params.mysqllog )
 
   command += " \
-   get_results.pl -conf \$config -obo ${obofile} ; \
+   get_results.pl -conf \$config -obo ${oboFile} ; \
   "
 
   command
