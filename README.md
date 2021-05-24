@@ -183,8 +183,8 @@ The relevant paremetres below:
     mysqldata = "${baseDir}/mysql/"
     # If using the wrapper below, where MySQL instance logs will be stored
     mysqllog = "${baseDir}/tmp/"
-    # If using the wrapper below, which Singularity image will be used
-    mysqlimg = "/software/bi/biocore_tools/git/singularity/mariadb-10.3.simg"
+    # If using the wrapper below, which Singularity/Docker image will be used
+    mysqlimg = "docker://library/mariadb:10.3"
 ```
 
 **Note**: when running a different analysis, take care to use a different ```dbname``` for avoiding unexpected problems.  
@@ -220,8 +220,8 @@ The software used all along this pipeline is encapsulated in several containers:
 
 As written down in ```nextflow.config``` file, whenever possible, we try to provide necessary images in a public repository (e.g. [Docker hub](https://hub.docker.com/) or quay.io from [Biocontainers](https://biocontainers.pro/)). However, for some software that includes privative components, we suggest to build the container image by yourself.
 
-* [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build this)
-* [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build this)
+* [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build this, **sigtarp** process in ```nextflow.config```)
+* [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build this, **ipscan** process in ```nextflow.config```)
 
 ### How to build base container
 
