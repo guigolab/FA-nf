@@ -196,7 +196,7 @@ my $duplicated=0;
 $c_prot_id='';
 #open file for parsing
 open FH,"$inFile";
- while(<FH>) {
+while(<FH>) {
    next if /^#/;
     chomp;
     my $line=$_;
@@ -204,51 +204,52 @@ open FH,"$inFile";
     #@elms=split/\t/,$line;
     # Allow handling more variability below
     @elms=split/\s+/,$line;
-  if($elms[$type_ix] eq 'gene') {
-    if($c_prot_id ne '')
-     {
-      #if there was some protein before, insert it into DB
-      &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList, $dbh, $engine, $loglevel);
-      $c_prot_id='';
-     }
 
-    # Toniher: Handling IDs more in detail since no always only words. Notice TransDecoder output
+    if($elms[$type_ix] eq 'gene') {
 
-    $gene_name = &getGeneName( $elms[$ids_ix], $elms[$annot_ix] );
+      if($c_prot_id ne '') {
+        #if there was some protein before, insert it into DB
+        &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList, $dbh, $engine, $loglevel);
+        $c_prot_id='';
+       }
 
-    #print STDERR Dumper( \@elms );
-    #print STDERR $gene_name, "\n";
- #patch for pc2127 isolate, p.cucumerina project - gene name contains . symbol in the name
-  #if( $elms[$ids_ix]=~/ID=(PCUC.+)$/)
-  #  {$gene_name=$1;}
+      # Toniher: Handling IDs more in detail since no always only words. Notice TransDecoder output
 
-    # check that this gene is not present in DB
+      $gene_name = &getGeneName( $elms[$ids_ix], $elms[$annot_ix] );
+
+      #print STDERR Dumper( \@elms );
+      #print STDERR $gene_name, "\n";
+      #patch for pc2127 isolate, p.cucumerina project - gene name contains . symbol in the name
+      #if( $elms[$ids_ix]=~/ID=(PCUC.+)$/)
+      #  {$gene_name=$1;}
+
+      # check that this gene is not present in DB
      $duplicated=0;
      # check if there is already a gene with this gene_name in the DB
      my $selectString ="SELECT gene_id FROM gene WHERE gene_name=\"$gene_name\"";
-    if(($loglevel eq 'debug'))
+     if(($loglevel eq 'debug'))
      {print "$selectString\n";}
      my @res= @{$dbh->select_from_table($selectString,$dbh)};
      # if YES, then do not insert
      if (scalar(@res)) {
-     if(($loglevel eq 'debug')||($loglevel eq 'info'))
-      {	print STDOUT "WARN: $gene_name already exists in the DB. Skipping\n"; }
+       if(($loglevel eq 'debug')||($loglevel eq 'info'))
+        {	print STDOUT "WARN: $gene_name already exists in the DB. Skipping\n"; }
 
-  	$duplicated=1;
-        $g_id = $res[0]->{'gene_id'};
-     if(($loglevel eq 'debug'))
-      {  print "GENE_ID: $g_id\n";}
+    	$duplicated=1;
+          $g_id = $res[0]->{'gene_id'};
+       if(($loglevel eq 'debug'))
+        {  print "GENE_ID: $g_id\n";}
 
-        next;
+          next;
       }
       # insert new gene
      $gene_strand=$elms[$strand_ix];
      $gene_start=$elms[$start_ix];
      $gene_end=$elms[$end_ix];
      my $gene_sql_insert;
-    if( lc( $engine ) eq 'sqlite')
+     if( lc( $engine ) eq 'sqlite')
      {$gene_sql_insert = qq{ INSERT INTO gene(gene_id, gene_name,start,end,strand)  VALUES (NULL,\"$gene_name\", \"$gene_start\", \"$gene_end\", \"$gene_strand\");};}
-    else
+     else
      { $gene_sql_insert = qq{ INSERT INTO gene SET gene_name=\"$gene_name\", start=\"$gene_start\", end=\"$gene_end\", strand=\"$gene_strand\";};}
    if(($loglevel eq 'debug'))
      {
@@ -257,15 +258,15 @@ open FH,"$inFile";
     }
 
      $g_id =  $dbh->insert_set($gene_sql_insert,$dbh) if $duplicated==0;
-    if(!defined $g_id)
+     if(!defined $g_id)
      {
        my $select = &selectLastId( $engine );
        my $results = $dbh->select_from_table($select);
        #print Dumper($results);
        $g_id=$results->[0]->{'id'};
-     }
-    if(($loglevel eq 'debug'))
-     { print "GENE_ID: $g_id\n";}
+      }
+      if(($loglevel eq 'debug'))
+      { print "GENE_ID: $g_id\n";}
    }
 
    #elsif ($elms[$type_ix] eq 'CDS') {
@@ -331,6 +332,7 @@ open FH,"$inFile";
 	    }
     }
   }
+}
 close FH;
 
  #update tailing record
