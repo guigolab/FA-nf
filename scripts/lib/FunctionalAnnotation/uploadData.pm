@@ -189,6 +189,7 @@ my $end_ix=4;
 my $strand_ix=6;
 my $ids_ix=8;
 
+my %detectp = {};
 my($g_id, $gene_start, $gene_end, $gene_strand, $gene_name, $c_prot_id, $c_contig, $c_start, $c_strand, $start, $end);
 my @elms;
 my $duplicated=0;
@@ -203,12 +204,11 @@ open FH,"$inFile";
     #@elms=split/\t/,$line;
     # Allow handling more variability below
     @elms=split/\s+/,$line;
-  if($elms[$type_ix] eq 'gene')
-   {
+  if($elms[$type_ix] eq 'gene') {
     if($c_prot_id ne '')
      {
       #if there was some protein before, insert it into DB
-      &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh, $engine,$loglevel);
+      &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList, $dbh, $engine, $loglevel);
       $c_prot_id='';
      }
 
@@ -267,51 +267,74 @@ open FH,"$inFile";
     if(($loglevel eq 'debug'))
      { print "GENE_ID: $g_id\n";}
    }
-   #elsif ($elms[$type_ix] eq 'CDS') {
-#29/01/2016 - Francisco's annotation does not contain transcript field, but CDs
-#14/09/2016 - Tyler's annotation contains both - transcript field and CDs, so there is a clear confusion - protein information is uploading twice.
-# I need to check with CDs, if the prot_id is already present - just skip it.
-#14/09/2016 - new Francisco's annotation contains mRNA field in combination with Name attribute
 
-  # Here we prioritize transcript and mRNA
+   #elsif ($elms[$type_ix] eq 'CDS') {
+    #29/01/2016 - Francisco's annotation does not contain transcript field, but CDs
+    #14/09/2016 - Tyler's annotation contains both - transcript field and CDs, so there is a clear confusion - protein information is uploading twice.
+    # I need to check with CDs, if the prot_id is already present - just skip it.
+    #14/09/2016 - new Francisco's annotation contains mRNA field in combination with Name attribute
+
   # Toniher: Removed transcript option
-  elsif ( ( $elms[$type_ix] eq 'mRNA' ) || ( ( $elms[$type_ix] eq 'CDS' ) && ( !$c_prot_id || $c_prot_id eq '') ) ) {
+
+  # Easy case, mRNA
+  if ( $elms[$type_ix] eq 'mRNA' ) {
 
     my $prot_id= &parseGFFProduct( $elms[$type_ix], $elms[$ids_ix], $elms[$annot_ix] );
 
+    $c_prot_id=$prot_id;
+    $c_contig=$elms[$contig_ix];
+    $c_strand=$elms[$strand_ix];
+    $start=$elms[$start_ix];
+    $end=$elms[$end_ix];
 
-    if(($loglevel eq 'debug')) {
-      #print "PROTNE: ". Dumper( \@elms );
-      print "PROTNE: $c_prot_id vs $prot_id\n";
+    if ( ! $detectp{$c_prot_id} ) {
+      &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh,$engine,$loglevel);
+      $detectp{$c_prot_id} = 1;
+      $c_prot_id = "";
     }
 
-     if (!$c_prot_id || $c_prot_id eq '') {
-	    $c_prot_id=$prot_id;
-	    $c_contig=$elms[$contig_ix];
-	    $c_strand=$elms[$strand_ix];
-	    $start=$elms[$start_ix];
-	    $end=$elms[$end_ix];
-	} elsif ($c_prot_id eq $prot_id) {
-           # if($c_strand eq '+')
-	   #  {$end=$elms[$end_ix];}
-           # else
-             {$start = $elms[$start_ix];}
-	    next;
-	} elsif ($c_prot_id ne $prot_id) {
+  }
 
-	    &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh,$engine,$loglevel);
-	    $c_prot_id=$prot_id;
-	    $c_strand=$elms[$strand_ix];
-	    $c_contig=$elms[$contig_ix];
-	    $start=$elms[$start_ix];
-	    $end=$elms[$end_ix];
-	}
+  # Convoluted case, via CDS
+  if ( $elms[$type_ix] eq 'CDS' ) {
+
+    my $prot_id= &parseGFFProduct( $elms[$type_ix], $elms[$ids_ix], $elms[$annot_ix] );
+
+    # First case of CDS
+    if ( !$c_prot_id || $c_prot_id eq '' ) {
+      $c_prot_id=$prot_id;
+      $c_contig=$elms[$contig_ix];
+      $c_strand=$elms[$strand_ix];
+      $start=$elms[$start_ix];
+      $end=$elms[$end_ix];
+    } else {
+      if ( $c_prot_id eq $prot_id ) {
+        if($c_strand eq '+') {
+          $end=$elms[$end_ix];
+        } else {
+          $start = $elms[$start_ix];
+        }
+        next;
+      } else {
+
+        if ( ! $detectp{$c_prot_id} ) {
+          &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh,$engine,$loglevel);
+          $detectp{$c_prot_id} = 1;
+          $c_prot_id = "";
+        }
+
+        $c_prot_id=$prot_id;
+  	    $c_strand=$elms[$strand_ix];
+  	    $c_contig=$elms[$contig_ix];
+  	    $start=$elms[$start_ix];
+  	    $end=$elms[$end_ix];
+	    }
     }
-}
+  }
 close FH;
 
-#update tailing record
- &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList,$dbh, $engine, $loglevel);
+ #update tailing record
+ &insertProtein($c_prot_id, $c_contig, $start, $end, $c_strand, $g_id, $idList, $dbh, $engine, $loglevel);
 
 } #end sub
 
