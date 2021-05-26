@@ -13,6 +13,8 @@ use Cwd qw(cwd);
 
 my ($confFile,$show_help);
 my $nextflow = "nextflow";
+# Tested NF version
+my $nextflowver = "20.10.0";
 my $nfscript = "main.nf";
 my $nfparams = ""; # By default no additional params
 
@@ -35,6 +37,7 @@ GetOptions(
     "conf=s"=>\$confFile,
     "help|h" => \$show_help,
     "nextflow=s" => \$nextflow,
+    "nextflowver=s" => \$nextflowver,
     "params=s" => \$nfparams,
     "extra=s" => \$extra,
     "resume|r" => \$resume,
@@ -166,7 +169,7 @@ if ( lc( $config{"dbEngine"} ) eq 'mysql' ) {
             my $myip=`cat "$mysqllog/DBHOST"`;
             print "DBHOST: ".$myip."\n";
            	print( "Run NEXTFLOW\n") ;
-            system( "$nextflow run $nfparams -bg $nfscript $resumeStr --config $confFile" );
+            system( "export NXF_VER=$nextflowver; $nextflow run $nfparams -bg $nfscript $resumeStr --config $confFile" );
         } else {
 
             while ( ! -f "$mysqllog/DBHOST" ) {
@@ -187,6 +190,6 @@ if ( lc( $config{"dbEngine"} ) eq 'mysql' ) {
     # Else, SQLite mode
     # Run Nextflow pipeline
     print( "Run NEXTFLOW\n") ;
-    system( "$nextflow run $nfparams -bg $nfscript $resumeStr --config $confFile" );
+    system( "export NXF_VER=$nextflowver; $nextflow run $nfparams -bg $nfscript $resumeStr --config $confFile" );
 
 }
