@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `kegg_group` (
   `class` TEXT ,
   `db_links` TEXT ,
   `db_id` TEXT  ,
-  `genes` MEDIUMTEXT ,
+  `genes` LONGTEXT ,
   `kegg_release` FLOAT,
   KEY `kegg_release_idx` (`kegg_release`)
 );

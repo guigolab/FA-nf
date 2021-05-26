@@ -212,13 +212,13 @@ sub parseAndUploadKEGGEntry {
 
 
 	# TODO: Rewrite into specific table
-	if ( $returnData{"GENES"} ) {
-		my (@parts) = split( ",", $returnData{"GENES"} );
-		if ( $#parts > 1500 ) { # TODO: check this margin
-			$returnData{"GENES"} = join( ",", @parts[0 .. 1000] );
+	#if ( $returnData{"GENES"} ) {
+	#	my (@parts) = split( ",", $returnData{"GENES"} );
+	#	if ( $#parts > 1500 ) { # TODO: check this margin
+	#		$returnData{"GENES"} = join( ",", @parts[0 .. 1000] );
 			# print STDERR "** Too big GENES in $kegg_id\n";
-		}
-	}
+	#	}
+	#}
 
 	if ( $kegg_id ) {
 
