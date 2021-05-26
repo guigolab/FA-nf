@@ -264,7 +264,7 @@ sub preUploadKeggInformation {
 
 sub splitKeggFile {
 	my $file = shift;
-	my @strings = [];
+	my @strings = ();
 
 	open (FH, "$file");
 
