@@ -217,7 +217,7 @@ seqWebData = Channel
 // TODO: This may be changed as paremeter
 ipscan_properties = file(params.ipscanproperties)
 
-if ( params.debug ) {
+if ( params.debug == "true" || params.debug == true ) {
  println("Debugging... only the first $params.debugSize chunks will be processed")
  // Diferent parts for different processes.
  // TODO: With DSL2 this is far simpler
