@@ -261,7 +261,7 @@ if( params.oboFile == "" || params.oboFile == null ) {
 // TODO: To change for different aligners
 diamond = false
 
-if( params.diamond ) {
+if( params.diamond == "true" || params.diamond == true ) {
  diamond = true
 }
 
