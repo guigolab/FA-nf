@@ -94,7 +94,7 @@ if ( ! -d $down_kegg_dir ) {
 }
 
 my $webChunk = 10;
-my @queue = [];
+my @queue = ();
 my $iter = 0;
 
 foreach my $kegg_id ( keys %keggs ) {
@@ -103,7 +103,7 @@ foreach my $kegg_id ( keys %keggs ) {
 
     &processByAPI( \@queue, $down_kegg_dir, $iter );
 
-    @queue = [];
+    @queue = ();
     $iter++;
 
   }
