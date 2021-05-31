@@ -237,13 +237,13 @@ The base container is [available in Docker Hub](https://hub.docker.com/r/guigola
 
 ## Troubleshooting
 
-**I get an error message such as ```FATAL:   While making image from oci registry: while building SIF from layers: conveyor failed to get: no descriptor found for reference``` or any other mentioning OCI, SIF or Singularity.**
+**At the beginning of the pipeline execution, I get an error message such as ```FATAL:   While making image from oci registry: while building SIF from layers: conveyor failed to get: no descriptor found for reference``` or any other mentioning OCI, SIF or Singularity.**
 
 *Ensure you have an up-to-date version of Singularity. Otherwise you may need to clean some Singularity directories, the singularity one (where pipeline images are stored) in FA-nf base directory and ```.singularity``` in your ```$HOME``` directory.*
 
 
 
-**Something went wrong. No supported configuration file syntax found at /your/path/lib/site_perl/5.26.2/Config/Simple.pm line 184, <FH> line 23.**
+**Just after starting the pipeline, it stops and I get a message such as ```Something went wrong. No supported configuration file syntax found at /your/path/lib/site_perl/5.26.2/Config/Simple.pm line 184, <FH> line 23.```**
 
-*Check in line **23** (or the number you have) of your params.config if you have any syntax error (e.g., new line, additional quote character, etc.)*
+*Check line **23** (or the number you have) of your params.config if you have any syntax error (e.g., new line, additional quote character, etc.)*
 
