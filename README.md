@@ -243,4 +243,7 @@ The base container is [available in Docker Hub](https://hub.docker.com/r/guigola
 
 
 
+**Something went wrong. No supported configuration file syntax found at /your/path/lib/site_perl/5.26.2/Config/Simple.pm line 184, <FH> line 23.**
+
+*Check in line **23** (or the number you have) of your params.config if you have any syntax error (e.g., new line, additional quote character, etc.)*
 
