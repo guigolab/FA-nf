@@ -1,12 +1,10 @@
+* Singularity file for run_mysql wrapper process
 * Check kegg_upload slow process
   * In pre-upload insert many KEGG entries at once.
-  * Improve KEGG-GO part
 * Add option to detect if possible contamination from BLAST (inspiration from MEGAN)
-* Improve documentation of parameters
 * Include some testing and CI
 * Visualization of results
     * Venn Diagrams
-* Ensure stop of MySQL process when error
 ---
 * Allow conversion from GenBank https://metacpan.org/pod/bp_genbank2gff3.pl
 * Allow reports from KEGG orthologs (number of potential orthologs from KEGG species)
