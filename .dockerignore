@@ -1,0 +1,8 @@
+external/
+tmp/
+.nextflow*
+work/
+.git/
+Dockerfile*
+Singularity*
+dataset/
