@@ -35,6 +35,10 @@ params.help = false
 params.debug = false
 params.dbEngine = "mysql" // SQLite otherwise
 
+// Main input files
+params.proteinFile = null;
+params.gffFile = null;
+
 // Sizes for different programs
 params.chunkIPSSize = null
 params.chunkBlastSize = null
@@ -94,13 +98,14 @@ if ( params.help ) {
 */
 
 // species-specific parameters
-protein = file(params.proteinFile)
-annotation = file(params.gffFile)
+protein = null
+annotation = null
 config_file = file(params.config)
 
 dbFile = false
 boolean exists = false
 boolean mysql = false
+gffavail = false
 gffclean = false
 gffstats = false
 // Skip cdSearch
@@ -148,8 +153,35 @@ log.info "Functional annotation pipeline"
 log.info ""
 log.info "General parameters"
 log.info "------------------"
-log.info "Protein sequence file        : ${params.proteinFile}"
-log.info "GFF Annotation file              : ${params.gffFile}"
+log.info "GFF Structural Annotation file              : ${params.gffFile}"
+
+if ( params.proteinFile == null || params.proteinFile == "" ) {
+  log.info "No protein sequence file specified!"
+  exit 1
+} else {
+  if ( file( params.proteinFile ).exists() && file( params.proteinFile ).size() > 0 ) {
+    log.info "Protein sequence file            : ${params.proteinFile}"
+    protein = file(params.proteinFile)
+  } else {
+    log.info "Protein sequence file does not exist or it is empty!"
+    exit 1
+  }
+}
+
+if ( params.gffFile == null || params.gffFile == "" ) {
+  log.info "No GFF Structural Annotation file specified!"
+  log.info "We proceed anyway..."
+} else {
+  if ( file( params.gffFile ).exists() && file( params.gffFile ).size() > 0 ) {
+    log.info "GFF Structural Annotation file              : ${params.gffFile}"
+    gffavail = true
+    annotation = file(params.gffFile)
+  } else {
+    log.info "GFF Structural Annotation file is missing or empty."
+    log.info "We stop the pipeline so you can check it and define as \"\" otherwise if no GFF file is provided."
+    exit 1
+  }
+}
 
 if ( params.blastFile ) {
   log.info "BLAST results file           : ${params.blastFile}"
@@ -159,9 +191,9 @@ log.info "Species name                  : ${params.speciesName}"
 log.info "KEGG species                 : ${params.kegg_species}"
 
 if ( mysql ) {
-  log.info "FA database 		       : ${params.dbname}"
+  log.info "MySQL FA database 		       : ${params.dbname}"
 } else {
-  log.info "FA database 		       : $dbFileName"
+  log.info "SQLite FA database 		       : $dbFileName"
 }
 
 if ( skip_cdSearch ) {
@@ -214,7 +246,6 @@ seqWebData = Channel
  .from(protein)
  .splitFasta( by: chunkWebSize )
 
-// TODO: This may be changed as paremeter
 ipscan_properties = file(params.ipscanproperties)
 
 if ( params.debug == "true" || params.debug == true ) {
@@ -234,8 +265,7 @@ if ( params.debug == "true" || params.debug == true ) {
 
   (seq_test) = seqTestData.take(1).into(1)
 
-}
-else {
+} else {
  println("Process entire dataset")
  (seq_file1, seq_file2) = seqData.into(2)
  (seq_file_blast) = seqBlastData.into(1)
@@ -251,13 +281,160 @@ else {
 
 }
 
-if( params.oboFile == "" || params.oboFile == null ) {
+if ( params.oboFile == "" || params.oboFile == null ) {
   oboFile = downloadURL( "http://www.geneontology.org/ontology/gene_ontology.obo", "gene_ontology.obo" )
 } else {
   oboFile = params.oboFile
 }
 
 
+// Preprocessing GFF File
+if ( gffavail ) {
+
+  if ( gffclean ) {
+
+   process cleanGFF {
+
+    publishDir params.resultPath, mode: 'copy'
+
+    label 'gffcheck'
+
+    input:
+     file config_file
+
+    output:
+     file "annot.gff" into gff_file
+     file "annot.gff.clean.txt" into gff_file_log
+
+     """
+      # get annot file
+      export escaped=\$(echo '$baseDir')
+      export basedirvar=\$(echo '\\\$\\{baseDir\\}')
+      agat_sp_gxf_to_gff3.pl --gff `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` -o annot.gff > annot.gff.clean.txt
+     """
+
+   }
+
+
+  } else {
+
+   process copyGFF {
+
+    label 'gffcheck'
+
+    input:
+     file config_file
+
+    output:
+     file "annot.gff" into gff_file
+
+     """
+      # get annot file
+      export escaped=\$(echo '$baseDir')
+      export basedirvar=\$(echo '\\\$\\{baseDir\\}')
+      cp `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` annot.gff
+     """
+
+   }
+  }
+
+  if ( gffstats ) {
+
+   process statsGFF {
+
+    publishDir params.resultPath, mode: 'copy'
+
+    label 'gffcheck'
+
+    input:
+     file gff_file
+
+    output:
+     file "*.txt" into gff_stats
+
+     """
+      # Generate Stats
+      agat_sp_statistics.pl --gff $gff_file > ${gff_file}.stats.txt
+     """
+
+   }
+
+
+  }
+
+} else {
+
+  // Dummy empty GFF
+  process copyGFF {
+
+   label 'gffcheck'
+
+   input:
+    file config_file
+
+   output:
+    file "annot.gff" into gff_file
+
+    """
+     # empty annot file
+     touch annot.gff
+    """
+
+  }
+}
+
+// Database setup below
+process initDB {
+
+ input:
+  file config_file
+  file gff_file
+  file seq from seq_test
+
+ output:
+  file 'config' into (config4perl1, config4perl2, config4perl3, config4perl4, config4perl5, config4perl6, config4perl7, config4perl8, config4perl9, config4perl10, config4perl11)
+
+ script:
+ command = "mkdir -p $params.resultPath\n"
+ command += "sed 's/^\\s*params\\s*{\\s*\$//gi' $config_file | sed 's/^\\s*}\\s*\$//gi' | sed '/^\\s*\$/d' | sed 's/\\s\\=\\s/:/gi' > configt\n"
+ command += "export escaped=\$(echo '$baseDir')\n"
+ command += "export basedirvar=\$(echo '\\\$\\{baseDir\\}')\n"
+ command += "perl -lae '\$_=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print;' configt > config\n"
+
+
+ if ( mysql ) {
+  // Add dbhost to config
+  command += "echo \"\$(cat config)\n dbhost:${dbhost}\" > configIn ;\n"
+  command += "fa_main.v1.pl init -conf configIn"
+
+   if ( gffavail && gffclean ) {
+    command += " -gff ${gff_file}"
+   }
+ } else {
+
+   if (!exists) {
+     command += "fa_main.v1.pl init -conf config"
+
+    if ( gffavail && gffclean ) {
+     command += " -gff ${gff_file}"
+    }
+   }
+ }
+
+ if ( params.debug=="TRUE"||params.debug=="true" ) {
+   // If in debug mode, we restrict de seq entries we process
+   command += " -fasta ${seq}"
+ }
+
+ if ( params.rmversion=="TRUE"||params.rmversion=="true" ) {
+   // If remove versioning in protein sequences (for cases like ENSEMBL)
+   command += " -rmversion"
+ }
+
+ command
+}
+
+// Blast like processes
 // TODO: To change for different aligners
 diamond = false
 
@@ -395,7 +572,7 @@ if ( params.blastFile == "" ||  params.blastFile == null ){
 
  blastInput=file(params.blastFile)
 
- process convertBlast{
+ process convertBlast {
 
   // publishDir "results", mode: 'copy'
 
@@ -412,57 +589,58 @@ if ( params.blastFile == "" ||  params.blastFile == null ){
  }
 }
 
-if (params.kolist != "" ||  params.kolist != null ){
+if ( params.kolist != "" ||  params.kolist != null ){
 
-process kofamscan{
+  process kofamscan{
 
- label 'kofamscan'
+   label 'kofamscan'
 
- input:
- file seq from seq_file_koala
+   input:
+   file seq from seq_file_koala
 
- output:
- file "koala_${seq}" into koalaResults
+   output:
+   file "koala_${seq}" into koalaResults
 
- """
-  exec_annotation --cpu ${task.cpus} -p ${params.koprofiles} -k ${params.kolist} -o koala_${seq} $seq
- """
+   """
+    exec_annotation --cpu ${task.cpus} -p ${params.koprofiles} -k ${params.kolist} -o koala_${seq} $seq
+   """
 
-}
+  }
 
-process kofam_parse {
+  process kofam_parse {
 
- input:
- file "koala_*" from koalaResults.collect()
+   input:
+   file "koala_*" from koalaResults.collect()
 
- output:
- file allKoala into koala_parsed
+   output:
+   file allKoala into koala_parsed
 
-"""
+  """
 
-mkdir -p output
-processHmmscan2TSV.pl "koala_*" output
-cat output/koala_* > allKoala
-"""
+  mkdir -p output
+  processHmmscan2TSV.pl "koala_*" output
+  cat output/koala_* > allKoala
+  """
 
-}
+  }
 
-// Replacing keggfile
-keggfile = koala_parsed
+  // Replacing keggfile
+  keggfile = koala_parsed
 
 } else {
 
 
- if(params.keggFile == "" ||  params.keggFile == null ) {
+ if (params.keggFile == "" ||  params.keggFile == null ) {
 
   println "Please run KEGG KO group annotation on the web server http://www.genome.jp/tools/kaas/"
 
  }
 
- keggfile=file(params.keggFile)
+ keggfile = file(params.keggFile)
 
 }
 
+// GO retrieval from BLAST results
 if (params.gogourl != "") {
 
   process blast_annotator {
@@ -496,129 +674,6 @@ process blastDef {
  """
   definitionFromBlast.pl  -in $blastXml -out blastDef_${blastXml}.txt -format xml -q
  """
-}
-
-// TODO: Need to simplify this step
-
-if ( gffclean ) {
-
- process cleanGFF {
-
-  publishDir params.resultPath, mode: 'copy'
-
-  label 'gffcheck'
-
-  input:
-   file config_file
-
-  output:
-   file "annot.gff" into gff_file
-   file "annot.gff.clean.txt" into gff_file_log
-
-   """
-    # get annot file
-    export escaped=\$(echo '$baseDir')
-    export basedirvar=\$(echo '\\\$\\{baseDir\\}')
-    agat_sp_gxf_to_gff3.pl --gff `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` -o annot.gff > annot.gff.clean.txt
-   """
-
- }
-
-
-} else {
-
- process copyGFF {
-
-  label 'gffcheck'
-
-  input:
-   file config_file
-
-  output:
-   file "annot.gff" into gff_file
-
-   """
-    # get annot file
-    export escaped=\$(echo '$baseDir')
-    export basedirvar=\$(echo '\\\$\\{baseDir\\}')
-    cp `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` annot.gff
-   """
-
- }
-}
-
-if ( gffstats ) {
-
- process statsGFF {
-
-  publishDir params.resultPath, mode: 'copy'
-
-  label 'gffcheck'
-
-  input:
-   file gff_file
-
-  output:
-   file "*.txt" into gff_stats
-
-   """
-    # Generate Stats
-    agat_sp_statistics.pl --gff $gff_file > ${gff_file}.stats.txt
-   """
-
- }
-
-
-}
-
-process initDB {
-
- input:
-  file config_file
-  file gff_file
-  file seq from seq_test
-
- output:
-  file 'config' into (config4perl1, config4perl2, config4perl3, config4perl4, config4perl5, config4perl6, config4perl7, config4perl8, config4perl9, config4perl10, config4perl11)
-
- script:
- command = "mkdir -p $params.resultPath\n"
- command += "sed 's/^\\s*params\\s*{\\s*\$//gi' $config_file | sed 's/^\\s*}\\s*\$//gi' | sed '/^\\s*\$/d' | sed 's/\\s\\=\\s/:/gi' > configt\n"
- command += "export escaped=\$(echo '$baseDir')\n"
- command += "export basedirvar=\$(echo '\\\$\\{baseDir\\}')\n"
- command += "perl -lae '\$_=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print;' configt > config\n"
-
-
- if ( mysql ) {
-  // Add dbhost to config
-  command += "echo \"\$(cat config)\n dbhost:${dbhost}\" > configIn ;\n"
-  command += "fa_main.v1.pl init -conf configIn"
-
-   if ( gffclean ) {
-    command += " -gff ${gff_file}"
-   }
- } else {
-
-   if (!exists) {
-     command += "fa_main.v1.pl init -conf config"
-
-    if ( gffclean ) {
-     command += " -gff ${gff_file}"
-    }
-   }
- }
-
- if ( params.debug=="TRUE"||params.debug=="true" ) {
-   // If in debug mode, we restrict de seq entries we process
-   command += " -fasta ${seq}"
- }
-
- if ( params.rmversion=="TRUE"||params.rmversion=="true" ) {
-   // If remove versioning in protein sequences (for cases like ENSEMBL)
-   command += " -rmversion"
- }
-
- command
 }
 
 process 'definition_upload'{
@@ -789,7 +844,6 @@ process 'targetP_upload'{
   command
 }
 
-
 process 'interpro_upload'{
 
  maxForks 1
@@ -864,7 +918,7 @@ process 'CDsearch_feat_upload'{
   command
 }
 
-process 'blast_annotator_upload'{
+process 'blast_annotator_upload' {
 
  maxForks 1
 
