@@ -153,7 +153,6 @@ log.info "Functional annotation pipeline"
 log.info ""
 log.info "General parameters"
 log.info "------------------"
-log.info "GFF Structural Annotation file              : ${params.gffFile}"
 
 if ( params.proteinFile == null || params.proteinFile == "" ) {
   log.info "No protein sequence file specified!"
