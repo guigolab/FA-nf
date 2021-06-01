@@ -365,7 +365,7 @@ if ( gffavail ) {
 } else {
 
   // Dummy empty GFF
-  process copyGFF {
+  process dummyGFF {
 
    label 'gffcheck'
 
