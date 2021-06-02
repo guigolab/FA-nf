@@ -247,3 +247,7 @@ The base container is [available in Docker Hub](https://hub.docker.com/r/guigola
 
 *Check line **23** (or the number you have) of your params.config if you have any syntax error (e.g., new line, additional quote character, etc.)*
 
+
+**Despite it ran successfully, the pipeline did not process the whole dataset but just a small part of it**
+
+*You may have run it in debug mode. Check your params file and change it to debug = 'false'*
