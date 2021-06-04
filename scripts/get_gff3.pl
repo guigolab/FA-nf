@@ -188,7 +188,7 @@ sub createGFF3File {
     my $geneName =$results->[0]->{'gene_name'}||'';
 
     #blast2go
-    if($definition ne ''){
+    if ( $definition ne '' ){
       my (@defparts) = split(/@@/, $definition);
     			my @descfields;
     			foreach my $def ( @defparts ) {
@@ -196,200 +196,205 @@ sub createGFF3File {
     				push( @descfields, $def );
     			}
     			$descrField .="Definition=".join( ",", @descfields).";";
-     }
+    }
 
     #Xref record
-    $selectString =  "select distinct dbid,dbname from xref where protein_id=$idItem";
+    $selectString =  "select distinct dbid, dbname from xref where protein_id=$idItem";
     #print STDERR "D:".$selectString, "\n";
     $results =$dbh->select_from_table($selectString);
     my @xrefId=();
 
-    foreach my $item(@{$results}) {
-      push(@xrefId , "$item->{'dbname'}.id=$item->{'dbid'}");}
+    foreach my $item( @{$results} ) {
+      push(@xrefId , "$item->{'dbname'}.id=$item->{'dbid'}");
+    }
 
-      if(scalar @xrefId >0){
-        my $xrefList = join(',', @xrefId);
-        $descrField .= $xrefList.';';
+    if(scalar @xrefId >0){
+      my $xrefList = join(',', @xrefId);
+      $descrField .= $xrefList.';';
+    }
+
+    #ontology
+    my @ontologyData=();
+    #The intersection of this table is too big, since protein_go is huge. Thus I decided to make a two select, and then join results.
+    $selectString =  "select distinct go_term_id, source from protein_go where protein_id=$idItem";
+    #print STDERR "G:".$selectString."\n";
+    $results =$dbh->select_from_table($selectString);
+    #one protein could have more then one go_term_id
+    my @goTermId=();
+	  my @goSource=();
+
+    foreach my $item(@{$results}) {
+      push(@goTermId , $item->{'go_term_id'});
+		  push(@goSource , $item->{'source'});
+	  }
+
+    if ( scalar @goTermId > 0 ) {
+        my $goTermIdString = join(',',@goTermId);
+        $selectString =  "select go_acc from go_term where go_term_id in ($goTermIdString)";
+        $results =$dbh->select_from_table($selectString);
+        foreach my $item(@{$results}) {
+          push(@ontologyData, $item->{'go_acc'});
+        }
+        my $ontologyList = join(',', @ontologyData);
+
+        if($ontologyList ne ''){
+
+              $descrField .= "Ontology_term=$ontologyList;";
+              my @usources = do { my %seen; grep { !$seen{ trim($_ ) }++ } @goSource };
+              my $usourcestr = join(',',@usources);
+
+              if ($usourcestr ne ''){
+					         # TODO: To consider better way to keep this
+					         $descrField .= "Ontology_source=$usourcestr;";
+				      }
+
+			  }
       }
 
-      #ontology
-      my @ontologyData=();
-      #The intersection of this table is too big, since protein_go is huge. Thus I decided to make a two select, and then join results.
-      $selectString =  "select distinct go_term_id, source from protein_go where protein_id=$idItem";
+
+      #KEGG KO groups
+      #The same thing here - protein_ortholog is quite big, so I will select kegg_groups first and then do select information about them.
+      $selectString ="select distinct kegg_group_id from protein_ortholog where protein_id=$idItem";
       #print STDERR "G:".$selectString."\n";
       $results =$dbh->select_from_table($selectString);
-      #one protein could have more then one go_term_id
-      my @goTermId=();
-  	  my @goSource=();
+      my @keggGroupId=();
 
-      foreach my $item(@{$results}) {
-        push(@goTermId , $item->{'go_term_id'});
-  		  push(@goSource , $item->{'source'});
-  	  }
+      foreach my $item(@{$results}){
+        push(@keggGroupId , $item->{'kegg_group_id'});
+      }
 
-      if (scalar @goTermId >0) {
-          my $goTermIdString = join(',',@goTermId);
-          $selectString =  "select go_acc from go_term where go_term_id in ($goTermIdString)";
-          $results =$dbh->select_from_table($selectString);
-          foreach my $item(@{$results}) {
-            push(@ontologyData, $item->{'go_acc'});
-          }
-          my $ontologyList = join(',', @ontologyData);
-
-          if($ontologyList ne ''){
-
-                $descrField .= "Ontology_term=$ontologyList;";
-                my @usources = do { my %seen; grep { !$seen{ trim($_ ) }++ } @goSource };
-                my $usourcestr = join(',',@usources);
-
-                if ($usourcestr ne ''){
-  					         # TODO: To consider better way to keep this
-  					         $descrField .= "Ontology_source=$usourcestr;";
-  				      }
-
-  			  }
-        }
-
-
-        #KEGG KO groups
-        #The same thing here - protein_ortholog is quite big, so I will select kegg_groups first and then do select information about them.
-        $selectString ="select distinct kegg_group_id from protein_ortholog where protein_id=$idItem";
-        #print STDERR "G:".$selectString."\n";
+      if(scalar @keggGroupId >0) {
+        my $keggGroupString = join(',',@keggGroupId);
+        $selectString =  "select db_id, definition, pathway from kegg_group where kegg_group_id in ($keggGroupString)";
         $results =$dbh->select_from_table($selectString);
-        my @keggGroupId=();
-        foreach my $item(@{$results}){
-          push(@keggGroupId , $item->{'kegg_group_id'});
-        }
-        if(scalar @keggGroupId >0) {
-         my $keggGroupString = join(',',@keggGroupId);
-         $selectString =  "select db_id, definition, pathway from kegg_group where kegg_group_id in ($keggGroupString)";
-         $results =$dbh->select_from_table($selectString);
-         my $koGroup = $results->[0]->{'db_id'};
-         my $koDefinition = $results->[0]->{'definition'};
-         my $koPathway = $results->[0]->{'pathway'};
-         if((defined $koGroup) && ($koGroup ne '')) {
+        my $koGroup = $results->[0]->{'db_id'};
+        my $koDefinition = $results->[0]->{'definition'};
+        my $koPathway = $results->[0]->{'pathway'};
+        if((defined $koGroup) && ($koGroup ne '')) {
 
-           $descrField .= "ko_group=$koGroup;ko_definition=".escapeGFF($koDefinition).";";
+         $descrField .= "ko_group=$koGroup;ko_definition=".escapeGFF($koDefinition).";";
 
-           if ( trim( $koPathway ) ne '' ) {
-             $descrField .= "ko_pathway=$koPathway;";
-           }
-        }
-
-        if ( $protName && $protName ne '' ) {
-          print OUTFILE "##sequence-region $protName $start $stop\n";
-        }
-
-        if( $geneName ne '' ) {
-          if ( ! $geneStore{$geneName} ) {
-            # Avoid duplication of genes
-            print OUTFILE "$genomicLocation\t.\tgene\t$genomicStart\t$genomicEnd\t.\t$strand\t.\tID=$geneName;\n";
-            $geneStore{$geneName} = 1;
-          }
-        }
-        ####### update 29/06/2017
-        ### in the protein-based coordinates it should be plus strand, if other not specified.
-        $strand='+';
-
-        #updt 29/06/2017 added Parent field
-
-        if ( $protName && $protName ne '' ) {
-          print OUTFILE "$protName\t.\tpolypeptide\t$start\t$stop\t.\t$strand\t.\tID=$protName;Parent=$geneName;$descrField\n";
-        }
-
-        #blast hits TO CONSIDER
-        #$selectString = "select hit_id, start, end, score, evalue, description from blast_hit where protein_id=$idItem";
-        #$results =$dbh->select_from_table($selectString);
-        #foreach my $result (@{$results})
-        #{
-        # my $blastStart = $result->{'start'};
-        # my $blastEnd  = $result->{'end'};
-        # my $blastScore = $result->{'score'};
-        # my $blastEvalue = $result->{'evalue'};
-        # my $hitId = $result->{'hit_id'};
-        # my $descr = $result->{'description'};
-        #my ($definition, $organism);
-        #   ($definition, $organism)=$descr=~/^(.+?)\[(.+?)\]/;
-        #  if(!defined $definition)
-        #   {
-        #     $definition = $descr;
-        #     #($definition)=$descr=~/^(.+?)\>/;
-        #    $organism="all";
-        #   }
-        # $definition =~s/[][><=:;|.]/ /g;
-        # print OUTFILE "$protName\tNR\tBLAST_match\t$start\t$stop\t$blastEvalue\t$strand\t.\tName=Match;Target=$hitId $blastStart $blastEnd;score=$blastScore;Note=$definition;organism=$organism;\n";
-        #}
-        #domains
-        $selectString =  "SELECT domain_name, rel_start, rel_end, db_xref, score, evalue,description,ip_desc, ip_id FROM domain where protein_id=$idItem order by db_xref";
-        #print STDERR "D:".$selectString."\n";
-        $results =$dbh->select_from_table($selectString);
-        foreach my $result (@{$results}) {
-         my $dbName = $result->{'db_xref'};
-         my  $domainStart =$result->{'rel_start'};
-         my $domainEnd = $result->{'rel_end'};
-         my $evalue = $result->{'evalue'}||'.'; # Default for evalue
-         if($evalue ne '.' and $evalue ne '-') {
-           $evalue = sprintf("%.1e", $evalue);
+         if ( trim( $koPathway ) ne '' ) {
+           $descrField .= "ko_pathway=$koPathway;";
          }
-         my $ipID =$result->{'ip_id'};
-         my $domainName =$result->{'domain_name'};
-         my $descfield = $result->{'description'}||'';
-         my $ipdesc = $result->{'ip_desc'}||'';
+        }
+      }
 
-         my @descarr;
-         if ( $descfield && $descfield ne '' ) {
-         		push( @descarr, escapeGFF( $descfield ) );
-         }
-         if ( $ipdesc && $ipdesc ne '' && $ipdesc ne '-' ) {
-        		push( @descarr, escapeGFF( $ipdesc ) );
-         }
+      if ( $protName && $protName ne '' ) {
+        print OUTFILE "##sequence-region $protName $start $stop\n";
+      }
 
-         my $description = join( ",", @descarr );
+      if( $geneName ne '' ) {
+        if ( ! $geneStore{$geneName} ) {
+          # Avoid duplication of genes
+          print OUTFILE "$genomicLocation\t.\tgene\t$genomicStart\t$genomicEnd\t.\t$strand\t.\tID=$geneName;\n";
+          $geneStore{$geneName} = 1;
+        }
+      }
 
-         #updt 29/06/2017 -added ID and Parent records
+      ####### update 29/06/2017
+      ### in the protein-based coordinates it should be plus strand, if other not specified.
+      $strand='+';
 
-         $idInterPro++;
+      #updt 29/06/2017 added Parent field
+
+      if ( $protName && $protName ne '' ) {
+        print OUTFILE "$protName\t.\tpolypeptide\t$start\t$stop\t.\t$strand\t.\tID=$protName;Parent=$geneName;$descrField\n";
+      }
+
+      #blast hits TO CONSIDER
+      #$selectString = "select hit_id, start, end, score, evalue, description from blast_hit where protein_id=$idItem";
+      #$results =$dbh->select_from_table($selectString);
+      #foreach my $result (@{$results})
+      #{
+      # my $blastStart = $result->{'start'};
+      # my $blastEnd  = $result->{'end'};
+      # my $blastScore = $result->{'score'};
+      # my $blastEvalue = $result->{'evalue'};
+      # my $hitId = $result->{'hit_id'};
+      # my $descr = $result->{'description'};
+      #my ($definition, $organism);
+      #   ($definition, $organism)=$descr=~/^(.+?)\[(.+?)\]/;
+      #  if(!defined $definition)
+      #   {
+      #     $definition = $descr;
+      #     #($definition)=$descr=~/^(.+?)\>/;
+      #    $organism="all";
+      #   }
+      # $definition =~s/[][><=:;|.]/ /g;
+      # print OUTFILE "$protName\tNR\tBLAST_match\t$start\t$stop\t$blastEvalue\t$strand\t.\tName=Match;Target=$hitId $blastStart $blastEnd;score=$blastScore;Note=$definition;organism=$organism;\n";
+      #}
+      #domains
+      $selectString =  "SELECT domain_name, rel_start, rel_end, db_xref, score, evalue,description,ip_desc, ip_id FROM domain where protein_id=$idItem order by db_xref";
+      #print STDERR "D:".$selectString."\n";
+      $results =$dbh->select_from_table($selectString);
+      foreach my $result (@{$results}) {
+       my $dbName = $result->{'db_xref'};
+       my  $domainStart =$result->{'rel_start'};
+       my $domainEnd = $result->{'rel_end'};
+       my $evalue = $result->{'evalue'}||'.'; # Default for evalue
+       if($evalue ne '.' and $evalue ne '-') {
+         $evalue = sprintf("%.1e", $evalue);
+       }
+       my $ipID =$result->{'ip_id'};
+       my $domainName =$result->{'domain_name'};
+       my $descfield = $result->{'description'}||'';
+       my $ipdesc = $result->{'ip_desc'}||'';
+
+       my @descarr;
+       if ( $descfield && $descfield ne '' ) {
+       		push( @descarr, escapeGFF( $descfield ) );
+       }
+       if ( $ipdesc && $ipdesc ne '' && $ipdesc ne '-' ) {
+      		push( @descarr, escapeGFF( $ipdesc ) );
+       }
+
+       my $description = join( ",", @descarr );
+
+       #updt 29/06/2017 -added ID and Parent records
+
+       $idInterPro++;
+
+       if ( $protName && $protName ne '' ) {
+
+        print OUTFILE "$protName\t$dbName\tprotein_match\t$domainStart\t$domainEnd\t$evalue\t$strand\t.\tName=$domainName;ID=InterProScan$idInterPro;";
+        if( $ipID && $ipID ne '' && $ipID ne '-' ) {
+      		print OUTFILE "interpro_id=$ipID;";
+      	}
+      	if($description && $description ne '') {
+          print OUTFILE "interpro_note=$description;\n";
+        } else {
+          print OUTFILE "\n";
+        }
+       }
+
+      }
+      #NCBI conserved domains (CD) search results - hits and features
+      #hits
+      $selectString =  "SELECT accession, Superfamily,Hit_type, PSSM_ID, coordinateFrom, coordinateTo, E_Value, Bitscore, Short_name, Incomplete FROM cd_search_hit where protein_id=$idItem order by coordinateFrom";
+      #print STDERR "C:".$selectString."\n";
+      $results =$dbh->select_from_table($selectString);
+      foreach my $result (@{$results}) {
+         my $access = $result->{'accession'};
+         my $superfamily =$result->{'Superfamily'};
+         my $CDEnd = $result->{'coordinateTo'};
+         my $CDStart = $result->{'coordinateFrom'};
+         #my  $evalue = sprintf("%.1e", $result->{'E_Value'});
+         my $evalue = $result->{'E_Value'};
+         my $CDType =$result->{'Hit_type'};
+         my $PSS =$result->{'PSSM_ID'};
+         my $shortName =$result->{'Short_name'};
+         my $Incomplete =$result->{'Incomplete'};
+
+         #updt 29/06/17 added ID record and remove \" characters from fields
+         $idCDSearchHit++;
+         $CDStart=~s/\"//gi;
+         $CDEnd=~s/\"//gi;
+         $evalue=~s/\"//gi;
 
          if ( $protName && $protName ne '' ) {
-
-          print OUTFILE "$protName\t$dbName\tprotein_match\t$domainStart\t$domainEnd\t$evalue\t$strand\t.\tName=$domainName;ID=InterProScan$idInterPro;";
-          if( $ipID && $ipID ne '' && $ipID ne '-' ) {
-        		print OUTFILE "interpro_id=$ipID;";
-        	}
-        	if($description && $description ne '') {
-            print OUTFILE "interpro_note=$description;\n";
-          } else {
-            print OUTFILE "\n";
-          }
+           print OUTFILE "$protName\tCDsearch\tdomain_match\t$CDStart\t$CDEnd\t$evalue\t.\t.\tID=CDSearchHit$idCDSearchHit;Accession=$access;Superfamily=$superfamily;Short_name=$shortName;PSSM_ID=$PSS;Hit_type=$CDType;\n";
          }
-
-        }
-        #NCBI conserved domains (CD) search results - hits and features
-        #hits
-        $selectString =  "SELECT accession, Superfamily,Hit_type, PSSM_ID, coordinateFrom, coordinateTo, E_Value, Bitscore, Short_name, Incomplete FROM cd_search_hit where protein_id=$idItem order by coordinateFrom";
-        #print STDERR "C:".$selectString."\n";
-        $results =$dbh->select_from_table($selectString);
-        foreach my $result (@{$results}) {
-           my $access = $result->{'accession'};
-           my $superfamily =$result->{'Superfamily'};
-           my $CDEnd = $result->{'coordinateTo'};
-           my $CDStart = $result->{'coordinateFrom'};
-           #my  $evalue = sprintf("%.1e", $result->{'E_Value'});
-           my $evalue = $result->{'E_Value'};
-           my $CDType =$result->{'Hit_type'};
-           my $PSS =$result->{'PSSM_ID'};
-           my $shortName =$result->{'Short_name'};
-           my $Incomplete =$result->{'Incomplete'};
-
-           #updt 29/06/17 added ID record and remove \" characters from fields
-           $idCDSearchHit++;
-           $CDStart=~s/\"//gi;
-           $CDEnd=~s/\"//gi;
-           $evalue=~s/\"//gi;
-
-           if ( $protName && $protName ne '' ) {
-             print OUTFILE "$protName\tCDsearch\tdomain_match\t$CDStart\t$CDEnd\t$evalue\t.\t.\tID=CDSearchHit$idCDSearchHit;Accession=$access;Superfamily=$superfamily;Short_name=$shortName;PSSM_ID=$PSS;Hit_type=$CDType;\n";
-           }
         }
         #features
         $selectString =  "SELECT title, Type, coordinates,source_domain FROM cd_search_features where protein_id=$idItem";
@@ -410,7 +415,7 @@ sub createGFF3File {
           }
         }
 
-         #signalP, chloroP features
+        #signalP, chloroP features
         my @list=('signalP', 'chloroP');
         foreach my $lItem (@list) {
           $selectString =  "SELECT start, end, score FROM $lItem where protein_id=$idItem";
@@ -430,8 +435,8 @@ sub createGFF3File {
           }
         } #signalP, targetP, chloroP
 
-    } #foreach protein item
- }
+  } #foreach protein item
+
  close(OUTFILE);
 
 }
