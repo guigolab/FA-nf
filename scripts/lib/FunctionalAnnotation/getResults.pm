@@ -136,7 +136,7 @@ sub printSummaryInfo
  if(defined $resultNumber && $resultNumber >0)
  {
   $propAnnot =sprintf("%.2f",$resultNumber*100/$numberProteins);
-  print OUTPUT "Proteins with definition(name): $resultNumber ($propAnnot %)\n";
+  print OUTPUT "Proteins with definition (name): $resultNumber ($propAnnot %)\n";
  }
 
  # TODO: To review all these tables
