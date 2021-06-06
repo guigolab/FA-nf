@@ -1,3 +1,4 @@
+* Log directory check
 * Singularity file for run_mysql wrapper process
 * Check kegg_upload slow process
   * In pre-upload insert many KEGG entries at once.
