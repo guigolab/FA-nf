@@ -250,4 +250,8 @@ The base container is [available in Docker Hub](https://hub.docker.com/r/guigola
 
 **Despite it ran successfully, the pipeline did not process the whole dataset but just a small part of it**
 
-*You may have run it in debug mode. Check your params file and change it to debug = 'false'*
+*You may have run it in debug mode. Check your params file and change it to ```debug = 'false'```*
+
+**After several retries, a process stops and the pipeline finishes unsucessfully**
+
+*You may need to assign more time, CPU or memory to the involved process from ```nextflow.config``` file. If it keeps failing you may need to check input files (e.g., there may be sequences of anomalous length). Otherwise, submit an issue in this Github repo detailing your problem.*
