@@ -170,6 +170,7 @@ sub retrieveGFFTypes {
 
   my %htypes;
   my $inFile = shift;
+  my $type_ix = shift;
 
   #open file for parsing
   open FH, "$inFile";
@@ -221,7 +222,7 @@ my @elms;
 my $duplicated=0;
 $c_prot_id='';
 
-my %htypes = &retrieveGFFTypes( $inFile );
+my %htypes = &retrieveGFFTypes( $inFile, $type_ix );
 print STDERR \%htypes;
 
 #open file for parsing
