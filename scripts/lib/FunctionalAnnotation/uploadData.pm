@@ -308,8 +308,13 @@ while(<FH>) {
 
   # Toniher: Removed transcript option
 
-  # Easy case, mRNA and no CDS around
-  if ( ( $elms[$type_ix] eq 'mRNA' ) && ! $htypes{"CDS"} ) {
+  # Easy case, mRNA
+  if ( ( $elms[$type_ix] eq 'mRNA' ) ) {
+
+    # We skip transdecoder if there are CDS around
+    if ( $elms[$annot_ix] eq 'transdecoder' && $htypes{"CDS"} ) {
+      next;
+    }
 
     my $prot_id= &parseGFFProduct( $elms[$type_ix], $elms[$ids_ix], $elms[$annot_ix] );
 
