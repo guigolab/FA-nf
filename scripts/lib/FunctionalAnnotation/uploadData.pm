@@ -223,7 +223,7 @@ my $duplicated=0;
 $c_prot_id='';
 
 my %htypes = &retrieveGFFTypes( $inFile, $type_ix );
-print STDERR \%htypes;
+# print STDERR \%htypes;
 
 #open file for parsing
 open FH, "$inFile";
@@ -308,13 +308,8 @@ while(<FH>) {
 
   # Toniher: Removed transcript option
 
-  # Easy case, mRNA
-  if ( $elms[$type_ix] eq 'mRNA' ) {
-
-    # We skip transdecoder. #  TODO: Check there are CDS around
-    if ( $elms[$annot_ix] eq 'transdecoder' ) {
-      next;
-    }
+  # Easy case, mRNA and no CDS around
+  if ( ( $elms[$type_ix] eq 'mRNA' ) && ! $htypes{"CDS"} ) {
 
     my $prot_id= &parseGFFProduct( $elms[$type_ix], $elms[$ids_ix], $elms[$annot_ix] );
 
