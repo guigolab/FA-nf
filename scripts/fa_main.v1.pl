@@ -51,7 +51,6 @@ use FunctionalAnnotation::sqlDB;
 use FunctionalAnnotation::uploadData;
 use FunctionalAnnotation::getResults;
 use IO::Handle;
-use File::Basename;
 use Cwd;
 
 &usage if (@ARGV < 1);

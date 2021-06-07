@@ -30,6 +30,7 @@ use FunctionalAnnotation::DB;
 use Scalar::Util qw( looks_like_number );
 use Text::Trim;
 use Digest::SHA qw(sha1_hex);
+use File::Basename;
 #use Bio::SeqIO;
 #use Bio::SearchIO;
 
