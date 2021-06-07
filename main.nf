@@ -39,6 +39,11 @@ params.dbEngine = "mysql" // SQLite otherwise
 params.proteinFile = null;
 params.gffFile = null;
 
+// Main result and log dirs
+params.resultPath = "${baseDir}/results/"
+params.stdoutLog = "${baseDir}/logs/out.log"
+params.stderrLog = "${baseDir}/logs/err.log"
+
 // Sizes for different programs
 params.chunkIPSSize = null
 params.chunkBlastSize = null

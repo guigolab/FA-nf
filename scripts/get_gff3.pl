@@ -78,6 +78,9 @@ my $update=0;
 
  my $logFile = $config{'stdoutLog'};
  my $errFile = $config{'stderrLog'};
+
+ &setLogDirs( $config{'stdoutLog'}, $config{'stderrLog'} );
+
  open OUTPUT, '>>', $logFile or die $!;
  open ERROR,  '>>', $errFile  or die $!;
  STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;

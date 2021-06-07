@@ -51,6 +51,7 @@ use FunctionalAnnotation::sqlDB;
 use FunctionalAnnotation::uploadData;
 use FunctionalAnnotation::getResults;
 use IO::Handle;
+use File::Basename;
 use Cwd;
 
 &usage if (@ARGV < 1);
@@ -160,6 +161,8 @@ die(qq/
  my %config = $cfg->vars();
  my $logFile = $config{'stdoutLog'};
  my $errFile = $config{'stderrLog'};
+
+ &setLogDirs( $config{'stdoutLog'}, $config{'stderrLog'} );
  #open OUTPUT, '>>', $logFile or die $!;
  #open ERROR,  '>>', $errFile  or die $!;
  #STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
@@ -229,6 +232,27 @@ if($config{'loglevel'} eq 'debug')
 
 }
 
+sub setLogDirs {
+  my $outfile = shift;
+  my $errfile = shift;
+
+  if ( ! -f $outfile ) {
+    my $outdir = dirname( $outfile );
+    if ( ! -d $outdir ) {
+      mkdir $outdir;
+    }
+  }
+
+  if ( ! -f $errfile ) {
+    my $errdir = dirname( $errfile );
+    if ( ! -d $errdir ) {
+      mkdir $errdir;
+    }
+  }
+
+  return 1;
+
+}
 
 #
 # Name : uploadKegg
@@ -277,8 +301,13 @@ Note: Don't forget to specify mandatory options in the main configuration file :
  my $cfg = new Config::Simple($configurationFile);
  #put config parameters into %config
  my %config = $cfg->vars();
- my $logFile =$config{'resultPath'}.$config{'stdoutLog'};
- my $errFile =$config{'resultPath'}.$config{'stderrLog'};
+
+ my $logFile = $config{'stdoutLog'};
+ my $errFile = $config{'stderrLog'};
+
+ &setLogDirs( $config{'stdoutLog'}, $config{'stderrLog'} );
+
+
  open OUTPUT, '>>', $logFile or die $!;
  open ERROR,  '>>', $errFile  or die $!;
  STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
@@ -389,8 +418,10 @@ if(!defined $confFile)
  my $cfg = new Config::Simple($confFile);
  #put config parameters into %config
  my %config = $cfg->vars();
- my $logFile =$config{'resultPath'}.$config{'stdoutLog'};
- my $errFile =$config{'resultPath'}.$config{'stderrLog'};
+ my $logFile = $config{'stdoutLog'};
+ my $errFile = $config{'stderrLog'};
+
+ &setLogDirs( $config{'stdoutLog'}, $config{'stderrLog'} );
  open OUTPUT, '>>', $logFile or die $!;
  open ERROR,  '>>', $errFile  or die $!;
  STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
@@ -501,8 +532,10 @@ if(!defined $confFile)
  my $cfg = new Config::Simple($confFile);
  #put config parameters into %config
  my %config = $cfg->vars();
- my $logFile =$config{'resultPath'}.$config{'stdoutLog'};
- my $errFile =$config{'resultPath'}.$config{'stderrLog'};
+ my $logFile = $config{'stdoutLog'};
+ my $errFile = $config{'stderrLog'};
+
+ &setLogDirs( $config{'stdoutLog'}, $config{'stderrLog'} );
  open OUTPUT, '>>', $logFile or die $!;
  open ERROR,  '>>', $errFile  or die $!;
  STDOUT->fdopen( \*OUTPUT, 'w' ) or die $!;
