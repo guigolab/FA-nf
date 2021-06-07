@@ -281,7 +281,7 @@ while(<FH>) {
   if ( $elms[$type_ix] eq 'mRNA' ) {
 
     # We skip transdecoder. #  TODO: Check there are CDS around
-    if ( $type eq 'transdecoder' ) {
+    if ( $elms[$annot_ix] eq 'transdecoder' ) {
       next;
     }
 
