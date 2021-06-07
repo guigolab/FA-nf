@@ -280,6 +280,11 @@ while(<FH>) {
   # Easy case, mRNA
   if ( $elms[$type_ix] eq 'mRNA' ) {
 
+    # We skip transdecoder. #  TODO: Check there are CDS around
+    if ( $type eq 'transdecoder' ) {
+      next;
+    }
+
     my $prot_id= &parseGFFProduct( $elms[$type_ix], $elms[$ids_ix], $elms[$annot_ix] );
 
     $c_prot_id=$prot_id;
