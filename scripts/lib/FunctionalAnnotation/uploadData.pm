@@ -380,6 +380,10 @@ sub parseGFFProduct {
     # TransDecoder. Added by Toniher
     if ( $prot_id eq '' && $annotation eq 'transdecoder' ) {
       $prot_id=$1 if $sid=~/ID=([^\;]+)/;
+      if ( $type eq "CDS" ) {
+        # Case of CDS prefix
+        $prot_id=~s/^cds\.//g;
+      }
     }
 
     # Allowing different types for PASA
