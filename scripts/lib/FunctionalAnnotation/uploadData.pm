@@ -165,13 +165,39 @@ sub uploadFastaData
    }#while
 }#sub
 
-#
+
+sub retrieveGFFTypes {
+
+  my %htypes;
+  my $inFile = shift;
+
+  #open file for parsing
+  open FH, "$inFile";
+  while(<FH>) {
+     next if /^#/;
+      chomp;
+      my $line=$_;
+
+      my (@elms) =split/\s+/,$line;
+
+      if ( $elms[$type_ix] ) {
+        if ( $htypes{$elms[$type_ix]} ) {
+          $htypes{$elms[$type_ix]}++;
+        } else {
+          $htypes{$elms[$type_ix]} = 1;
+        }
+      }
+
+    }
+
+    return %htypes;
+}
+
 #
 #Note: here I assume that gff file is correct and soesnot contain errors, e.g. all genes and their transcript are at the same strand and so on. All genes definition is prior to cds definition!
 # For checking correctness on the gff file there is another subroutine.
 
-sub uploadGFFData
-{
+sub uploadGFFData {
  my($inFile, $dbh, $idList,$do_update, $engine, $loglevel)=@_;
 
  my $numberElements = scalar keys %{$idList}||'';
@@ -194,8 +220,12 @@ my($g_id, $gene_start, $gene_end, $gene_strand, $gene_name, $c_prot_id, $c_conti
 my @elms;
 my $duplicated=0;
 $c_prot_id='';
+
+my %htypes = &retrieveGFFTypes( $inFile );
+print STDERR \%htypes;
+
 #open file for parsing
-open FH,"$inFile";
+open FH, "$inFile";
 while(<FH>) {
    next if /^#/;
     chomp;
