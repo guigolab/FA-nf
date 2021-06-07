@@ -312,7 +312,7 @@ while(<FH>) {
   if ( ( $elms[$type_ix] eq 'mRNA' ) ) {
 
     # We skip transdecoder if there are CDS around
-    if ( $elms[$annot_ix] eq 'transdecoder' && $htypes{"CDS"} ) {
+    if ( ( $elms[$annot_ix] eq 'transdecoder' || $elms[$annot_ix]=~/^geneid/ ) && $htypes{"CDS"} ) {
       next;
     }
 
@@ -422,8 +422,9 @@ sub parseGFFProduct {
       }
     }
 
-    # Allowing different types for PASA
-    elsif ( $prot_id eq '' && $annotation eq 'EVM_PASA' ) {
+    # Allowing different types for PASA and GeneId
+
+    elsif ( $prot_id eq '' && ( $annotation eq 'EVM_PASA' || $annotation=~/^geneid/ ) ) {
       if ( $type eq "mRNA" ) {
         # Recent PASA
         $prot_id=$1 if $sid=~/Name\=([^\;]+)/;
@@ -460,6 +461,10 @@ sub parseGFFProduct {
       }
     }
   }
+
+  # Let's clean empty parts
+  my ( @clean ) = split(/\s+/, $prot_id);
+  $prot_id = $clean[0];
 
   return $prot_id;
 
