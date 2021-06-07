@@ -21,7 +21,7 @@ package FunctionalAnnotation::uploadData;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT = qw(readListFile uploadFastaData checkGFFData uploadGFFData uploadGoAnnotation uploadBlastResults parseBlastResults parseAnnotation updateProteinDefinition parseInterProTSV uploadInterProResults uploadGOInfo updateAnnotationStatus parseCDsearchData uploadCDsearchData);
+@EXPORT = qw(readListFile uploadFastaData checkGFFData uploadGFFData uploadGoAnnotation uploadBlastResults parseBlastResults parseAnnotation updateProteinDefinition parseInterProTSV uploadInterProResults uploadGOInfo updateAnnotationStatus parseCDsearchData uploadCDsearchData setLogDirs);
 
 use FindBin qw($RealBin);
 use lib "$RealBin/lib";
@@ -1457,6 +1457,28 @@ sub handleValue {
   } else {
     return $value;
   }
+
+}
+
+sub setLogDirs {
+  my $outfile = shift;
+  my $errfile = shift;
+
+  if ( ! -f $outfile ) {
+    my $outdir = dirname( $outfile );
+    if ( ! -d $outdir ) {
+      mkdir $outdir;
+    }
+  }
+
+  if ( ! -f $errfile ) {
+    my $errdir = dirname( $errfile );
+    if ( ! -d $errdir ) {
+      mkdir $errdir;
+    }
+  }
+
+  return 1;
 
 }
 

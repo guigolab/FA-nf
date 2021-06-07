@@ -232,28 +232,6 @@ if($config{'loglevel'} eq 'debug')
 
 }
 
-sub setLogDirs {
-  my $outfile = shift;
-  my $errfile = shift;
-
-  if ( ! -f $outfile ) {
-    my $outdir = dirname( $outfile );
-    if ( ! -d $outdir ) {
-      mkdir $outdir;
-    }
-  }
-
-  if ( ! -f $errfile ) {
-    my $errdir = dirname( $errfile );
-    if ( ! -d $errdir ) {
-      mkdir $errdir;
-    }
-  }
-
-  return 1;
-
-}
-
 #
 # Name : uploadKegg
 # Description: This subroutine upload infromation from KEGG DB using BioMart modules and list of KO groups
