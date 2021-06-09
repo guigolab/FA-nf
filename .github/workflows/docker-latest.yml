@@ -1,4 +1,4 @@
-name: Publish Docker image
+name: Publish Docker image (latest)
 on:
   push:
      branches:
@@ -35,4 +35,4 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: docker.pkg.github.com/${{ github.repository }}/fa-nf:latest
+          tags: docker.pkg.github.com/${{ github.actor }}/fa-nf/fa-nf:latest
