@@ -3,6 +3,7 @@ tmp/
 .nextflow*
 work/
 .git/
+.github/
 Dockerfile*
 Singularity*
 dataset/
