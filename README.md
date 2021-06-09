@@ -255,3 +255,7 @@ The base container is [available in Docker Hub](https://hub.docker.com/r/guigola
 **After several retries, a process stops and the pipeline finishes unsucessfully**
 
 *You may need to assign more time, CPU or memory to the involved process from ```nextflow.config``` file. If it keeps failing you may need to check input files (e.g., there may be sequences of anomalous length). Otherwise, submit an issue in this Github repo detailing your problem.*
+
+**When using MySQL database mode with Singularity wrapper, it does not start and it complains it is locked**
+
+*Ensure no Singularity process is running on the contents of the selected MySQL directory. If it is not the case and it is still failing, copy the contents in another directory and run it from there instead*
