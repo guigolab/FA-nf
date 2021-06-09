@@ -27,7 +27,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: toniher/fa-nf:${{ github.ref }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/fa-nf:${{ github.ref }}
       - name: Build container image
         uses: docker/build-push-action@v2
         with:
