@@ -12,7 +12,7 @@ The software used in this pipeline is mostly free software for academic users. F
 The pipeline is build on Nextflow as a woking engine, so it need to be installed first
 
 ```
- wget -qO- get.nextflow.io | bash
+ export NXF_VER=20.10.0; curl -s https://get.nextflow.io | bash
 ```
 The detailed procedure is described in the [Nextflow documentation](https://www.nextflow.io/docs/latest/getstarted.html)
 
