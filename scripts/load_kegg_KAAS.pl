@@ -54,12 +54,13 @@ my $confFile = 'main_configuration.ini';
 
 
 my $USAGE = "perl load_kegg_KAAS.pl [-i input]  [-rel Kegg release] [-h help] [-conf configuration file] \n";
-my ($do_update, $show_help, $input, $directory, $kegg_release);
+my ($do_update, $show_help, $input, $directory, $entries, $kegg_release);
 
 &GetOptions(
 			'update|u=s'		=> \$do_update,
       'input|i=s'     => \$input,
 			'dir|d=s'				=> \$directory,
+			'entries|e=s'		=> \$entries,
       'rel|r=s'       => \$kegg_release,
       'conf=s'				=>\$confFile,
 			'help|h'        => \$show_help
@@ -74,7 +75,7 @@ if ( !$input || !$kegg_release ) {
 }
 
 # If null, let's assign 0.0
-if ( $kegg_release eq 'null' ) {
+if ( $kegg_release eq 'null' || $kegg_release eq '' ) {
 
 	$kegg_release = &retrieve_kegg_release;
 
@@ -144,10 +145,13 @@ my $pre_upload_kegg = 0;
 
 if ( $directory ) {
 	$pre_upload_kegg = &preUploadKeggInformation( $dbh, $directory, $config{'dbEngine'} );
+} else {
+	if ( $entries ) {
+		$pre_upload_kegg = &preUploadKeggEntries( $dbh, $entries, $config{'dbEngine'} );
+	}
 }
 
 print STDERR "Preupload finished here ".getLoggingTime()."\n";
-
 
 #print Dumper( \%keggs );
 #print Dumper( \%organisms );
@@ -256,6 +260,27 @@ sub preUploadKeggInformation {
 			&parseAndUploadKEGGEntry( $filentry, $dbh, $dbEngine);
 			$pre_upload_kegg++;
 		}
+	}
+
+	return $pre_upload_kegg;
+
+}
+
+sub preUploadKeggEntries {
+
+	my ($dbh, $directory, $dbEngine) = @_;
+
+	opendir(my $dh, $directory) || die "Can't open $directory: $!";
+	my @files = grep { /\.txt/ && -f "$directory/$_" } readdir($dh);
+	closedir $dh;
+
+	foreach my $file (@files) {
+		open my $fh, '<', $directory."/".$file;
+		my $filentry = do { local $/; <$fh> };
+		close $fh;
+		
+		&parseAndUploadKEGGEntry( $filentry, $dbh, $dbEngine);
+		$pre_upload_kegg++;
 	}
 
 	return $pre_upload_kegg;

@@ -65,6 +65,7 @@ params.blastAnnotMode = "common" // common, most, all available so far
 params.kolist = ""
 params.koprofiles = ""
 params.koentries = ""
+params.kegg_release = null
 
 // Params for InterProScan
 //  Temporary location for InterproScan intermediary files. This can be huge
