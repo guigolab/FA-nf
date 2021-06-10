@@ -952,27 +952,51 @@ process 'blast_annotator_upload' {
   command
 }
 
-process 'kegg_download'{
+if ( params.koentries == "" ) {
 
- maxForks 1
+  process 'kegg_download'{
 
- input:
- file keggfile from keggfile
- file config from config4perl8
- file("upload_blast") from upload_blast
+   maxForks 1
 
- output:
- file("down_kegg") into (down_kegg)
+   input:
+   file keggfile from keggfile
+   file config from config4perl8
+
+   output:
+   file("down_kegg") into (down_kegg)
 
 
- script:
+   script:
 
-  command = "download_kegg_KAAS.pl -input $keggfile -conf $config > done 2>err"
+    command = "download_kegg_KAAS.pl -input $keggfile -conf $config > done 2>err"
 
-  command
+    command
+  }
+
+} else {
+
+  process 'kegg_download_dummy' {
+
+   maxForks 1
+
+   input:
+   file keggfile from keggfile
+   file config from config4perl8
+
+   output:
+   file("down_kegg") into (down_kegg)
+
+
+   script:
+
+    command = "touch down_kegg"
+
+    command
+
+  }
 }
 
-process 'kegg_upload'{
+process 'kegg_upload' {
 
  label 'kegg_upload'
 
@@ -982,6 +1006,8 @@ process 'kegg_upload'{
  file keggfile from keggfile
  file config from config4perl9
  file("down_kegg") from down_kegg
+ // We do after blast Upload
+ file("upload_blast") from upload_blast
 
  output:
  file('done') into (last_step1, last_step2)
@@ -991,9 +1017,16 @@ process 'kegg_upload'{
 
   command = checkMySQL( mysql, params.mysqllog )
 
-  command += " \
-   load_kegg_KAAS.pl -input $keggfile -dir down_kegg -rel $params.kegg_release -conf \$config > done 2>err; \
-  "
+
+  if ( params.koentries == "" ) {
+    command += " \
+     load_kegg_KAAS.pl -input $keggfile -dir down_kegg -rel $params.kegg_release -conf \$config > done 2>err; \
+    "
+  } else {
+    command += " \
+     load_kegg_KAAS.pl -input $keggfile -entries $params.koentries -rel $params.kegg_release -conf \$config > done 2>err; \
+    "
+  }
 
   command
 }
