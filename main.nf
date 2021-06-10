@@ -61,6 +61,11 @@ params.gogourl = ""
 params.gogohits = 30
 params.blastAnnotMode = "common" // common, most, all available so far
 
+// KEGG
+params.kolist = ""
+params.koprofiles = ""
+params.koentries = ""
+
 // Params for InterProScan
 //  Temporary location for InterproScan intermediary files. This can be huge
 params.ipscantmp = "${baseDir}/tmp/"
