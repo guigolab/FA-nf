@@ -186,9 +186,10 @@ sub printDefinitionInfo
  my $sqlselect;
 
  if ( $dbEngine eq 'mysql' ){
-  $sqlSelect = "select p.protein_id, p.stable_id, GROUP_CONCAT( distinct( d.source ) SEPARATOR \"; \" ) as src, GROUP_CONCAT( distinct( d.definition ) SEPARATOR \"; \" ) as def from protein p, definition d where d.protein_id=p.protein_id and d.definition is not null and d.definition not like '' $condStat group by p.protein_id order by p.protein_id";
+  $sqlSelect = "select p.protein_id, p.stable_id, GROUP_CONCAT( distinct( d.source ) SEPARATOR \",\" ) as src, GROUP_CONCAT( distinct( d.definition ) SEPARATOR \"; \" ) as def from protein p, definition d where d.protein_id=p.protein_id and d.definition is not null and d.definition not like '' $condStat group by p.protein_id order by p.protein_id";
  } else {
-  $sqlSelect = "select p.protein_id, p.stable_id, GROUP_CONCAT( distinct( d.source ), \"; \" ) as src, GROUP_CONCAT( distinct( d.definition ), \"; \" ) as def from protein p, definition d where d.protein_id=p.protein_id and d.definition is not null and d.definition not like '' $condStat group by p.protein_id order by p.protein_id";
+  # TODO: Problem with group concat in SQLite https://stackoverflow.com/questions/49879115/sqlite-group-concat-and-distinct
+  $sqlSelect = "select p.protein_id, p.stable_id, GROUP_CONCAT( distinct( d.source ) ) as src, GROUP_CONCAT( distinct( d.definition ) ) as def from protein p, definition d where d.protein_id=p.protein_id and d.definition is not null and d.definition not like '' $condStat group by p.protein_id order by p.protein_id";
  }
 
 
