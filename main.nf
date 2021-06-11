@@ -428,6 +428,9 @@ process initDB {
     if ( gffavail && gffclean ) {
      command += " -gff ${gff_file}"
     }
+   } else {
+     log.info "SQLite database ${dbFileName} exists. Exiting..."
+     exit 1
    }
  }
 
