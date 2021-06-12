@@ -278,7 +278,7 @@ sub preUploadKeggEntries {
 		open my $fh, '<', $directory."/".$file;
 		my $filentry = do { local $/; <$fh> };
 		close $fh;
-		
+
 		&parseAndUploadKEGGEntry( $filentry, $dbh, $dbEngine);
 		$pre_upload_kegg++;
 	}
@@ -361,6 +361,7 @@ sub uploadKeggInformation {
 
  my($sqlSelect, $sqlInsert,$sqlUpdate);
  my %protDefinitionData=();
+ my %goall;
 
  my @countk = keys %{$keggData};
  print STDERR "* COUNT: ", $#countk + 1, "\n";
@@ -649,23 +650,33 @@ sub uploadKeggInformation {
 			 $gomap{$protein_id} = ();
 
 			 foreach my $goId ( @goIds ) {
-			     #insert go term, associated with this protein into go_term table, and then into protein_go
-			     my $sqlSelect = "SELECT go_term_id from go_term where go_acc like '$goId'";
-			     my $sqlUpdate ="";
-			     my $sqlInsert = "";
-			     if( lc( $dbEngine ) eq 'sqlite') {
-						 $sqlInsert = "INSERT INTO go_term (go_term_id,go_acc) VALUES (NULL,\"$goId\")";
+
+				 	 my $goTermId;
+
+				   if ( ! $goall{$goId} ) {
+
+				     #insert go term, associated with this protein into go_term table, and then into protein_go
+				     my $sqlSelect = "SELECT go_term_id from go_term where go_acc like '$goId'";
+				     my $sqlUpdate ="";
+				     my $sqlInsert = "";
+				     if( lc( $dbEngine ) eq 'sqlite') {
+							 $sqlInsert = "INSERT INTO go_term (go_term_id,go_acc) VALUES (NULL,\"$goId\")";
+						 }
+				     else {
+							 $sqlInsert = "INSERT INTO go_term SET go_acc =\"$goId\"";
+						 }
+				     $goTermId = $dbh->select_update_insert("go_term_id", $sqlSelect, $sqlUpdate, $sqlInsert, 0);
+				     #small patch for SQLite - the current insert function could not return id of the last inserted record...
+				     if(!defined $goTermId) {
+				        my $select = &selectLastId( $dbEngine );
+				        my $results = $dbh->select_from_table($select);
+				        $goTermId=$results->[0]->{'id'};
+				     }
+
+						 $goall{$goId} = $goTermId;
+					 } else {
+						 $goTermId = $goall{$goId};
 					 }
-			     else {
-						 $sqlInsert = "INSERT INTO go_term SET go_acc =\"$goId\"";
-					 }
-			     my $goTermId = $dbh->select_update_insert("go_term_id", $sqlSelect, $sqlUpdate, $sqlInsert, 0);
-			     #small patch for SQLite - the current insert function could not return id of the last inserted record...
-			     if(!defined $goTermId) {
-			        my $select = &selectLastId( $dbEngine );
-			        my $results = $dbh->select_from_table($select);
-			        $goTermId=$results->[0]->{'id'};
-			     }
 
 			     #select protein_go_id if there is one, and add 'KEGG' to the source field
 					 # TODO: Change INSERT or IGNORE here
