@@ -147,8 +147,8 @@ sub printSummaryInfo
              'protein_go'=>'GO terms',
              'protein_ortholog'=>'Ortholog signatures',
              'signalP'=>'SignalP signatures',
-             'cd_search_hit'=>'Conserved domains(NCBI CDs)',
-             'cd_search_features'=>'Conserved features(NCBI CDs)');
+             'cd_search_hit'=>'Conserved domains (NCBI CDs)',
+             'cd_search_features'=>'Conserved features (NCBI CDs)');
 
 
  foreach my $key(keys %dbHash)
