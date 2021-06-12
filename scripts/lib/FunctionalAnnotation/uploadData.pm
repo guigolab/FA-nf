@@ -605,8 +605,12 @@ sub uploadGoAnnotation
      }
 
     my @goList = &uniqueValues(\@{$annotData->{$protItem}{'annot'}});
-    foreach my $goItem(@goList)
-    {
+    foreach my $goItem (@goList) {
+
+      # Avoid dummy stuff
+      unless ( $goItem=~/^GO\:/ ) {
+        next;
+      }
       #select go_term_id: if this go is present then select id, otherwise upload it.
       if( lc( $engine ) eq 'sqlite')
          {
