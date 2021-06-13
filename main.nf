@@ -930,31 +930,6 @@ process 'CDsearch_feat_upload'{
   command
 }
 
-process 'blast_annotator_upload' {
-
- maxForks 1
-
- input:
-  file "blastAnnot*" from blast_annotator_results.collect()
-  file config from config4perl7
-  file upload_kegg from upload_kegg
-
-  output:
-  file('done') into (last_step1, last_step2)
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat blastAnnot* > allBlast ; \
-   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file ; \
-   upload_go_definitions.pl -i two_column_file -conf \$config -mode go -param 'blast_annotator' > done ; \
-  "
-
-  command
-}
-
 if ( params.koentries == "" ) {
 
   process 'kegg_download'{
@@ -1029,6 +1004,31 @@ process 'kegg_upload' {
      load_kegg_KAAS.pl -input $keggfile -entries $params.koentries -rel $params.kegg_release -conf \$config > upload_kegg 2>err; \
     "
   }
+
+  command
+}
+
+process 'blast_annotator_upload' {
+
+ maxForks 1
+
+ input:
+  file "blastAnnot*" from blast_annotator_results.collect()
+  file config from config4perl7
+  file upload_kegg from upload_kegg
+
+  output:
+  file('done') into (last_step1, last_step2)
+
+ script:
+
+  command = checkMySQL( mysql, params.mysqllog )
+
+  command += " \
+   cat blastAnnot* > allBlast ; \
+   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file ; \
+   upload_go_definitions.pl -i two_column_file -conf \$config -mode go -param 'blast_annotator' > done ; \
+  "
 
   command
 }
