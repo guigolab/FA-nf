@@ -1012,7 +1012,7 @@ process 'kegg_upload' {
  file("down_kegg") from down_kegg
 
  output:
- file('kegg_done') into (upload_kegg)
+ file('upload_kegg') into (upload_kegg)
 
 
  script:
@@ -1026,7 +1026,7 @@ process 'kegg_upload' {
     "
   } else {
     command += " \
-     load_kegg_KAAS.pl -input $keggfile -entries $params.koentries -rel $params.kegg_release -conf \$config > kegg_done 2>err; \
+     load_kegg_KAAS.pl -input $keggfile -entries $params.koentries -rel $params.kegg_release -conf \$config > upload_kegg 2>err; \
     "
   }
 
