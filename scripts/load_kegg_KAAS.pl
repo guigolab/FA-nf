@@ -423,6 +423,7 @@ sub uploadKeggInformation {
 
 	# We store mapping of proteins and GO for making it faster
 	my %gomap;
+	my @porthobucket = ();
 
   foreach my $proteinItem ( @proteinList ) {
 
@@ -543,7 +544,6 @@ sub uploadKeggInformation {
 
 			# We do batch mode for MySQL but not sqlite
 			# https://sqlite.org/np1queryprob.html
-			my @porthobucket = ();
 
 			foreach my $l (@lines) {
 
@@ -613,17 +613,17 @@ sub uploadKeggInformation {
 
 			} #for each group of genes in multiply organisms
 
-			if ($#porthobucket >= 0) {
-				my $query;
-				# VALUES here used for replacement
-				if ( lc($dbEngine) eq 'sqlite' ) {
-					$query = "INSERT OR IGNORE INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ;";
-				} else {
-					$query = "INSERT INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), ortholog_id=values(ortholog_id), type=values(ortholog_id), kegg_group_id=values(kegg_group_id) ;";
-				}
-				# print STDERR Dumper( \@porthobucket );
-				$dbh->multiple_query( $query, \@porthobucket );
-			}
+			# if ($#porthobucket >= 0) {
+			# 	my $query;
+			# 	# VALUES here used for replacement
+			# 	if ( lc($dbEngine) eq 'sqlite' ) {
+			# 		$query = "INSERT OR IGNORE INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ;";
+			# 	} else {
+			# 		$query = "INSERT INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), ortholog_id=values(ortholog_id), type=values(ortholog_id), kegg_group_id=values(kegg_group_id) ;";
+			# 	}
+			# 	# print STDERR Dumper( \@porthobucket );
+			# 	$dbh->multiple_query( $query, \@porthobucket );
+			# }
 
 			print STDERR "Ortholog here ".getLoggingTime()."\n";
 
@@ -695,6 +695,19 @@ sub uploadKeggInformation {
 			 }#if there was a GO records
 		 }#if defined dbLinks
 	}#foreach protein Item
+
+	if ($#porthobucket >= 0) {
+		my $query;
+		# VALUES here used for replacement
+		if ( lc($dbEngine) eq 'sqlite' ) {
+			$query = "INSERT OR IGNORE INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ;";
+		} else {
+			$query = "INSERT INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), ortholog_id=values(ortholog_id), type=values(ortholog_id), kegg_group_id=values(kegg_group_id) ;";
+		}
+		# print STDERR Dumper( \@porthobucket );
+		$dbh->multiple_query( $query, \@porthobucket );
+	}
+	@porthobucket = ();
 
 	my @gobucket = ();
 	foreach my $protein_id ( keys %gomap ) {
