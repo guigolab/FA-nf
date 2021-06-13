@@ -1022,7 +1022,7 @@ process 'kegg_upload' {
 
   if ( params.koentries == "" ) {
     command += " \
-     load_kegg_KAAS.pl -input $keggfile -dir down_kegg -rel $params.kegg_release -conf \$config > done 2>err; \
+     load_kegg_KAAS.pl -input $keggfile -dir down_kegg -rel $params.kegg_release -conf \$config > upload_kegg 2>err; \
     "
   } else {
     command += " \
