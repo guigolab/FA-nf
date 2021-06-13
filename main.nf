@@ -429,8 +429,7 @@ process initDB {
      command += " -gff ${gff_file}"
     }
    } else {
-     log.info "SQLite database ${dbFileName} exists. Exiting..."
-     exit 1
+     log.info "SQLite database ${dbFileName} exists. We proceed anyway..."
    }
  }
 
