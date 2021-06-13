@@ -698,7 +698,7 @@ sub uploadKeggInformation {
 
 	my @gobucket = ();
 	foreach my $protein_id ( keys %gomap ) {
-		foreach my $goTermId ( @{@gomap{$protein_id}} ) {
+		foreach my $goTermId ( @{$gomap{$protein_id}} ) {
 			my $values = "( \"$protein_id\", \"$goTermId\", \"KEGG\" )";
 			push( @gobucket, $values );
 		}
