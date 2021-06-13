@@ -937,10 +937,10 @@ process 'blast_annotator_upload' {
  input:
   file "blastAnnot*" from blast_annotator_results.collect()
   file config from config4perl7
-  file upload_feat from upload_feat
+  file upload_kegg from upload_kegg
 
   output:
-  file("upload_blast") into upload_blast
+  file('done') into (last_step1, last_step2)
 
  script:
 
@@ -949,7 +949,7 @@ process 'blast_annotator_upload' {
   command += " \
    cat blastAnnot* > allBlast ; \
    awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file ; \
-   upload_go_definitions.pl -i two_column_file -conf \$config -mode go -param 'blast_annotator' > upload_blast ; \
+   upload_go_definitions.pl -i two_column_file -conf \$config -mode go -param 'blast_annotator' > done ; \
   "
 
   command
@@ -1008,12 +1008,11 @@ process 'kegg_upload' {
  input:
  file keggfile from keggfile
  file config from config4perl9
+ file upload_feat from upload_feat
  file("down_kegg") from down_kegg
- // We do after blast Upload
- file("upload_blast") from upload_blast
 
  output:
- file('done') into (last_step1, last_step2)
+ file('kegg_done') into (upload_kegg)
 
 
  script:
@@ -1027,7 +1026,7 @@ process 'kegg_upload' {
     "
   } else {
     command += " \
-     load_kegg_KAAS.pl -input $keggfile -entries $params.koentries -rel $params.kegg_release -conf \$config > done 2>err; \
+     load_kegg_KAAS.pl -input $keggfile -entries $params.koentries -rel $params.kegg_release -conf \$config > kegg_done 2>err; \
     "
   }
 
