@@ -678,25 +678,46 @@ sub uploadKeggInformation {
 						 $goTermId = $goall{$goId};
 					 }
 
+					 push( @{$gomap{$protein_id}}, $goTermId );
+
 			     #select protein_go_id if there is one, and add 'KEGG' to the source field
-					 # TODO: Change INSERT or IGNORE here
-			     $sqlSelect = "SELECT protein_go_id, source FROM protein_go where protein_id = $protein_id and go_term_id=$goTermId and source='KEGG'";
-			     my $result =$dbh->select_from_table($sqlSelect);
-					 if ( $#$result < 0 ) {
-			      if( lc( $config{'dbEngine'} ) eq 'sqlite') {
-							$sqlInsert = "INSERT INTO protein_go (protein_go_id,source, protein_id, go_term_id) VALUES (NULL,'KEGG',$protein_id,$goTermId)";
-						} else {
-							$sqlInsert = "INSERT INTO protein_go SET source='KEGG', protein_id=$protein_id, go_term_id = $goTermId";
-						}
-						$dbh->insert_set($sqlInsert);
-			     }
+					 # # TODO: Change INSERT or IGNORE here
+			     # $sqlSelect = "SELECT protein_go_id, source FROM protein_go where protein_id = $protein_id and go_term_id=$goTermId and source='KEGG'";
+			     # my $result =$dbh->select_from_table($sqlSelect);
+					 # if ( $#$result < 0 ) {
+			     #  if( lc( $config{'dbEngine'} ) eq 'sqlite') {
+						# 	$sqlInsert = "INSERT INTO protein_go (protein_go_id,source, protein_id, go_term_id) VALUES (NULL,'KEGG',$protein_id,$goTermId)";
+						# } else {
+						# 	$sqlInsert = "INSERT INTO protein_go SET source='KEGG', protein_id=$protein_id, go_term_id = $goTermId";
+						# }
+						# $dbh->insert_set($sqlInsert);
+			     # }
 			 }#if there was a GO records
 		 }#if defined dbLinks
 	}#foreach protein Item
 
-	# TODO: Process gomap here
+	my @gobucket = ();
+	foreach my $protein_id ( keys %gomap ) {
+		foreach my $goTermId ( @{@gomap{$protein_id}} ) {
+			my $values = "( \"$protein_id\", \"$goTermId\", \"KEGG\" )";
+			push( @gobucket, $values );
+		}
 
-	print STDERR "Protein finished here ".getLoggingTime()."\n";
+	}
+	if ( $#gobucket >= 0 ) {
+		my $query;
+		# VALUES here used for replacement
+		if ( lc($dbEngine) eq 'sqlite' ) {
+			$query = "INSERT OR IGNORE INTO protein_go (protein_id, go_term_id, source) VALUES #VALUES# ;";
+		} else {
+			$query = "INSERT INTO protein_go (protein_id, go_term_id, source) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), go_term_id=values(go_term_id), source=values(source) ;";
+		}
+		# print STDERR Dumper( \@gobucket );
+		$dbh->multiple_query( $query, \@gobucket );
+	}
+
+	print STDERR "KO finished here ".getLoggingTime()."\n";
+	%gomap = ();
 
  }#foreach kegg KO item
 
