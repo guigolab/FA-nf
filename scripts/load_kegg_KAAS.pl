@@ -738,9 +738,9 @@ sub uploadKeggInformation {
 	print STDERR "KO finished here ".getLoggingTime()."\n";
 	%gomap = ();
 
-	@orthobucket = &processBucket( $dbh, \@orthobucket, $bucketsize, "ortho ");
-	@porthobucket = &processBucket( $dbh, \@porthobucket, $bucketsize, "portho ");
-	@gobucket = &processBucket( $dbh, \@gobucket, $bucketsize, "go ");
+	@orthobucket = &processBucket( $dbh, $dbEngine, \@orthobucket, $bucketsize, "ortho ");
+	@porthobucket = &processBucket( $dbh, $dbEngine, \@porthobucket, $bucketsize, "portho ");
+	@gobucket = &processBucket( $dbh, $dbEngine, \@gobucket, $bucketsize, "go ");
 
  }#foreach kegg KO item
 
@@ -750,9 +750,9 @@ sub uploadKeggInformation {
 	# Toniher: We do not include protein Definition here
 	# &updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
 
-	@orthobucket = &processBucket( $dbh, \@orthobucket, 0, "ortho ");
-	@porthobucket = &processBucket( $dbh, \@porthobucket, 0, "portho ");
-	@gobucket = &processBucket( $dbh, \@gobucket, 0, "go ");
+	@orthobucket = &processBucket( $dbh, $dbEngine, \@orthobucket, 0, "ortho ");
+	@porthobucket = &processBucket( $dbh, $dbEngine, \@porthobucket, 0, "portho ");
+	@gobucket = &processBucket( $dbh, $dbEngine, \@gobucket, 0, "go ");
 
 	print STDERR "Finished here ".getLoggingTime()."\n";
 
@@ -761,6 +761,7 @@ sub uploadKeggInformation {
 sub processBucket {
 
 	my $dbh = shift;
+	my $dbEngine = shift;
 	my $bucket = shift;
 	my $size = shift;
 	my $type = shift;
