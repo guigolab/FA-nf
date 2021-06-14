@@ -371,6 +371,12 @@ sub uploadKeggInformation {
 
  # my $l = 0;
 
+ # Let's put buckets here
+ my $bucketsize = 100;
+ my @orthobucket = ();
+ my @porthobucket = ();
+ my @gobucket = ();
+
  foreach my $kegg_id (sort( keys %{$keggData})) {
   #get KO information from server
 
@@ -423,7 +429,7 @@ sub uploadKeggInformation {
 
 	# We store mapping of proteins and GO for making it faster
 	my %gomap;
-	my @porthobucket = ();
+	# my @porthobucket = ();
 
   foreach my $proteinItem ( @proteinList ) {
 
@@ -452,7 +458,7 @@ sub uploadKeggInformation {
 
 			# We do batch mode for MySQL but not sqlite
 			# https://sqlite.org/np1queryprob.html
-			my @orthobucket = ();
+			# my @orthobucket = ();
 
 			print "NUM LINES: $#lines\n";
 
@@ -510,17 +516,17 @@ sub uploadKeggInformation {
 
 			}
 
-			if ($#orthobucket >= 0) {
-				my $query;
-				# VALUES here used for replacement
-				if ( lc($dbEngine) eq 'sqlite' ) {
-					$query = "INSERT OR IGNORE INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ;";
-				} else {
-					$query = "INSERT INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ON DUPLICATE KEY UPDATE name = values(name), organism_id = values(organism_id), db_id = values(db_id) ;";
-				}
-				# print STDERR Dumper( \@orthobucket );
-				$dbh->multiple_query( $query, \@orthobucket );
-			}
+			# if ($#orthobucket >= 0) {
+			# 	my $query;
+			# 	# VALUES here used for replacement
+			# 	if ( lc($dbEngine) eq 'sqlite' ) {
+			# 		$query = "INSERT OR IGNORE INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ;";
+			# 	} else {
+			# 		$query = "INSERT INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ON DUPLICATE KEY UPDATE name = values(name), organism_id = values(organism_id), db_id = values(db_id) ;";
+			# 	}
+			# 	# print STDERR Dumper( \@orthobucket );
+			# 	$dbh->multiple_query( $query, \@orthobucket );
+			# }
 
 			print "* NUM LINES ORTHO: $#lines\n";
 
@@ -696,20 +702,20 @@ sub uploadKeggInformation {
 		 }#if defined dbLinks
 	}#foreach protein Item
 
-	if ($#porthobucket >= 0) {
-		my $query;
-		# VALUES here used for replacement
-		if ( lc($dbEngine) eq 'sqlite' ) {
-			$query = "INSERT OR IGNORE INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ;";
-		} else {
-			$query = "INSERT INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), ortholog_id=values(ortholog_id), type=values(ortholog_id), kegg_group_id=values(kegg_group_id) ;";
-		}
-		# print STDERR Dumper( \@porthobucket );
-		$dbh->multiple_query( $query, \@porthobucket );
-	}
-	@porthobucket = ();
+	# if ($#porthobucket >= 0) {
+	# 	my $query;
+	# 	# VALUES here used for replacement
+	# 	if ( lc($dbEngine) eq 'sqlite' ) {
+	# 		$query = "INSERT OR IGNORE INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ;";
+	# 	} else {
+	# 		$query = "INSERT INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), ortholog_id=values(ortholog_id), type=values(ortholog_id), kegg_group_id=values(kegg_group_id) ;";
+	# 	}
+	# 	# print STDERR Dumper( \@porthobucket );
+	# 	$dbh->multiple_query( $query, \@porthobucket );
+	# }
+	# @porthobucket = ();
 
-	my @gobucket = ();
+	# my @gobucket = ();
 	foreach my $protein_id ( keys %gomap ) {
 		foreach my $goTermId ( @{$gomap{$protein_id}} ) {
 			my $values = "( \"$protein_id\", \"$goTermId\", \"KEGG\" )";
@@ -717,20 +723,24 @@ sub uploadKeggInformation {
 		}
 
 	}
-	if ( $#gobucket >= 0 ) {
-		my $query;
-		# VALUES here used for replacement
-		if ( lc($dbEngine) eq 'sqlite' ) {
-			$query = "INSERT OR IGNORE INTO protein_go (protein_id, go_term_id, source) VALUES #VALUES# ;";
-		} else {
-			$query = "INSERT INTO protein_go (protein_id, go_term_id, source) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), go_term_id=values(go_term_id), source=values(source) ;";
-		}
-		# print STDERR Dumper( \@gobucket );
-		$dbh->multiple_query( $query, \@gobucket );
-	}
+	# if ( $#gobucket >= 0 ) {
+	# 	my $query;
+	# 	# VALUES here used for replacement
+	# 	if ( lc($dbEngine) eq 'sqlite' ) {
+	# 		$query = "INSERT OR IGNORE INTO protein_go (protein_id, go_term_id, source) VALUES #VALUES# ;";
+	# 	} else {
+	# 		$query = "INSERT INTO protein_go (protein_id, go_term_id, source) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), go_term_id=values(go_term_id), source=values(source) ;";
+	# 	}
+	# 	# print STDERR Dumper( \@gobucket );
+	# 	$dbh->multiple_query( $query, \@gobucket );
+	# }
 
 	print STDERR "KO finished here ".getLoggingTime()."\n";
 	%gomap = ();
+
+	@orthobucket = &processBucket( $dbh, \@orthobucket, $bucketsize, "ortho ");
+	@porthobucket = &processBucket( $dbh, \@porthobucket, $bucketsize, "portho ");
+	@gobucket = &processBucket( $dbh, \@gobucket, $bucketsize, "go ");
 
  }#foreach kegg KO item
 
@@ -739,10 +749,64 @@ sub uploadKeggInformation {
 	#print STDERR Dumper( \%protDefinitionData );
 	# Toniher: We do not include protein Definition here
 	# &updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
+
+	@orthobucket = &processBucket( $dbh, \@orthobucket, 0, "ortho ");
+	@porthobucket = &processBucket( $dbh, \@porthobucket, 0, "portho ");
+	@gobucket = &processBucket( $dbh, \@gobucket, 0, "go ");
+
 	print STDERR "Finished here ".getLoggingTime()."\n";
 
 }#sub
 
+sub processBucket {
+
+	my $dbh = shift;
+	my $bucket = shift;
+	my $size = shift;
+	my $type = shift;
+
+	if ( $#bucket >= $size ) {
+
+		my $query;
+		if ( $type eq 'go' ) {
+
+			# VALUES here used for replacement
+			if ( lc($dbEngine) eq 'sqlite' ) {
+				$query = "INSERT OR IGNORE INTO protein_go (protein_id, go_term_id, source) VALUES #VALUES# ;";
+			} else {
+				$query = "INSERT INTO protein_go (protein_id, go_term_id, source) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), go_term_id=values(go_term_id), source=values(source) ;";
+			}
+		}
+		if ( $type eq 'portho' ) {
+
+			if ( lc($dbEngine) eq 'sqlite' ) {
+				$query = "INSERT OR IGNORE INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ;";
+			} else {
+				$query = "INSERT INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), ortholog_id=values(ortholog_id), type=values(ortholog_id), kegg_group_id=values(kegg_group_id) ;";
+			}
+		}
+
+		if ( $type eq 'ortho' ) {
+
+			if ( lc($dbEngine) eq 'sqlite' ) {
+				$query = "INSERT OR IGNORE INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ;";
+			} else {
+				$query = "INSERT INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ON DUPLICATE KEY UPDATE name = values(name), organism_id = values(organism_id), db_id = values(db_id) ;";
+			}
+		}
+
+		$dbh->multiple_query( $query, $bucket );
+
+		# Return empty bucket
+		return ();
+
+	} else {
+
+		# Continue with the bucket
+		return @{$bucket};
+	}
+
+}
 
 
 sub parseKEGGDBLinks {
