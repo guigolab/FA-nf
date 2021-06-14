@@ -766,7 +766,7 @@ sub processBucket {
 	my $size = shift;
 	my $type = shift;
 
-	if ( $#bucket >= $size ) {
+	if ( $#{$bucket} >= $size ) {
 
 		my $query;
 		if ( $type eq 'go' ) {
