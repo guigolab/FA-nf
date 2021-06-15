@@ -506,6 +506,22 @@ sub uploadKeggInformation {
 	my %gomap;
 	# my @porthobucket = ();
 
+	# Here we preretrieve orthologs_id for saving time with fixed KEGG_ID
+	my ($orthoidlist) = {};
+	my $results_ortho = $dbh->select_from_table("SELECT ortholog_id, name, organism_id from `ortholog` where db_id = \"$kegg_id\" ;");
+
+	foreach my $result ( @{$results_ortho} ) {
+		my $org = $result->{"organism_id"};
+		my $name = $result->{"name"};
+		my $oid = $result->{"ortholog_id"};
+
+		if ( ! $orthoidlist->{$org} ) {
+			$orthoidlist->{$org} = {};
+		}
+
+		$orthoidlist->{$org}->{$name} = $oid;
+	}
+
   foreach my $proteinItem ( @proteinList ) {
 
 			#select protein_id infor (because items are stable_ids in protein table)
@@ -531,24 +547,6 @@ sub uploadKeggInformation {
 			# print STDERR $proteinItem, "\t", $gene_string, "\n";
 			# print STDERR "gene string: $gene_string\n";
 			my @lines=split/\,/,$gene_string;
-
-			# Here we preretrieve orthologs_id for saving time with fixed KEGG_ID
-			my ($orthoidlist) = {};
-			my $results_ortho = $dbh->select_from_table("SELECT ortholog_id, name, organism_id from `ortholog` where db_id = \"$kegg_id\" ;");
-
-			foreach my $result ( @{$results_ortho} ) {
-				my $org = $result->{"organism_id"};
-				my $name = $result->{"name"};
-				my $oid = $result->{"ortholog_id"};
-
-				if ( ! $orthoidlist->{$org} ) {
-					$orthoidlist->{$org} = {};
-				}
-
-				$orthoidlist->{$org}->{$name} = $oid;
-			}
-
-			# print STDERR Dumper( $orthoidlist );
 
 			# We do batch mode for MySQL but not sqlite
 			# https://sqlite.org/np1queryprob.html
