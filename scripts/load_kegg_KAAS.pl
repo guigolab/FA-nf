@@ -371,6 +371,9 @@ sub uploadKOInformation {
   my @countk = keys %{$keggData};
   print STDERR "* COUNT: ", $#countk + 1, "\n";
 
+	# Number limit names
+	my $limnames = 9;
+	
   # Let's put buckets here
   my $bucketsize = 100;
 	my @orthobucket = ();
