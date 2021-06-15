@@ -160,6 +160,8 @@ print STDERR "Preupload finished here ".getLoggingTime()."\n";
 
 &uploadKeggInformation( $dbh, \%keggs, \%organisms, $config{'dbEngine'}, $pre_upload_kegg );
 
+print STDERR "Finished here ".getLoggingTime()."\n";
+
 sub retrieve_kegg_release {
 
 	my $value = 0.0;
@@ -637,8 +639,6 @@ sub uploadKeggInformation {
 
 	@porthobucket = &processBucket( $dbh, $dbEngine, \@porthobucket, 0, "portho ");
 	@gobucket = &processBucket( $dbh, $dbEngine, \@gobucket, 0, "go ");
-
-	print STDERR "Finished here ".getLoggingTime()."\n";
 
 }#sub
 
