@@ -556,7 +556,7 @@ sub uploadKeggInformation {
 				#my $ortholog_id = $results_ortho->[0]->{'ortholog_id'};
 				my $ortholog_id = $orthoidlist->{$organism_id}->{$name};
 
-				# print STDERR "* $ortholog_id\n";
+				print STDERR "* ORTHO_ID: $ortholog_id\n";
 
 				if ( ! $ortholog_id ) {
 					print STDERR "Major error here\n";
