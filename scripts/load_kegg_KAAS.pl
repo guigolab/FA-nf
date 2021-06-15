@@ -158,7 +158,8 @@ print STDERR "Preupload finished here ".getLoggingTime()."\n";
 #print Dumper( $pre_upload_kegg );
 #exit;
 
-&uploadKeggInformation( $dbh, \%keggs, \%organisms, $config{'dbEngine'}, $pre_upload_kegg );
+&uploadKOInformation( $dbh, \%keggs, \%organisms, $config{'dbEngine'}, $pre_upload_kegg );
+&uploadKeggInformation( $dbh, \%keggs, \%organisms, $config{'dbEngine'} );
 
 print STDERR "Finished here ".getLoggingTime()."\n";
 
@@ -356,10 +357,111 @@ sub uploadSingleKEGGId {
 
 }
 
-sub uploadKeggInformation {
- my($dbh, $keggData, $codesOrg, $dbEngine, $pre_upload_kegg)=@_;
+sub uploadKOInformation {
 
- print STDERR "KO entries: ".$pre_upload_kegg."\n";
+	my($dbh, $keggData, $codesOrg, $dbEngine, $pre_upload_kegg)=@_;
+
+  print STDERR "KO entries: ".$pre_upload_kegg."\n";
+
+  my($sqlSelect, $sqlInsert,$sqlUpdate);
+
+  my @countk = keys %{$keggData};
+  print STDERR "* COUNT: ", $#countk + 1, "\n";
+
+  # Let's put buckets here
+  my $bucketsize = 100;
+	my @orthobucket = ();
+
+	foreach my $kegg_id (sort( keys %{$keggData})) {
+   #get KO information from server
+
+	 	my $hash;
+	 	my $kegg_group_id;
+	 	if ( $pre_upload_kegg > 0 ) {
+
+	 		print STDERR "\n* Entering $kegg_id\n";
+	 		( $hash, $kegg_group_id ) = retrieve_kegg_record( $kegg_id );
+
+	 		#print STDERR "Prefilled\n";
+	 		#print STDERR Dumper( $hash );
+	 		#print STDERR Dumper( $kegg_group_id );
+
+	 	} else {
+
+	 		$hash = parse_kegg_record($kegg_id);
+
+	 		#upload information about KO group into DB if its absent in DB
+	 	  my @absentList=qw(PATHWAY CLASS MODULE DEFINITION DBLINKS GENES);
+	 	  foreach my $absItem(@absentList) {
+	 			if(!defined $hash->{$absItem}) {
+	 				$hash->{$absItem}="";
+	 			}
+	 	  }
+
+	 		$kegg_group_id = &uploadSingleKEGGId($kegg_id, $hash, $dbh, $dbEngine);
+	 	}
+
+		if(!defined $kegg_group_id) {
+			print STDERR "Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n";
+			next; # Skip to another entry
+		}
+
+		#add orthologus information from the list of species for proteins associated to this KO group
+		my $gene_string = "";
+		if ( $hash->{'GENES'} ) {
+			$gene_string = $hash->{'GENES'};
+		}
+
+		# print STDERR $proteinItem, "\t", $gene_string, "\n";
+		# print STDERR "gene string: $gene_string\n";
+		my @lines=split/\,/,$gene_string;
+
+		# We do batch mode for MySQL but not sqlite
+		# https://sqlite.org/np1queryprob.html
+
+		print "NUM LINES: $#lines\n";
+
+		foreach my $l (@lines) {
+
+			# insert each ortholog
+			my ($code,$gene_id)=split/\:/,$l;
+			$gene_id = trim($gene_id);
+			my $lcode=lc(trim($code));
+
+			my $name;
+			# Gene id can be too long
+			my (@names) = split(/ /, $gene_id);
+			if ( $#names > $limnames ) {
+				$name = join(" ", @names[0..$limnames]);
+			} else {
+				$name = join(" ", @names);
+			}
+			#print STDERR "* ", $lcode, "\n";
+			#print STDERR "- ", Dumper( $codesOrg );
+			# next if ortholog is not in the list of species to analyze
+			next if !$codesOrg->{$lcode};
+			#print STDERR "Passed\n";
+			#get organism_id from DB
+			#my $organism_id= organism_table($lcode,$dbEngine,$dbh);
+			my $organism_id= $codesOrg->{$lcode};
+
+			my $values = "( \"$name\", \"$organism_id\", \"$kegg_id\", \"KEGG\" )";
+			push( @orthobucket, $values );
+
+		}
+
+		@orthobucket = &processBucket( $dbh, $dbEngine, \@orthobucket, $bucketsize, "ortho" );
+
+
+	}
+
+	@orthobucket = &processBucket( $dbh, $dbEngine, \@orthobucket, 0, "ortho" );
+
+
+}
+
+sub uploadKeggInformation {
+ my($dbh, $keggData, $codesOrg, $dbEngine)=@_;
 
  my($sqlSelect, $sqlInsert,$sqlUpdate);
  my %protDefinitionData=();
@@ -378,29 +480,8 @@ sub uploadKeggInformation {
 
 	my $hash;
 	my $kegg_group_id;
-	if ( $pre_upload_kegg > 0 ) {
-
-		print STDERR "\n* Entering $kegg_id\n";
-		( $hash, $kegg_group_id ) = retrieve_kegg_record( $kegg_id );
-
-		#print STDERR "Prefilled\n";
-		#print STDERR Dumper( $hash );
-		#print STDERR Dumper( $kegg_group_id );
-
-	} else {
-
-		$hash = parse_kegg_record($kegg_id);
-
-		#upload information about KO group into DB if its absent in DB
-	  my @absentList=qw(PATHWAY CLASS MODULE DEFINITION DBLINKS GENES);
-	  foreach my $absItem(@absentList) {
-			if(!defined $hash->{$absItem}) {
-				$hash->{$absItem}="";
-			}
-	  }
-
-		$kegg_group_id = &uploadSingleKEGGId($kegg_id, $hash, $dbh, $dbEngine);
-	}
+	print STDERR "\n* Entering $kegg_id\n";
+	( $hash, $kegg_group_id ) = retrieve_kegg_record( $kegg_id );
 
 	#  print Dumper($hash)."\n"; die;
 
@@ -436,6 +517,8 @@ sub uploadKeggInformation {
 			my $protein_id = $res->[0]->{'protein_id'};
 			my $protein_definition = $res->[0]->{'definition'};
 
+			my $is_cluster;
+
 			#add orthologus information from the list of species for proteins associated to this KO group
 			my $gene_string = "";
 			if ( $hash->{'GENES'} ) {
@@ -445,47 +528,6 @@ sub uploadKeggInformation {
 			# print STDERR $proteinItem, "\t", $gene_string, "\n";
 			# print STDERR "gene string: $gene_string\n";
 			my @lines=split/\,/,$gene_string;
-			my $is_cluster;
-
-			# We do batch mode for MySQL but not sqlite
-			# https://sqlite.org/np1queryprob.html
-			my @orthobucket = ();
-
-			print "NUM LINES: $#lines\n";
-
-			foreach my $l (@lines) {
-
-				# insert each ortholog
-				my ($code,$gene_id)=split/\:/,$l;
-				$gene_id = trim($gene_id);
-				my $lcode=lc(trim($code));
-
-				my $name;
-				# Gene id can be too long
-				my (@names) = split(/ /, $gene_id);
-				if ( $#names > $limnames ) {
-					$name = join(" ", @names[0..$limnames]);
-				} else {
-					$name = join(" ", @names);
-				}
-				#print STDERR "* ", $lcode, "\n";
-				#print STDERR "- ", Dumper( $codesOrg );
-				# next if ortholog is not in the list of species to analyze
-				next if !$codesOrg->{$lcode};
-				#print STDERR "Passed\n";
-				#get organism_id from DB
-				#my $organism_id= organism_table($lcode,$dbEngine,$dbh);
-				my $organism_id= $codesOrg->{$lcode};
-
-				my $values = "( \"$name\", \"$organism_id\", \"$kegg_id\", \"KEGG\" )";
-				push( @orthobucket, $values );
-
-			}
-
-			@orthobucket = &processBucket( $dbh, $dbEngine, \@orthobucket, 0, "ortho ");
-
-
-			print "* NUM LINES ORTHO: $#lines\n";
 
 			# Here we preretrieve orthologs_id for saving time with fixed KEGG_ID
 			my ($orthoidlist) = {};
@@ -626,8 +668,8 @@ sub uploadKeggInformation {
 	print STDERR "KO finished here ".getLoggingTime()."\n";
 	%gomap = ();
 
-	@porthobucket = &processBucket( $dbh, $dbEngine, \@porthobucket, $bucketsize, "portho ");
-	@gobucket = &processBucket( $dbh, $dbEngine, \@gobucket, $bucketsize, "go ");
+	@porthobucket = &processBucket( $dbh, $dbEngine, \@porthobucket, $bucketsize, "portho" );
+	@gobucket = &processBucket( $dbh, $dbEngine, \@gobucket, $bucketsize, "go" );
 
  }#foreach kegg KO item
 
@@ -637,8 +679,8 @@ sub uploadKeggInformation {
 	# Toniher: We do not include protein Definition here
 	# &updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
 
-	@porthobucket = &processBucket( $dbh, $dbEngine, \@porthobucket, 0, "portho ");
-	@gobucket = &processBucket( $dbh, $dbEngine, \@gobucket, 0, "go ");
+	@porthobucket = &processBucket( $dbh, $dbEngine, \@porthobucket, 0, "portho" );
+	@gobucket = &processBucket( $dbh, $dbEngine, \@gobucket, 0, "go" );
 
 }#sub
 
