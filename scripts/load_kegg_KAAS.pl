@@ -373,7 +373,6 @@ sub uploadKeggInformation {
 
  # Let's put buckets here
  my $bucketsize = 100;
- my @orthobucket = ();
  my @porthobucket = ();
  my @gobucket = ();
 
@@ -458,7 +457,7 @@ sub uploadKeggInformation {
 
 			# We do batch mode for MySQL but not sqlite
 			# https://sqlite.org/np1queryprob.html
-			# my @orthobucket = ();
+			my @orthobucket = ();
 
 			print "NUM LINES: $#lines\n";
 
@@ -486,47 +485,13 @@ sub uploadKeggInformation {
 				#my $organism_id= organism_table($lcode,$dbEngine,$dbh);
 				my $organism_id= $codesOrg->{$lcode};
 
-				#populate ortholog table
-				#check if ortholog already exists (yes && do_update => update record; no => insert new ortholog)
-				# my $ortholog_sql_select = qq{ SELECT ortholog_id FROM ortholog WHERE name=\"$gene_id\" };
-				# print STDERR  $ortholog_sql_select, "\n";
-				# my $ortholog_sql_update = qq{ UPDATE ortholog SET name=\"$gene_id\",organism_id=\"$organism_id\",db_id=\"$kegg_id\",db_name=\"KEGG\";};
-				# print STDERR  $ortholog_sql_update, "\n";
-
-				# my $ortholog_sql_insert = "";
-				#if( lc( $dbEngine ) eq 'sqlite') {
-				#		$ortholog_sql_insert = qq{ INSERT INTO ortholog(ortholog_id, name, organism_id, db_id, db_name ) VALUES(NULL,\"$gene_id\",\"$organism_id\",\"$kegg_id\",\"KEGG\")};
-
-						# print STDERR $ortholog_sql_insert, "\n";
-				#		my $ortholog_id = $dbh->select_update_insert("ortholog_id", $ortholog_sql_select, $ortholog_sql_update, $ortholog_sql_insert, $do_update);
-
-						# Not needed for next step
-						#small patch for SQLite - the current insert function could not return id of the last inserted record...
-		        # if(!defined $ortholog_id) {
-						# 	my $select = &selectLastId( $dbEngine );
-		        #   my $results = $dbh->select_from_table($select);
-		        #   $ortholog_id=$results->[0]->{'id'};
-		        # }
-
-				#} else {
-					# Handling stuff for SQL
 				my $values = "( \"$name\", \"$organism_id\", \"$kegg_id\", \"KEGG\" )";
 				push( @orthobucket, $values );
-				#}
 
 			}
 
-			# if ($#orthobucket >= 0) {
-			# 	my $query;
-			# 	# VALUES here used for replacement
-			# 	if ( lc($dbEngine) eq 'sqlite' ) {
-			# 		$query = "INSERT OR IGNORE INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ;";
-			# 	} else {
-			# 		$query = "INSERT INTO ortholog (name, organism_id, db_id, db_name) VALUES #VALUES# ON DUPLICATE KEY UPDATE name = values(name), organism_id = values(organism_id), db_id = values(db_id) ;";
-			# 	}
-			# 	# print STDERR Dumper( \@orthobucket );
-			# 	$dbh->multiple_query( $query, \@orthobucket );
-			# }
+			@orthobucket = &processBucket( $dbh, $dbEngine, \@orthobucket, 0, "ortho ");
+
 
 			print "* NUM LINES ORTHO: $#lines\n";
 
@@ -606,45 +571,13 @@ sub uploadKeggInformation {
 					exit;
 				}
 
-        #my $prot_ortholog_sql_select = qq{ SELECT protein_ortholog_id FROM protein_ortholog WHERE protein_id=\"$protein_id\" AND ortholog_id=\"$ortholog_id\" };
-        #my $prot_ortholog_sql_update = qq{ UPDATE protein_ortholog SET protein_id=\"$protein_id\",ortholog_id=\"$ortholog_id\",type=\"$type\",kegg_group_id=\"$kegg_group_id\";};
-        #my $prot_ortholog_sql_insert ="";
-        #if( lc( $config{'dbEngine'} ) eq 'sqlite') {
-				#	$prot_ortholog_sql_insert = qq{ INSERT INTO protein_ortholog (protein_ortholog_id, protein_id,ortholog_id,type,kegg_group_id) VALUES(NULL,\"$protein_id\",\"$ortholog_id\",\"$type\",\"$kegg_group_id\");};
-				#	my $protein_ortholog_id = $dbh->select_update_insert("protein_ortholog_id", $prot_ortholog_sql_select, $prot_ortholog_sql_update, $prot_ortholog_sql_insert, $do_update);
-				#} else {
 				my $values = "( \"$protein_id\", \"$ortholog_id\", \"$type\", \"$kegg_group_id\" )";
 				push( @porthobucket, $values );
-				#}
 
 			} #for each group of genes in multiply organisms
 
-			# if ($#porthobucket >= 0) {
-			# 	my $query;
-			# 	# VALUES here used for replacement
-			# 	if ( lc($dbEngine) eq 'sqlite' ) {
-			# 		$query = "INSERT OR IGNORE INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ;";
-			# 	} else {
-			# 		$query = "INSERT INTO protein_ortholog (protein_id, ortholog_id, type, kegg_group_id) VALUES #VALUES# ON DUPLICATE KEY UPDATE protein_id=values(protein_id), ortholog_id=values(ortholog_id), type=values(ortholog_id), kegg_group_id=values(kegg_group_id) ;";
-			# 	}
-			# 	# print STDERR Dumper( \@porthobucket );
-			# 	$dbh->multiple_query( $query, \@porthobucket );
-			# }
 
 			print STDERR "Ortholog here ".getLoggingTime()."\n";
-
-			# print "* NUM LINES PORTHO: $#lines\n";
-
-			# Toniher. This below is not necessary since it is sent to updateProteinDefinition
-			#update definition field for proteins associated to this KO group
-			#if($hash->{'DEFINITION'} && $hash->{'DEFINITION'} ne '') {
-			#	push(@{$protDefinitionData{$protein_id}{'annot'}},$hash->{'DEFINITION'});
-			#}
-
-			#$protein_definition .='KEGG:'.$hash->{'DEFINITION'}.';';
-			#$sqlUpdate = "UPDATE protein set definition='$protein_definition' where protein_id=$protein_id";
-			#      print "SQL_CODE:$sqlUpdate\n" ;
-			#$dbh->update_set($sqlUpdate);
 
 			# add GO terms info into go_term and protein_go table.
 			# TODO Consider in the future other annotations, such as COG
@@ -738,7 +671,6 @@ sub uploadKeggInformation {
 	print STDERR "KO finished here ".getLoggingTime()."\n";
 	%gomap = ();
 
-	@orthobucket = &processBucket( $dbh, $dbEngine, \@orthobucket, $bucketsize, "ortho ");
 	@porthobucket = &processBucket( $dbh, $dbEngine, \@porthobucket, $bucketsize, "portho ");
 	@gobucket = &processBucket( $dbh, $dbEngine, \@gobucket, $bucketsize, "go ");
 
@@ -750,7 +682,6 @@ sub uploadKeggInformation {
 	# Toniher: We do not include protein Definition here
 	# &updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
 
-	@orthobucket = &processBucket( $dbh, $dbEngine, \@orthobucket, 0, "ortho ");
 	@porthobucket = &processBucket( $dbh, $dbEngine, \@porthobucket, 0, "portho ");
 	@gobucket = &processBucket( $dbh, $dbEngine, \@gobucket, 0, "go ");
 
