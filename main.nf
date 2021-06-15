@@ -813,7 +813,6 @@ process 'signalP_upload'{
  input:
  file "out_signalp*" from signalP_result1.collect()
  file config from config4perl2
- file def_done from definition_passed
 
  output:
  file("upload_signalp") into upload_signalp
