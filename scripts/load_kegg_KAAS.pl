@@ -159,6 +159,9 @@ print STDERR "Preupload finished here ".getLoggingTime()."\n";
 #exit;
 
 &uploadKOInformation( $dbh, \%keggs, \%organisms, $config{'dbEngine'}, $pre_upload_kegg );
+
+print STDERR "Second gone here ".getLoggingTime()."\n";
+
 &uploadKeggInformation( $dbh, \%keggs, \%organisms, $config{'dbEngine'} );
 
 print STDERR "Finished here ".getLoggingTime()."\n";
