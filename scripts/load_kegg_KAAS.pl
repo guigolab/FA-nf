@@ -375,7 +375,7 @@ sub uploadKOInformation {
 	my $limnames = 9;
 
   # Let's put buckets here
-  my $bucketsize = 1000;
+  my $bucketsize = 10000;
 	my @orthobucket = ();
 
 	foreach my $kegg_id (sort( keys %{$keggData})) {
@@ -477,7 +477,7 @@ sub uploadKeggInformation {
  print STDERR "* COUNT: ", $#countk + 1, "\n";
 
  # Let's put buckets here
- my $bucketsize = 1000;
+ my $bucketsize = 10000;
  my @porthobucket = ();
  my @gobucket = ();
 
