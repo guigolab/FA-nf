@@ -852,7 +852,7 @@ sub retrieve_kegg_window {
 		if ( $#{$results} >= 0 ) {
 
 			foreach my $result ( @{$results} ) {
-				$dbid = $result->{"db_id"};
+				my $db_id = $result->{"db_id"};
 				$hash{$db_id} = {};
 
 				foreach my $key ( keys %{$result} ) {
