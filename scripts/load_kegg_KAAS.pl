@@ -484,211 +484,216 @@ sub uploadKeggInformation {
 
  # RETRIEVE By windows
  my ( @all_kegg ) = sort( keys %{$keggData} );
- my ( @keg_windows ) = &prepareWinArray( \@all_kegg, $winsize );
+ my ( @kegg_windows ) = &prepareWinArray( \@all_kegg, $winsize );
 
- foreach my $kegg_id (sort( keys %{$keggData})) {
-  #get KO information from server
+ foreach my $kw ( @kegg_windows ) {
 
-	my $hash;
-	my $kegg_group_id;
-	print STDERR "\n* Entering $kegg_id\n";
-	( $hash, $kegg_group_id ) = retrieve_kegg_record( $kegg_id );
+	 my $hash = retrieve_kegg_window( $dbh, $kw );
 
-	#  print Dumper($hash)."\n"; die;
+	 foreach my $kegg_id (sort( keys %{$hash} ) ) {
+	  #get KO information from server
+
+		my $hash;
+		my $kegg_group_id = $hash->{$kegg_id}->{"KEGGGROUPID"};
+		print STDERR "\n* Entering $kegg_id\n";
+		#( $hash, $kegg_group_id ) = retrieve_kegg_record( $kegg_id );
+
+		#  print Dumper($hash)."\n"; die;
 
 
-	if(!defined $kegg_group_id) {
-		print STDERR "Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n";
-		next; # Skip to another entry
-	}
-
- 	my @proteinList = @{$keggData->{$kegg_id}};
-  my $numberProteinsInGroup=scalar @proteinList;
-
-	print "* NUM PROT: $#proteinList\n";
-
-	# Number limit names
-	my $limnames = 9;
-
-	# We store mapping of proteins and GO for making it faster
-	my %gomap;
-	# my @porthobucket = ();
-
-	# Here we preretrieve orthologs_id for saving time with fixed KEGG_ID
-	my ($orthoidlist) = {};
-	my $results_ortho = $dbh->select_from_table("SELECT ortholog_id, name, organism_id from `ortholog` where db_id = \"$kegg_id\" ;");
-
-	foreach my $result ( @{$results_ortho} ) {
-		my $org = $result->{"organism_id"};
-		my $name = $result->{"name"};
-		my $oid = $result->{"ortholog_id"};
-
-		if ( ! $orthoidlist->{$org} ) {
-			$orthoidlist->{$org} = {};
+		if(!defined $kegg_group_id) {
+			print STDERR "Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n";
+			next; # Skip to another entry
 		}
 
-		$orthoidlist->{$org}->{$name} = $oid;
-	}
+	 	my @proteinList = @{$keggData->{$kegg_id}};
+	  my $numberProteinsInGroup=scalar @proteinList;
 
-  foreach my $proteinItem ( @proteinList ) {
+		print "* NUM PROT: $#proteinList\n";
 
-			#select protein_id infor (because items are stable_ids in protein table)
-			my $protein_sql_select= qq{ SELECT d.protein_id,d.definition d FROM definition d, protein p WHERE p.protein_id=d.protein_id and p.stable_id=\"$proteinItem\"};
-			my $res = $dbh->select_from_table($protein_sql_select);
+		# Number limit names
+		my $limnames = 9;
 
-			# If no content, next. Cases of partial tests.
-			if ( $#{$res} < 0 ){
-				next;
+		# We store mapping of proteins and GO for making it faster
+		my %gomap;
+		# my @porthobucket = ();
+
+		# Here we preretrieve orthologs_id for saving time with fixed KEGG_ID
+		my ($orthoidlist) = {};
+		my $results_ortho = $dbh->select_from_table("SELECT ortholog_id, name, organism_id from `ortholog` where db_id = \"$kegg_id\" ;");
+
+		foreach my $result ( @{$results_ortho} ) {
+			my $org = $result->{"organism_id"};
+			my $name = $result->{"name"};
+			my $oid = $result->{"ortholog_id"};
+
+			if ( ! $orthoidlist->{$org} ) {
+				$orthoidlist->{$org} = {};
 			}
 
-			my $protein_id = $res->[0]->{'protein_id'};
-			my $protein_definition = $res->[0]->{'definition'};
-
-			my $is_cluster;
-
-			#add orthologus information from the list of species for proteins associated to this KO group
-			my $gene_string = "";
-			if ( $hash->{'GENES'} ) {
-				$gene_string = $hash->{'GENES'};
-			}
-
-			# print STDERR $proteinItem, "\t", $gene_string, "\n";
-			# print STDERR "gene string: $gene_string\n";
-			my @lines=split/\,/,$gene_string;
-
-			# We do batch mode for MySQL but not sqlite
-			# https://sqlite.org/np1queryprob.html
-
-			foreach my $l (@lines) {
-
-				# insert each ortholog
-				my ($code,$gene_id)=split/\:/,$l;
-				$gene_id = trim($gene_id);
-				# determine if $gene_id containt a cluster of genes
-				my $name;
-				# Gene id can be too long
-				my (@names) = split(/ /, $gene_id);
-				if ( $#names > $limnames ) {
-					$name = join(" ", @names[0..$limnames]);
-				} else {
-					$name = join(" ", @names);
-				}
-
-				$is_cluster=1 if scalar(@names)>1;
-				$is_cluster=0 if scalar(@names)==1;
-				my $lcode=lc(trim($code));
-				#print STDERR "* ", $lcode, "\n";
-				#print STDERR "- ", Dumper( $codesOrg );
-				# next if ortholog is not in the list of species to analyze
-				next if !$codesOrg->{$lcode};
-				#print STDERR "Passed\n";
-				#get organism_id from DB
-				#my $organism_id= organism_table($lcode,$dbEngine,$dbh);
-				my $organism_id= $codesOrg->{$lcode};
-
-				#populate protein_ortholog
-				#check if protein_ortholog already exists in the table (yes && do_update => update record; no => insert new protein_ortholog)
-
-				my $type;
-
-				if ($numberProteinsInGroup>1 && $is_cluster==0) {
-					$type="many2one";
-				} elsif ($numberProteinsInGroup>1 && $is_cluster==1) {
-					$type="many2many";
-				} elsif ($numberProteinsInGroup==1 && $is_cluster==1) {
-					$type="one2many";
-				} else {
-					$type="one2one";
-				}
-
-				#my $query = "SELECT ortholog_id from ortholog WHERE name = \"$gene_id\" AND organism_id = \"$organism_id\" AND db_id = \"$kegg_id\"";
-				#my $results_ortho = $dbh->select_from_table($query);
-
-				#my $ortholog_id = $results_ortho->[0]->{'ortholog_id'};
-				my $ortholog_id = $orthoidlist->{$organism_id}->{$name};
-
-				print STDERR "* ORTHO_ID: $ortholog_id\n";
-
-				if ( ! $ortholog_id ) {
-					print STDERR "Major error here\n";
-					exit;
-				}
-
-				my $values = "( \"$protein_id\", \"$ortholog_id\", \"$type\", \"$kegg_group_id\" )";
-				push( @porthobucket, $values );
-
-			} #for each group of genes in multiply organisms
-
-
-			print STDERR "Ortholog here ".getLoggingTime()."\n";
-
-			# add GO terms info into go_term and protein_go table.
-			# TODO Consider in the future other annotations, such as COG
-			if(defined $hash->{'DBLINKS'}) {
-
-			 my @goIds = &parseKEGGDBLinks($hash->{'DBLINKS'});
-
-			 # Define storage
-			 $gomap{$protein_id} = ();
-
-			 foreach my $goId ( @goIds ) {
-
-				 	 my $goTermId;
-
-				   if ( ! $goall{$goId} ) {
-
-				     #insert go term, associated with this protein into go_term table, and then into protein_go
-				     my $sqlSelect = "SELECT go_term_id from go_term where go_acc like '$goId'";
-				     my $sqlUpdate ="";
-				     my $sqlInsert = "";
-				     if( lc( $dbEngine ) eq 'sqlite') {
-							 $sqlInsert = "INSERT INTO go_term (go_term_id,go_acc) VALUES (NULL,\"$goId\")";
-						 }
-				     else {
-							 $sqlInsert = "INSERT INTO go_term SET go_acc =\"$goId\"";
-						 }
-				     $goTermId = $dbh->select_update_insert("go_term_id", $sqlSelect, $sqlUpdate, $sqlInsert, 0);
-				     #small patch for SQLite - the current insert function could not return id of the last inserted record...
-				     if(!defined $goTermId) {
-				        my $select = &selectLastId( $dbEngine );
-				        my $results = $dbh->select_from_table($select);
-				        $goTermId=$results->[0]->{'id'};
-				     }
-
-						 $goall{$goId} = $goTermId;
-					 } else {
-						 $goTermId = $goall{$goId};
-					 }
-
-					 push( @{$gomap{$protein_id}}, $goTermId );
-			 }#if there was a GO records
-		 }#if defined dbLinks
-	}#foreach protein Item
-
-	# my @gobucket = ();
-	foreach my $protein_id ( keys %gomap ) {
-		foreach my $goTermId ( @{$gomap{$protein_id}} ) {
-			my $values = "( \"$protein_id\", \"$goTermId\", \"KEGG\" )";
-			push( @gobucket, $values );
+			$orthoidlist->{$org}->{$name} = $oid;
 		}
 
+	  foreach my $proteinItem ( @proteinList ) {
+
+				#select protein_id infor (because items are stable_ids in protein table)
+				my $protein_sql_select= qq{ SELECT d.protein_id,d.definition d FROM definition d, protein p WHERE p.protein_id=d.protein_id and p.stable_id=\"$proteinItem\"};
+				my $res = $dbh->select_from_table($protein_sql_select);
+
+				# If no content, next. Cases of partial tests.
+				if ( $#{$res} < 0 ){
+					next;
+				}
+
+				my $protein_id = $res->[0]->{'protein_id'};
+				my $protein_definition = $res->[0]->{'definition'};
+
+				my $is_cluster;
+
+				#add orthologus information from the list of species for proteins associated to this KO group
+				my $gene_string = "";
+				if ( $hash->{$kegg_id}->{'GENES'} ) {
+					$gene_string = $hash->{$kegg_id}->{'GENES'};
+				}
+
+				# print STDERR $proteinItem, "\t", $gene_string, "\n";
+				# print STDERR "gene string: $gene_string\n";
+				my @lines=split/\,/,$gene_string;
+
+				# We do batch mode for MySQL but not sqlite
+				# https://sqlite.org/np1queryprob.html
+
+				foreach my $l (@lines) {
+
+					# insert each ortholog
+					my ($code,$gene_id)=split/\:/,$l;
+					$gene_id = trim($gene_id);
+					# determine if $gene_id containt a cluster of genes
+					my $name;
+					# Gene id can be too long
+					my (@names) = split(/ /, $gene_id);
+					if ( $#names > $limnames ) {
+						$name = join(" ", @names[0..$limnames]);
+					} else {
+						$name = join(" ", @names);
+					}
+
+					$is_cluster=1 if scalar(@names)>1;
+					$is_cluster=0 if scalar(@names)==1;
+					my $lcode=lc(trim($code));
+					#print STDERR "* ", $lcode, "\n";
+					#print STDERR "- ", Dumper( $codesOrg );
+					# next if ortholog is not in the list of species to analyze
+					next if !$codesOrg->{$lcode};
+					#print STDERR "Passed\n";
+					#get organism_id from DB
+					#my $organism_id= organism_table($lcode,$dbEngine,$dbh);
+					my $organism_id= $codesOrg->{$lcode};
+
+					#populate protein_ortholog
+					#check if protein_ortholog already exists in the table (yes && do_update => update record; no => insert new protein_ortholog)
+
+					my $type;
+
+					if ($numberProteinsInGroup>1 && $is_cluster==0) {
+						$type="many2one";
+					} elsif ($numberProteinsInGroup>1 && $is_cluster==1) {
+						$type="many2many";
+					} elsif ($numberProteinsInGroup==1 && $is_cluster==1) {
+						$type="one2many";
+					} else {
+						$type="one2one";
+					}
+
+					#my $query = "SELECT ortholog_id from ortholog WHERE name = \"$gene_id\" AND organism_id = \"$organism_id\" AND db_id = \"$kegg_id\"";
+					#my $results_ortho = $dbh->select_from_table($query);
+
+					#my $ortholog_id = $results_ortho->[0]->{'ortholog_id'};
+					my $ortholog_id = $orthoidlist->{$organism_id}->{$name};
+
+					print STDERR "* ORTHO_ID: $ortholog_id\n";
+
+					if ( ! $ortholog_id ) {
+						print STDERR "Major error here\n";
+						exit;
+					}
+
+					my $values = "( \"$protein_id\", \"$ortholog_id\", \"$type\", \"$kegg_group_id\" )";
+					push( @porthobucket, $values );
+
+				} #for each group of genes in multiply organisms
+
+
+				print STDERR "Ortholog here ".getLoggingTime()."\n";
+
+				# add GO terms info into go_term and protein_go table.
+				# TODO Consider in the future other annotations, such as COG
+				if(defined $hash->{$kegg_id}->{'DBLINKS'}) {
+
+				 my @goIds = &parseKEGGDBLinks($hash->{$kegg_id}->{'DBLINKS'});
+
+				 # Define storage
+				 $gomap{$protein_id} = ();
+
+				 foreach my $goId ( @goIds ) {
+
+					 	 my $goTermId;
+
+					   if ( ! $goall{$goId} ) {
+
+					     #insert go term, associated with this protein into go_term table, and then into protein_go
+					     my $sqlSelect = "SELECT go_term_id from go_term where go_acc like '$goId'";
+					     my $sqlUpdate ="";
+					     my $sqlInsert = "";
+					     if( lc( $dbEngine ) eq 'sqlite') {
+								 $sqlInsert = "INSERT INTO go_term (go_term_id,go_acc) VALUES (NULL,\"$goId\")";
+							 }
+					     else {
+								 $sqlInsert = "INSERT INTO go_term SET go_acc =\"$goId\"";
+							 }
+					     $goTermId = $dbh->select_update_insert("go_term_id", $sqlSelect, $sqlUpdate, $sqlInsert, 0);
+					     #small patch for SQLite - the current insert function could not return id of the last inserted record...
+					     if(!defined $goTermId) {
+					        my $select = &selectLastId( $dbEngine );
+					        my $results = $dbh->select_from_table($select);
+					        $goTermId=$results->[0]->{'id'};
+					     }
+
+							 $goall{$goId} = $goTermId;
+						 } else {
+							 $goTermId = $goall{$goId};
+						 }
+
+						 push( @{$gomap{$protein_id}}, $goTermId );
+				 }#if there was a GO records
+			 }#if defined dbLinks
+		}#foreach protein Item
+
+		# my @gobucket = ();
+		foreach my $protein_id ( keys %gomap ) {
+			foreach my $goTermId ( @{$gomap{$protein_id}} ) {
+				my $values = "( \"$protein_id\", \"$goTermId\", \"KEGG\" )";
+				push( @gobucket, $values );
+			}
+
+		}
+
+		print STDERR "KO finished here ".getLoggingTime()."\n";
+		%gomap = ();
+
+		@porthobucket = &processBucket( $dbh, $dbEngine, \@porthobucket, $bucketsize, "portho" );
+		@gobucket = &processBucket( $dbh, $dbEngine, \@gobucket, $bucketsize, "go" );
+
+		print STDERR "KO upload finished here ".getLoggingTime()."\n";
+
+	 }#foreach kegg KO item
+
+		#update protein definition for KEGG source
+		#print STDERR "Definition\n";
+		#print STDERR Dumper( \%protDefinitionData );
+		# Toniher: We do not include protein Definition here
+		# &updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
 	}
-
-	print STDERR "KO finished here ".getLoggingTime()."\n";
-	%gomap = ();
-
-	@porthobucket = &processBucket( $dbh, $dbEngine, \@porthobucket, $bucketsize, "portho" );
-	@gobucket = &processBucket( $dbh, $dbEngine, \@gobucket, $bucketsize, "go" );
-
-	print STDERR "KO upload finished here ".getLoggingTime()."\n";
-
- }#foreach kegg KO item
-
-	#update protein definition for KEGG source
-	#print STDERR "Definition\n";
-	#print STDERR Dumper( \%protDefinitionData );
-	# Toniher: We do not include protein Definition here
-	# &updateProteinDefinition(\%protDefinitionData,$dbh,1,'KEGG',$dbEngine,'protein_id');
 
 	@porthobucket = &processBucket( $dbh, $dbEngine, \@porthobucket, 0, "portho" );
 	@gobucket = &processBucket( $dbh, $dbEngine, \@gobucket, 0, "go" );
@@ -829,31 +834,39 @@ sub retrieve_kegg_record {
 # subroutine to retrieve KEGG record from DB
 sub retrieve_kegg_window {
 
+	my $dbh = shift;
 	my $kegg_window = shift;
 	my %hash;
 
 	if ( $#{$kegg_window} >= 0 ) {
 
-		# TODO: Mapping needed here
-		my $sqlSelect = "SELECT * from kegg_group where db_id = \"$kegg_id\" limit 1";
+		my @arrSel;
+		foreach my $kw ( @{$kegg_window} ) {
+				push( @arrSel, "\"".$kw."\"" )
+		}
+
+		my $sqlSelect = "SELECT * from kegg_group where db_id in ( ".join( ", ", @arrSel )." ) ";
+		print STDERR $sqlSelect, "\n";
 		my $results =$dbh->select_from_table($sqlSelect);
 
-		my $kegg_group_id;
-
 		if ( $#{$results} >= 0 ) {
-			$kegg_group_id = $results->[0]->{"kegg_group_id"};
 
-			foreach my $key ( keys %{$results->[0]} ) {
-				my $finalkey = uc($key);
-				$finalkey=~s/\_//g;
-				$hash{$finalkey} = $results->[0]->{$key};
+			foreach my $result ( @{$results} ) {
+				$dbid = $result->{"db_id"};
+				$hash{$db_id} = {};
+
+				foreach my $key ( keys %{$result} ) {
+					my $finalkey = uc($key);
+					$finalkey=~s/\_//g;
+					$hash{$db_id}->{$finalkey} = $result->{$key};
+				}
+
 			}
-
 		}
 
 	}
 
-	return (\%hash, $kegg_group_id);
+	return (\%hash);
 }
 
 # subroutine to parse KEGG record and put its elements into a hash
