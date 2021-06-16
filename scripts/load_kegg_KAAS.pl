@@ -478,8 +478,13 @@ sub uploadKeggInformation {
 
  # Let's put buckets here
  my $bucketsize = 10000;
+ my $winsize = 100;
  my @porthobucket = ();
  my @gobucket = ();
+
+ # RETRIEVE By windows
+ my ( @all_kegg ) = sort( keys %{$keggData} );
+ my ( @keg_windows ) = &prepareWinArray( \@all_kegg, $winsize );
 
  foreach my $kegg_id (sort( keys %{$keggData})) {
   #get KO information from server
@@ -742,6 +747,35 @@ sub processBucket {
 
 }
 
+sub prepareWinArray {
+
+	my $array = shift;
+	my $winsize = shift;
+	my @final;
+
+	my $i = 0;
+	my $tmparr;
+
+	foreach my $el ( @{$array} ) {
+
+		push( @{$tmparr}, $el );
+
+		if ( $i >= $winsize ) {
+			push( @final, $tmparr );
+			@{$tmparr} = ();
+			$i = 0;
+		} else {
+			$i++;
+		}
+	}
+
+	if ( $#{$tmparr} >= 0 ) {
+		push( @final, $tmparr );
+	}
+
+	return @final;
+}
+
 
 sub parseKEGGDBLinks {
 	my $dbLinks = shift;
@@ -785,6 +819,36 @@ sub retrieve_kegg_record {
 			my $finalkey = uc($key);
 			$finalkey=~s/\_//g;
 			$hash{$finalkey} = $results->[0]->{$key};
+		}
+
+	}
+
+	return (\%hash, $kegg_group_id);
+}
+
+# subroutine to retrieve KEGG record from DB
+sub retrieve_kegg_window {
+
+	my $kegg_window = shift;
+	my %hash;
+
+	if ( $#{$kegg_window} >= 0 ) {
+
+		# TODO: Mapping needed here
+		my $sqlSelect = "SELECT * from kegg_group where db_id = \"$kegg_id\" limit 1";
+		my $results =$dbh->select_from_table($sqlSelect);
+
+		my $kegg_group_id;
+
+		if ( $#{$results} >= 0 ) {
+			$kegg_group_id = $results->[0]->{"kegg_group_id"};
+
+			foreach my $key ( keys %{$results->[0]} ) {
+				my $finalkey = uc($key);
+				$finalkey=~s/\_//g;
+				$hash{$finalkey} = $results->[0]->{$key};
+			}
+
 		}
 
 	}
