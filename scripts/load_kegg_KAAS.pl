@@ -730,7 +730,7 @@ sub processBucket {
 
 		$dbh->multiple_query( $query, $bucket );
 
-		print STDERR "Done here $type\n";
+		print STDERR "Done here $type ".getLoggingTime()."\n";
 		# Return empty bucket
 		return ();
 
