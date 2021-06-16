@@ -373,9 +373,9 @@ sub uploadKOInformation {
 
 	# Number limit names
 	my $limnames = 9;
-	
+
   # Let's put buckets here
-  my $bucketsize = 100;
+  my $bucketsize = 1000;
 	my @orthobucket = ();
 
 	foreach my $kegg_id (sort( keys %{$keggData})) {
@@ -477,7 +477,7 @@ sub uploadKeggInformation {
  print STDERR "* COUNT: ", $#countk + 1, "\n";
 
  # Let's put buckets here
- my $bucketsize = 100;
+ my $bucketsize = 1000;
  my @porthobucket = ();
  my @gobucket = ();
 
@@ -675,6 +675,8 @@ sub uploadKeggInformation {
 	@porthobucket = &processBucket( $dbh, $dbEngine, \@porthobucket, $bucketsize, "portho" );
 	@gobucket = &processBucket( $dbh, $dbEngine, \@gobucket, $bucketsize, "go" );
 
+	print STDERR "KO upload finished here ".getLoggingTime()."\n";
+
  }#foreach kegg KO item
 
 	#update protein definition for KEGG source
@@ -728,6 +730,7 @@ sub processBucket {
 
 		$dbh->multiple_query( $query, $bucket );
 
+		print STDERR "Done here $type\n";
 		# Return empty bucket
 		return ();
 
