@@ -807,7 +807,7 @@ sub retrieve_kegg_window {
 		}
 
 		my $sqlSelect = "SELECT * from kegg_group where db_id in ( ".join( ", ", @arrSel )." ) ";
-		print STDERR $sqlSelect, "\n";
+		#print STDERR $sqlSelect, "\n";
 		my $results =$dbh->select_from_table($sqlSelect);
 
 		if ( $#{$results} >= 0 ) {
