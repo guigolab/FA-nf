@@ -494,7 +494,6 @@ sub uploadKeggInformation {
 	 foreach my $kegg_id (sort( keys %{$hash} ) ) {
 	  #get KO information from server
 
-		my $hash;
 		my $kegg_group_id = $hash->{$kegg_id}->{"KEGGGROUPID"};
 		print STDERR "\n* Entering $kegg_id\n";
 		#( $hash, $kegg_group_id ) = retrieve_kegg_record( $kegg_id );
