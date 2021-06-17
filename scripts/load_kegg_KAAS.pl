@@ -372,93 +372,84 @@ sub uploadKOInformation {
   my @countk = keys %{$keggData};
   print STDERR "* COUNT: ", $#countk + 1, "\n";
 
+	if ( $pre_upload_kegg < 1 ) {
+		print STDERR "No entries!";
+	}
+
 	# Number limit names
 	my $limnames = 9;
 
   # Let's put buckets here
   my $bucketsize = 10000;
+	my $winsize = 100;
 	my @orthobucket = ();
 
-	foreach my $kegg_id (sort( keys %{$keggData})) {
-   #get KO information from server
+	# RETRIEVE By windows
+	my ( @all_kegg ) = sort( keys %{$keggData} );
+	my ( @kegg_windows ) = split_by( $winsize, @all_kegg );
 
-	 	my $hash;
-	 	my $kegg_group_id;
-	 	if ( $pre_upload_kegg > 0 ) {
+	foreach my $kw ( @kegg_windows ) {
 
-	 		print STDERR "\n* Entering $kegg_id\n";
-	 		( $hash, $kegg_group_id ) = retrieve_kegg_record( $kegg_id );
+	 	my $hash = retrieve_kegg_window( $dbh, $kw );
 
-	 		#print STDERR "Prefilled\n";
-	 		#print STDERR Dumper( $hash );
-	 		#print STDERR Dumper( $kegg_group_id );
+		foreach my $kegg_id (sort( keys %{$hash} ) ) {
+			#get KO information from server
 
-	 	} else {
+			my $kegg_group_id = $hash->{$kegg_id}->{"KEGGGROUPID"};
 
-	 		$hash = parse_kegg_record($kegg_id);
 
-	 		#upload information about KO group into DB if its absent in DB
-	 	  my @absentList=qw(PATHWAY CLASS MODULE DEFINITION DBLINKS GENES);
-	 	  foreach my $absItem(@absentList) {
-	 			if(!defined $hash->{$absItem}) {
-	 				$hash->{$absItem}="";
-	 			}
-	 	  }
-
-	 		$kegg_group_id = &uploadSingleKEGGId($kegg_id, $hash, $dbh, $dbEngine);
-	 	}
-
-		if(!defined $kegg_group_id) {
-			print STDERR "Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n";
-			next; # Skip to another entry
-		}
-
-		#add orthologus information from the list of species for proteins associated to this KO group
-		my $gene_string = "";
-		if ( $hash->{'GENES'} ) {
-			$gene_string = $hash->{'GENES'};
-		}
-
-		# print STDERR $proteinItem, "\t", $gene_string, "\n";
-		# print STDERR "gene string: $gene_string\n";
-		my @lines=split/\,/,$gene_string;
-
-		# We do batch mode for MySQL but not sqlite
-		# https://sqlite.org/np1queryprob.html
-
-		print "NUM LINES: $#lines\n";
-
-		foreach my $l (@lines) {
-
-			# insert each ortholog
-			my ($code,$gene_id)=split/\:/,$l;
-			$gene_id = trim($gene_id);
-			my $lcode=lc(trim($code));
-
-			my $name;
-			# Gene id can be too long
-			my (@names) = split(/ /, $gene_id);
-			if ( $#names > $limnames ) {
-				$name = join(" ", @names[0..$limnames]);
-			} else {
-				$name = join(" ", @names);
+			if(!defined $kegg_group_id) {
+				print STDERR "Unexpectable problem! Can not find kegg_group_id for $kegg_id group!$!\n";
+				next; # Skip to another entry
 			}
-			#print STDERR "* ", $lcode, "\n";
-			#print STDERR "- ", Dumper( $codesOrg );
-			# next if ortholog is not in the list of species to analyze
-			next if !$codesOrg->{$lcode};
-			#print STDERR "Passed\n";
-			#get organism_id from DB
-			#my $organism_id= organism_table($lcode,$dbEngine,$dbh);
-			my $organism_id= $codesOrg->{$lcode};
 
-			my $values = "( \"$name\", \"$organism_id\", \"$kegg_id\", \"KEGG\" )";
-			push( @orthobucket, $values );
+			#add orthologus information from the list of species for proteins associated to this KO group
+			my $gene_string = "";
+			if ( $hash->{$kegg_id}->{'GENES'} ) {
+				$gene_string = $hash->{$kegg_id}->{'GENES'};
+			}
+
+			# print STDERR $proteinItem, "\t", $gene_string, "\n";
+			# print STDERR "gene string: $gene_string\n";
+			my @lines=split/\,/,$gene_string;
+
+			# We do batch mode for MySQL but not sqlite
+			# https://sqlite.org/np1queryprob.html
+
+			print "NUM LINES: $#lines\n";
+
+			foreach my $l (@lines) {
+
+				# insert each ortholog
+				my ($code,$gene_id)=split/\:/,$l;
+				$gene_id = trim($gene_id);
+				my $lcode=lc(trim($code));
+
+				my $name;
+				# Gene id can be too long
+				my (@names) = split(/ /, $gene_id);
+				if ( $#names > $limnames ) {
+					$name = join(" ", @names[0..$limnames]);
+				} else {
+					$name = join(" ", @names);
+				}
+				#print STDERR "* ", $lcode, "\n";
+				#print STDERR "- ", Dumper( $codesOrg );
+				# next if ortholog is not in the list of species to analyze
+				next if !$codesOrg->{$lcode};
+				#print STDERR "Passed\n";
+				#get organism_id from DB
+				#my $organism_id= organism_table($lcode,$dbEngine,$dbh);
+				my $organism_id= $codesOrg->{$lcode};
+
+				my $values = "( \"$name\", \"$organism_id\", \"$kegg_id\", \"KEGG\" )";
+				push( @orthobucket, $values );
+
+			}
+
+			@orthobucket = &processBucket( $dbh, $dbEngine, \@orthobucket, $bucketsize, "ortho" );
 
 		}
-
-		@orthobucket = &processBucket( $dbh, $dbEngine, \@orthobucket, $bucketsize, "ortho" );
-
 
 	}
 
