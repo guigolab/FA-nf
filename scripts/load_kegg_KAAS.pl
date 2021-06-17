@@ -50,6 +50,7 @@ use Data::Dumper;
 use LWP::Simple;
 use Config::Simple;
 use String::Util 'trim';
+use Array::Split qw( split_by split_into );
 my $confFile = 'main_configuration.ini';
 
 
@@ -484,7 +485,7 @@ sub uploadKeggInformation {
 
  # RETRIEVE By windows
  my ( @all_kegg ) = sort( keys %{$keggData} );
- my ( @kegg_windows ) = &prepareWinArray( \@all_kegg, $winsize );
+ my ( @kegg_windows ) = split_by( $winsize, @all_kegg );
 
  foreach my $kw ( @kegg_windows ) {
 
@@ -751,36 +752,6 @@ sub processBucket {
 	}
 
 }
-
-sub prepareWinArray {
-
-	my $array = shift;
-	my $winsize = shift;
-	my @final;
-
-	my $i = 0;
-	my $tmparr;
-
-	foreach my $el ( @{$array} ) {
-
-		push( @{$tmparr}, $el );
-
-		if ( $i >= $winsize ) {
-			push( @final, $tmparr );
-			@{$tmparr} = ();
-			$i = 0;
-		} else {
-			$i++;
-		}
-	}
-
-	if ( $#{$tmparr} >= 0 ) {
-		push( @final, $tmparr );
-	}
-
-	return @final;
-}
-
 
 sub parseKEGGDBLinks {
 	my $dbLinks = shift;

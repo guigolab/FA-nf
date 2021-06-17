@@ -12,7 +12,7 @@ RUN apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-font
 RUN apt-get install -y libxml2-dev libexpat1-dev libdb-dev libgd-dev
 
 # Perl packages
-RUN cpanm Config::Simple Config::JSON DBI DBD::mysql DBD::SQLite Digest::SHA File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util Scalar::Util String::Util
+RUN cpanm Config::Simple Config::JSON DBI DBD::mysql DBD::SQLite Digest::SHA File::Basename Getopt::Long IO::Handle JSON Lingua::EN::Ngram List::Util Scalar::Util String::Util Array::Split
 
 ARG BIOPERL_VERSION=1.7.5
 # https://stackoverflow.com/questions/47966512/error-installing-xmldomxpath
@@ -46,5 +46,3 @@ ENV PATH /scripts:$PATH
 
 COPY scripts/ /scripts/
 RUN chmod -R a+rx /scripts/*
-
-
