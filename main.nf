@@ -658,6 +658,8 @@ if (params.gogourl != "") {
   process blast_annotator {
 
    label 'blastannotator'
+   
+   maxForks 3
 
    input:
    file blastXml from blastXmlResults2.flatMap()
