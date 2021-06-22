@@ -733,7 +733,9 @@ process 'cdSearchHit' {
 
     label 'cdSearch'
 
-    maxForks 1
+    if ( ! skip_cdSearch ) {
+    	maxForks 1
+    }
 
     input:
     file seq from web_seq_file1
@@ -756,7 +758,9 @@ process 'cdSearchFeat' {
 
     label 'cdSearch'
 
-    maxForks 1
+    if ( ! skip_cdSearch ) {
+    	maxForks 1
+    }
 
     input:
     file seq from web_seq_file2
@@ -953,8 +957,6 @@ if ( params.koentries == "" ) {
 } else {
 
   process 'kegg_download_dummy' {
-
-   maxForks 1
 
    input:
    file keggfile from keggfile
