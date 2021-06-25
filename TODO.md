@@ -1,7 +1,6 @@
 * Log directory check
 * Singularity file for run_mysql wrapper process
-* Check kegg_upload slow process
-  * In pre-upload insert many KEGG entries at once.
+* Initial check for FASTA file
 * Add option to detect if possible contamination from BLAST (inspiration from MEGAN)
 * Include some testing and CI
 * Visualization of results
