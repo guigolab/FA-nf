@@ -220,8 +220,8 @@ The software used all along this pipeline is encapsulated in several containers:
 
 As written down in ```nextflow.config``` file, whenever possible, we try to provide necessary images in a public repository (e.g. [Docker hub](https://hub.docker.com/) or quay.io from [Biocontainers](https://biocontainers.pro/)). However, for some software that includes privative components, we suggest to build the container image by yourself.
 
-* [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build this, **sigtarp** process in ```nextflow.config```)
-* [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build this, **ipscan** process in ```nextflow.config```)
+* [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build container image first. Please check **sigtarp** process in ```nextflow.config```)
+* [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build container image fisrt. Please check **ipscan** process in ```nextflow.config```. Two versions are available: one with privative software and one without)
 
 ### How to build base container
 
