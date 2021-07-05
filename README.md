@@ -142,6 +142,10 @@ For KofamKOLA, adjust the parameters below to match the location in your system 
 
 **Note**: when using KAAS, for the downstream processing of the KO file it is very important to store information about species used for predictions. Species are encoded in three letters abbreviations, and the list can be copied from the 'Selected organisms' field in the kaas_main form.
 
+### Dataset resources
+
+For downloading and formatting diferent datasets used by the programs part of this pipeline, [some scripts are provided here](https://github.com/toniher/biomirror/) for convenience.
+
 ## Result files
 
 Below you can check all the possibly available files in results directory (defined with ```resultPath``` parameter) at the end of the pipeline execution. Some files may not be there if certain options are switched (e.g., if GFF cleaning is skipped with ```gffclean = "false"```).
