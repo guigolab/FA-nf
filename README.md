@@ -138,7 +138,10 @@ For KofamKOLA, adjust the parameters below to match the location in your system 
 ```
   kolist = "/nfs/db/kegg/ko_list"
   koprofiles = "/nfs/db/kegg/profiles"
+  koentries = "/nfs/db/kegg/ko_store"
 ```
+
+In the parameters above, ```koentries``` refers to a directory containing KO entries text files that can be downloaded in advance (check *Dataset resources* section below).
 
 **Note**: when using KAAS, for the downstream processing of the KO file it is very important to store information about species used for predictions. Species are encoded in three letters abbreviations, and the list can be copied from the 'Selected organisms' field in the kaas_main form.
 
