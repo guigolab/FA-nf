@@ -147,7 +147,7 @@ In the parameters above, ```koentries``` refers to a directory containing KO ent
 
 ### Skipping some analyses
 
-Future versions of this pipeline might allow to control in more detail which applications to run. For now, it is possible to skip some of them: *cdSearch* (hit and features retrieval), *signalP* and *targetP*. For the first case, since it is a web process, it can be time-consuming and problematic in some HPC setups. For the last two cases, since preparing a container with privative software can be troublesome or problematic, it can also be skipped. It is worth noting that some CD-Search data is actually available in InterPro.
+Future versions of this pipeline might allow to control in more detail which applications to run. For now, it is possible to skip some of them: *cdSearch* (hit and features retrieval), *signalP* and *targetP*. For the first case, since it is a web process, it can be time-consuming and problematic in some HPC setups. For the last two cases, since [preparing a container with privative software]((https://github.com/biocorecrg/sigtarp_docker)) can be troublesome or problematic, it can also be skipped. It is worth noting that some CD-Search data is actually available in InterPro.
 
 For skipping these applications, the following lines can be added in the configuration file:
 
