@@ -84,6 +84,7 @@ params.oboFile = null
 
 // Skip params
 params.skip_cdSearch = false
+params.skip_sigtarp = false
 
 // Mail for sending reports
 params.email = ""
@@ -119,8 +120,9 @@ boolean mysql = false
 gffavail = false
 gffclean = false
 gffstats = false
-// Skip cdSearch
+// Skip
 skip_cdSearch = false
+skip_sigtarp = false
 
 if( params.dbEngine.toLowerCase()=="mysql" ) {
  mysql = true
@@ -136,6 +138,10 @@ if ( params.gffstats ) {
 
 if ( params.skip_cdSearch ) {
  skip_cdSearch = true
+}
+
+if ( params.skip_sigtarp ) {
+ skip_sigtarp = true
 }
 
 // Handling MySQL in a cleaner way
@@ -210,6 +216,9 @@ if ( skip_cdSearch ) {
   log.info "CD-Search queries will be skipped."
 }
 
+if ( skip_sigtarp ) {
+  log.info "SignalP and targetP queries will be skipped."
+}
 
 // split protein fasta file into chunks and then execute annotation for each chunk
 // chanels for: interpro, blast, signalP, targetP, cdsearch_hit, cdsearch_features
@@ -658,7 +667,7 @@ if (params.gogourl != "") {
   process blast_annotator {
 
    label 'blastannotator'
-   
+
    maxForks 3
 
    input:
@@ -781,35 +790,67 @@ process 'cdSearchFeat' {
     command
 }
 
+if ( skip_sigtarp ) {
 
-process 'signalP' {
+  process 'signalP_dummy' {
 
-    label 'sigtarp'
+      input:
+      file seq from seq_file1
 
-    input:
-    file seq from seq_file1
+      output:
+      file("out_signalp_${seq}") into (signalP_result1, signalP_result2)
 
-    output:
-    file("out_signalp_${seq}") into (signalP_result1, signalP_result2)
+      """
+      touch out_signalp_${seq}
+      """
+  }
 
-    """
-    signalp  $seq > out_signalp_${seq}
-    """
-}
+  process 'targetP_dummy' {
 
-process 'targetP' {
+      input:
+      file seq from seq_file2
 
-    label 'sigtarp'
+      output:
+      file("out_targetp_${seq}") into (targetP_result1, targetP_result2)
 
-    input:
-    file seq from seq_file2
+      """
+      touch > out_targetp_${seq}
+      """
+  }
 
-    output:
-    file("out_targetp_${seq}") into (targetP_result1, targetP_result2)
+} else {
 
-    """
-    targetp -P -c  $seq > out_targetp_${seq}
-    """
+
+  process 'signalP' {
+
+      label 'sigtarp'
+
+      input:
+      file seq from seq_file1
+
+      output:
+      file("out_signalp_${seq}") into (signalP_result1, signalP_result2)
+
+      """
+      signalp  $seq > out_signalp_${seq}
+      """
+  }
+
+  process 'targetP' {
+
+      label 'sigtarp'
+
+      input:
+      file seq from seq_file2
+
+      output:
+      file("out_targetp_${seq}") into (targetP_result1, targetP_result2)
+
+      """
+      targetp -P -c  $seq > out_targetp_${seq}
+      """
+  }
+
 }
 
 process 'signalP_upload'{
