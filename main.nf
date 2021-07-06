@@ -814,7 +814,7 @@ if ( skip_sigtarp ) {
       file("out_targetp_${seq}") into (targetP_result1, targetP_result2)
 
       """
-      touch > out_targetp_${seq}
+      touch out_targetp_${seq}
       """
   }
 
