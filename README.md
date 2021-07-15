@@ -120,14 +120,14 @@ When using the second option, you can tune it with the parameters below:
 
 ```
   # Instance from where to retrieve GO mappings
-  params.gogourl = "http://myinstance.example.com/api"
+  gogourl = "http://myinstance.example.com/api"
   # Maximum number of hits to consider (up to 30 by default))
-  params.gogohits = 30
+  gogohits = 30
   # Modes of retrieval from BLAST matches
     * Common: Only GO entries appearing in all matches
     * Most: Only GO entries appearing in more than half of matches
     * All: All GO entries appearing in all matches
-  params.blastAnnotMode = "common"
+  blastAnnotMode = "common"
 ```
 
 ### KEGG orthology groups
