@@ -280,4 +280,4 @@ The base container is [available in Docker Hub](https://hub.docker.com/r/guigola
 
 **My HPC infrastructure cannot access the Internet. Can I use the pipeline?**
 
-*Yes, as far as you skip CD-Search analyses (```skip_cdSearch = true```), you can use it by pre-downloading container images first (assuming Singularity) and replacing container values in ```nextflow.config``` for their path in your filesystem. You can download singularity images for latter placing them in your filesystem with a command like this: ```singularity pull kofamscan-1.2.0.sif docker://quay.io/biocontainers/kofamscan:1.2.0--0```.*
+*Yes, as far as you skip CD-Search analyses (```skip_cdSearch = true```), you can use it by pre-downloading container images first (assuming Singularity) and replacing container values in ```nextflow.config``` for their path in your filesystem. You can download singularity images for later placing them in your filesystem with a command like this: ```singularity pull kofamscan-1.2.0.sif docker://quay.io/biocontainers/kofamscan:1.2.0--0```.*
