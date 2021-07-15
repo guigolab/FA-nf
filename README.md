@@ -42,33 +42,33 @@ The example of configuration file is included into this repository with name ```
 Most parameters are self-explanatory. We highlight some below and in upcoming sections:
 
 ```
-  # Protein fasta input
+  // Protein fasta input
   proteinFile = "${baseDir}/dataset/P.vulgaris.proteins.fa"
-  # GFF input
+  // GFF input
   gffFile = "${baseDir}/dataset/P.vulgaris.gff3"
 ```
 
 When approaching a new dataset, we suggest to run first the pipeline in **debug** mode (provided as such in example params config). This will analyze a limited number of protein entries. This way you may save time and troubleshoot some potential problems in your input files.
 
 ```
-  # Whether to run pipeline in debug mode or not
+  // Whether to run pipeline in debug mode or not
   debug = "true"
 ```
 
 One of the strenghts of Nextflow is allowing the parallelization and merging of several processes. In our case, input protein FASTA file is split and its sequences are delievered to the different used applications in chunks. For a quick processing, the optimal size of these chunks is not the same for each target application, and it can also depend on the setup of your HPC environment or network health. This can be tuned using the parameters below:
 
 ```
-  # Number of protein sequences per chunk (used as fallback)
+  // Number of protein sequences per chunk (used as fallback)
   chunkSize = 25
-  # Number of protein sequences per chunk when using BLAST (or DIAMOND)
+  // Number of protein sequences per chunk when using BLAST (or DIAMOND)
   chunkBlastSize = 50
-  # Number of protein sequences per chunk when using InterProScan
+  // Number of protein sequences per chunk when using InterProScan
   chunkIPSSize = 25
-  # Number of protein sequences per chunk when using KofamKOALA
+  // Number of protein sequences per chunk when using KofamKOALA
   chunkKoalaSize = 50
-  # Number of protein sequences per chunk when submitting to web processes (CD-Search for now)
+  // Number of protein sequences per chunk when submitting to web processes (CD-Search for now)
   chunkWebSize = 100
-  # Number of chunks to be used when running in debug mode (e.g., for facllback processes this would be 5*25=125 protein sequences)
+  // Number of chunks to be used when running in debug mode (e.g., for facllback processes this would be 5*25=125 protein sequences)
   debugSize = 5
 ```
 
@@ -119,14 +119,14 @@ Moreover, we are also providing a web API for retrieving protein-GO mapping from
 When using the second option, you can tune it with the parameters below:
 
 ```
-  # Instance from where to retrieve GO mappings
+  // Instance from where to retrieve GO mappings
   gogourl = "http://myinstance.example.com/api"
-  # Maximum number of hits to consider (up to 30 by default))
+  // Maximum number of hits to consider (up to 30 by default))
   gogohits = 30
-  # Modes of retrieval from BLAST matches
-    * Common: Only GO entries appearing in all matches
-    * Most: Only GO entries appearing in more than half of matches
-    * All: All GO entries appearing in all matches
+  // Modes of retrieval from BLAST matches
+  //  * Common: Only GO entries appearing in all matches
+  //  * Most: Only GO entries appearing in more than half of matches
+  //  * All: All GO entries appearing in all matches
   blastAnnotMode = "common"
 ```
 
