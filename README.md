@@ -261,7 +261,6 @@ The base container is [available in Docker Hub](https://hub.docker.com/r/guigola
 *Ensure you have an up-to-date version of Singularity. Otherwise you may need to clean some Singularity directories, the singularity one (where pipeline images are stored) in FA-nf base directory and ```.singularity``` in your ```$HOME``` directory.*
 
 
-
 **Just after starting the pipeline, it stops and I get a message such as ```Something went wrong. No supported configuration file syntax found at /your/path/lib/site_perl/5.26.2/Config/Simple.pm line 184, <FH> line 23.```**
 
 *Check line **23** (or the number you have) of your params.config if you have any syntax error (e.g., new line, additional quote character, etc.)*
@@ -278,3 +277,7 @@ The base container is [available in Docker Hub](https://hub.docker.com/r/guigola
 **When using MySQL database mode with Singularity wrapper, it does not start and it complains it is locked**
 
 *Ensure no Singularity process is running on the contents of the selected MySQL directory. If it is not the case and it is still failing, copy the contents in another directory and run it from there instead*
+
+**My HPC infrastructure cannot access the Internet. Can I use the pipeline?**
+
+*Yes, as far as you skip CD-Search analyses (```skip_cdSearch = true```), you can use it by pre-downloading container images first (assuming Singularity) and replacing container values in ```nextflow.config``` for their path in your filesystem. You can download singularity images for latter placing them in your filesystem with a command like this: ```singularity pull kofamscan-1.2.0.sif docker://quay.io/biocontainers/kofamscan:1.2.0--0```.*
