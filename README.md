@@ -194,7 +194,7 @@ The relevant paremetres below:
     dbuser = "test"
     # Database user password
     dbpass = "test"
-    # Port of the MySQL engine
+    # Port of the MySQL engine (3306 default)
     dbport = 12345
     # The host where the MySQL engine is located. Skip it if using the wrapper below
     dbhost = 0.0.0.0

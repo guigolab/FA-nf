@@ -33,11 +33,13 @@
 // default parameters
 params.help = false
 params.debug = false
-params.dbEngine = "mysql" // SQLite otherwise
+params.dbEngine = "SQLite" // MySQL otherwise
 
 // Main input files
 params.proteinFile = null;
 params.gffFile = null;
+params.speciesName = "organism"
+params.dbname = "organismDB"
 
 // Main result and log dirs
 params.resultPath = "${baseDir}/results/"
@@ -66,6 +68,7 @@ params.kolist = ""
 params.koprofiles = ""
 params.koentries = ""
 params.kegg_release = null
+params.kegg_species = "hsa, dme, cel, ath"
 
 // Params for InterProScan
 //  Temporary location for InterproScan intermediary files. This can be huge
@@ -204,7 +207,7 @@ if ( params.blastFile ) {
 }
 
 log.info "Species name                  : ${params.speciesName}"
-log.info "KEGG species                 : ${params.kegg_species}"
+log.info "KEGG species                  : ${params.kegg_species}"
 
 if ( mysql ) {
   log.info "MySQL FA database 		       : ${params.dbname}"
