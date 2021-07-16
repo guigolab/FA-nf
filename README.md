@@ -186,23 +186,23 @@ Running in MySQL mode improves the speed of the pipeline, but some care must be 
 The relevant paremetres below:
 
 ```  
-    # Database engine. Specify MySQL (otherwise 'SQLite' will be used)
+    // Database engine. Specify MySQL (otherwise 'SQLite' will be used)
     dbEngine = "MySQL"
-    # Database name. If it does not exist, if the user has enough permissions it will be created
+    // Database name. If it does not exist, if the user has enough permissions it will be created
     dbname = "Pvulgaris"
-    # Database user name
+    // Database user name
     dbuser = "test"
-    # Database user password
+    // Database user password
     dbpass = "test"
-    # Port of the MySQL engine (3306 default)
+    // Port of the MySQL engine (3306 default)
     dbport = 12345
-    # The host where the MySQL engine is located. Skip it if using the wrapper below
+    // The host where the MySQL engine is located. Skip it if using the wrapper below
     dbhost = 0.0.0.0
-    # If using the wrapper below, where MySQL data will be stored
+    // If using the wrapper below, where MySQL data will be stored
     mysqldata = "${baseDir}/mysql/"
-    # If using the wrapper below, where MySQL instance logs will be stored
+    // If using the wrapper below, where MySQL instance logs will be stored
     mysqllog = "${baseDir}/tmp/"
-    # If using the wrapper below, which Singularity/Docker image will be used
+    // If using the wrapper below, which Singularity/Docker image will be used
     mysqlimg = "docker://library/mariadb:10.3"
 ```
 
