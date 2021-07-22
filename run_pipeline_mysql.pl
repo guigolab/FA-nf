@@ -94,6 +94,10 @@ while ( <CONF> ) {
 
     $_=~s/\s*\=\s*/:/g;
 
+    if ( $_=~/^\s*\/\// ) {
+      next;
+    }
+
     $strFile = $strFile. $_;
 }
 
