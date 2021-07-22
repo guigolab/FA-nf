@@ -205,7 +205,7 @@ The relevant paremetres below:
     // If using the wrapper below, where MySQL instance logs will be stored
     mysqllog = "${baseDir}/tmp/"
     // If using the wrapper below, which Singularity/Docker image will be used
-    mysqlimg = "docker://library/mariadb:10.3"
+    mysqlimg = "https://biocore.crg.eu/singularity/mariadb-10.3.sif"
 ```
 
 **Note**: when running a different analysis, take care to use a different ```dbname``` for avoiding unexpected problems.  
@@ -220,6 +220,11 @@ It is also possible to pass additional Nextflow parameters
 
     nohup perl run_pipeline_mysql.pl -params "-with-dag -with-report -with-timeline" -conf ./params.config  &> log.mysql &
 
+The Singularity recipe for the database container image is the ```Singularity.mysql``` file in the root of the repository and can be generated as shown below:
+
+```
+  sudo singularity build mariadb-10.3.sif Singularity.mysql
+```
 
 #### Inspection of MySQL database
 
