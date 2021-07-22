@@ -157,6 +157,8 @@ For skipping these applications, the following lines can be added in the configu
   skip_sigtarp  = true
 ```
 
+In the provided example ```params.config``` file we keep these two lines uncommented.
+
 ### Dataset resources
 
 For downloading and formatting diferent datasets used by the programs part of this pipeline, [some scripts are provided here](https://github.com/toniher/biomirror/) for convenience.
