@@ -9,24 +9,61 @@ The pipeline uses a set of well characterised software to assign functional info
 The software used in this pipeline is mostly free software for academic users. For the software from the Center for Biological Sequence (CBS), i.e. signalP, a suitable license agreement should be obtained. More details about how to use this software in the *Associated containers* section at the end of this page.
 
 ## Installation
-The pipeline is build on Nextflow as a woking engine, so it need to be installed first
+The pipeline is built on Nextflow as a woking engine, so it need to be installed first:
 
 ```
  export NXF_VER=20.10.0; curl -s https://get.nextflow.io | bash
 ```
 The detailed procedure is described in the [Nextflow documentation](https://www.nextflow.io/docs/latest/getstarted.html)
 
+You can place the Nextflow binary somewhere in your ```PATH``` or in the same location as where you are going to run the pipeline.
+
+If you want to use the ```latest``` version you can clone the last commit of the repository:
+
+```
+git clone --–depth 1 https://github.com/guigolab/FA-nf
+```
+
+Alternately you can clone the whole repository and choose the tag you want with ```git checkout``` command, or download a specific release from: https://github.com/guigolab/FA-nf/releases 
+
+### Associated containers
+
+We recommend installing either [Docker](https://www.docker.com/) or [Singularity](https://singularity.hpcng.org/) (the latter preferred).
+
+The software used all along this pipeline is encapsulated in several containers:
+
+As written down in ```nextflow.config``` file, whenever possible, we try to provide necessary images in a public repository (e.g. [Docker hub](https://hub.docker.com/) or quay.io from [Biocontainers](https://biocontainers.pro/)). However, for some software that includes privative components, we suggest to build the container image by yourself.
+
+* [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build container image first. Please check **sigtarp** process in ```nextflow.config```)
+* [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build container image fisrt. Please check **ipscan** process in ```nextflow.config```. Two versions are available: one with privative software and one without)
+
+### How to build base container
+
+The base container is [available in Docker Hub](https://hub.docker.com/r/guigolab/fa-nf) and Nextflow takes care automatically to retrieve it form there, but you can always decide to generate it yourself.
+
+```
+    # Generate Docker image
+    docker build -t fa-nf .
+
+    # Generate Singularity image if preferred
+    sudo singularity build fa-nf.sif docker-daemon://fa-nf:latest
+```
+
 ## Running the pipeline
 
-The annotation itself, when various software is excuted and the results are stored in an internal database.
+The annotation process consists of different programs which, once they are executed and finished, store their results in an internal database.
 
-Result files, including a main annotation file in gff format and annotation report, are generated at the end of the pipeline.
+Result files, including a main annotation file in GFF format and diferent annotation reports, are generated at the last steps of the pipeline.
 
-The annotation step can be launched by using the following command:
+First of all, users need to adapt ```nextflow.config``` and ```params.config``` to fit their HPC system and the location of the necessary datasets. Users need to download (and index when necessary) BLAST, Interproscan and KEGG datasets and point where they are located in ```params.config``` file.  This explained in the sections below.
+
+Once the datasets are prepared, the whole annotation process can be launched by using the following command:
 
 ```
 ./nextflow run -bg main.nf --config params.config &> logfile
 ```
+
+This executes this Nextflow pipeline in the background and its progress can be followed by inspecting ```logfile```. It can be done in real time with ```tail -f logfile``` command.
 
 ## Pipeline parameters
 
@@ -133,7 +170,7 @@ When using the second option, you can tune it with the parameters below:
 ### KEGG orthology groups
 Predictions of the KEGG orthology groups (KO) can be obtained outside of the pipeline, i.e. via [KAAS server](http://www.genome.jp/tools/kaas/) or using a previously set-up version of [KofamKOALA](https://www.genome.jp/tools/kofamkoala/).
 
-For KofamKOLA, adjust the parameters below to match the location in your system ([FTP source](ftp://ftp.genome.jp/pub/db/kofam/))
+For KofamKOLA, adjust the parameters below to match the location in your system (ftp://ftp.genome.jp/pub/db/kofam/)
 
 ```
   kolist = "/nfs/db/kegg/ko_list"
@@ -162,6 +199,7 @@ In the provided example ```params.config``` file we keep these two lines uncomme
 ### Dataset resources
 
 For downloading and formatting diferent datasets used by the programs part of this pipeline, [some scripts are provided here](https://github.com/toniher/biomirror/) for convenience.
+
 
 ## Result files
 
@@ -237,29 +275,6 @@ for further options or details, run:
 
     perl run_pipeline_mysql.pl -h
 
-
-## Associated containers
-
-We recommend installing either [Docker](https://www.docker.com/) or [Singularity](https://sylabs.io/singularity/) (the latter preferred).
-
-The software used all along this pipeline is encapsulated in several containers:
-
-As written down in ```nextflow.config``` file, whenever possible, we try to provide necessary images in a public repository (e.g. [Docker hub](https://hub.docker.com/) or quay.io from [Biocontainers](https://biocontainers.pro/)). However, for some software that includes privative components, we suggest to build the container image by yourself.
-
-* [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build container image first. Please check **sigtarp** process in ```nextflow.config```)
-* [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build container image fisrt. Please check **ipscan** process in ```nextflow.config```. Two versions are available: one with privative software and one without)
-
-### How to build base container
-
-The base container is [available in Docker Hub](https://hub.docker.com/r/guigolab/fa-nf) and Nextflow takes care automatically to retrieve it form there, but you can always decide to generate it yourself.
-
-```
-    # Generate Docker image
-    docker build -t fa-nf .
-
-    # Generate Singularity image if preferred
-    sudo singularity build fa-nf.sif docker-daemon://fa-nf:latest
-```
 
 ## Troubleshooting
 
