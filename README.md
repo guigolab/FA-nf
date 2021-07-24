@@ -6,7 +6,7 @@ A pipeline for **functional annotation** of proteins from non-model organisms im
 
 The pipeline uses a set of well characterised software to assign functional information to the proteins of interests, i.e. domains, GO terms annotation, putative name and some other features.
 
-The software used in this pipeline is mostly free software for academic users. For the software from the Center for Biological Sequence (CBS), i.e. signalP, a suitable license agreement should be obtained. More details about how to use this software in the *Associated containers* section at the end of this page.
+The software used in this pipeline is mostly free software for academic users. For some software, such as signalP, a suitable license agreement should be obtained. More details about how to use this software in the *Associated containers* section.
 
 ## Installation
 The pipeline is built on Nextflow as a woking engine, so it need to be installed first:
