@@ -37,7 +37,7 @@ As written down in ```nextflow.config``` file, whenever possible, we try to prov
 * [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build container image first. Please check **sigtarp** process in ```nextflow.config```)
 * [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build container image fisrt. Please check **ipscan** process in ```nextflow.config```. Two versions are available: one with privative software and one without)
 
-### How to build base container
+#### How to build base container
 
 The base container is [available in Docker Hub](https://hub.docker.com/r/guigolab/fa-nf) and Nextflow takes care automatically to retrieve it form there, but you can always decide to generate it yourself.
 
