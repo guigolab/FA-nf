@@ -9,14 +9,6 @@ The pipeline uses a set of well characterised software to assign functional info
 The software used in this pipeline is mostly free software for academic users. For some software, such as signalP, a suitable license agreement should be obtained. More details about how to use this software in the *Associated containers* section.
 
 ## Installation
-The pipeline is built on Nextflow as a woking engine, so it need to be installed first:
-
-```
- export NXF_VER=20.10.0; curl -s https://get.nextflow.io | bash
-```
-The detailed procedure is described in the [Nextflow documentation](https://www.nextflow.io/docs/latest/getstarted.html)
-
-You can place the Nextflow binary somewhere in your ```PATH``` or in the same location as where you are going to run the pipeline.
 
 If you want to use the ```latest``` version you can clone the last commit of the repository:
 
@@ -24,7 +16,16 @@ If you want to use the ```latest``` version you can clone the last commit of the
 git clone --–depth 1 https://github.com/guigolab/FA-nf
 ```
 
-Alternately you can clone the whole repository and choose the tag you want with ```git checkout``` command, or download a specific release from: https://github.com/guigolab/FA-nf/releases 
+Alternately, and actually recommended, you can clone the whole repository and choose the tag you want with ```git checkout``` command, or download a specific release from: https://github.com/guigolab/FA-nf/releases 
+
+Since the pipeline is built on Nextflow as a woking engine, it needs to be installed as well:
+
+```
+ export NXF_VER=20.10.0; curl -s https://get.nextflow.io | bash
+```
+The detailed procedure is described in the [Nextflow documentation](https://www.nextflow.io/docs/latest/getstarted.html)
+
+You can place the Nextflow binary somewhere in your ```PATH``` or in the same location where the pipeline is going to be run.
 
 ### Associated containers
 
