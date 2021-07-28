@@ -30,13 +30,18 @@ params.help = false
 params.dbPath = "/nfs/db"
 
 // Version
-params.ipscanVersion = "5.48-83.0"
+params.iprscanVersion = "5.48-83.0"
 params.koVersion = "2021-05-02"
 
 // URLs
-params.ipscanURL = "https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/${params.ipscanVersion}/interproscan-${params.ipscanVersion}-64-bit.tar.gz "
+params.iprscanURL = "https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/${params.iprscanVersion}/interproscan-${params.iprscanVersion}-64-bit.tar.gz "
 params.koURLlist = "ftp://ftp.genome.jp/pub/db/kofam/archives/${params.koVersion}/ko_list.gz"
 params.koURLprofiles = "ftp://ftp.genome.jp/pub/db/kofam/archives/${params.koVersion}/profiles.tar.gz"
+
+// Specific DB Paths
+params.dbNCBIPath = "${params.dbPath}/202105/blastdb/db"
+params.dbipscanPath = "${params.dbPath}/iprscan/${params.iprscanVersion}"
+params.dbKOPath = "${params.dbPath}/kegg/${params.koVersion}"
 
 // File with GO information, otherwise is downloaded
 params.oboFile = null
@@ -70,11 +75,44 @@ if ( params.oboFile == "" || params.oboFile == null ) {
   oboFile = params.oboFile
 }
 
-
-
 def downloadURL( address, filename ) {
   downFile = new File( filename ) << new URL (address).getText()
   return downFile.absolutePath
+}
+
+
+process downloadNCBI {
+
+  label 'blast'
+
+
+}
+
+process formatDIAMOND {
+
+  label 'diamond'
+
+  publishDir params.dbNCBIPath, mode: 'move'
+
+
+}
+
+process downloadInterPro {
+
+  publishDir params.dbipscanPath, mode: 'move'
+
+  label 'download'
+
+
+}
+
+process downloadKO {
+
+  publishDir params.dbKOPath, mode: 'move'
+
+  label 'download'
+
+
 }
 
 
