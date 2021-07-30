@@ -83,6 +83,8 @@ def downloadURL( address, filename ) {
 
 process downloadNCBI {
 
+  publishDir params.dbNCBIPath, mode: 'copy'
+
   label 'blast'
 
   input:
@@ -93,7 +95,24 @@ process downloadNCBI {
 
 
   """
-  downloadNCBI.sh ${params.dbNCBIList}
+  update_blastdb.pl ${params.dbNCBIList}
+  """
+
+}
+
+process uncompressNCBI {
+
+  label 'blast'
+
+  input:
+  file params.dbNCBIList
+
+  output:
+  file "*" into blastdb
+
+
+  """
+  blastdbcmd -dbtype prot -db $line -entry all -out $line.fa
   """
 
 }
@@ -112,7 +131,7 @@ process formatDIAMOND {
   file "*" into formatted_blastdb
 
   """
-  formatDIAMOND.sh ${params.dbNCBIList}
+  diamond makedb --in ${line}.fa --db ${line}
   """
 
 }
