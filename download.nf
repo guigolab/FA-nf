@@ -106,6 +106,16 @@ process downloadInterPro {
 
 }
 
+process formatInterPro {
+
+  publishDir params.dbipscanPath, mode: 'move'
+
+  label 'ipscan'
+
+
+}
+
+
 process downloadKO {
 
   publishDir params.dbKOPath, mode: 'move'
