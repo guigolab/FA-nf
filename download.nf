@@ -85,15 +85,35 @@ process downloadNCBI {
 
   label 'blast'
 
+  input:
+  file params.dbNCBIList
+
+  output:
+  file "*" into blastdb
+
+
+  """
+  downloadNCBI.sh ${params.dbNCBIList}
+  """
 
 }
 
 process formatDIAMOND {
 
-  label 'diamond'
-
   publishDir params.dbNCBIPath, mode: 'move'
 
+  label 'diamond'
+
+  input:
+  file params.dbNCBIList
+  file blastdb
+
+  output:
+  file "*" into formatted_blastdb
+
+  """
+  formatDIAMOND.sh ${params.dbNCBIList}
+  """
 
 }
 
@@ -122,6 +142,19 @@ process downloadKO {
 
   label 'download'
 
+  output:
+  file "ko_list" into ko_list
+  file "profiles" into ko_profiles
+  file "ko_store" into ko_store
+
+  """
+  wget -c -t0 ${params.koURLlist};
+  gunzip ko_list.gz;
+  wget -c -t0 ${params.koURLprofiles};
+  tar zxf ${params.koURLprofiles};
+  mkdir ko_store
+  bulkDownloadKEGG.pl ko_list ko_store
+  """
 
 }
 
