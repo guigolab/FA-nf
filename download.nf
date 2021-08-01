@@ -148,6 +148,7 @@ process downloadInterPro {
   rm iprscan.tar.gz
   cd interproscan-${params.iprscanVersion}
   python3 initial_setup.py
+  cd ..
   mv interproscan-${params.iprscanVersion}/data .
   rm -rf interproscan-${params.iprscanVersion}
   mv data/* .; rmdir interproscan-${params.iprscanVersion}
