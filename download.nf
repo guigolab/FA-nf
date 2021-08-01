@@ -133,9 +133,16 @@ process formatDIAMOND {
 //
 // process downloadInterPro {
 //
-//   publishDir params.dbipscanPath, mode: 'move'
-//
 //   label 'download'
+//
+//   output:
+//   file "interproscan-${params.iprscanVersion}/data/*" into interpro_data
+//
+//   """
+//   curl --retry 3 -o iprscan.tar.gz ${params.iprscanURL};
+//   tar zxf iprscan.tar.gz
+//
+//   """
 //
 //
 // }
@@ -167,7 +174,7 @@ process downloadKO {
   curl --retry 3 -o profiles.tar.gz ${params.koURLprofiles};
   tar zxf profiles.tar.gz; rm profiles.tar.gz;
   mkdir ko_store
-  perl bulkDownloadKEGG.pl ko_list ko_store
+  bulkDownloadKEGG.pl ko_list ko_store
   """
 
 }
