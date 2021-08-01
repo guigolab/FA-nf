@@ -130,33 +130,25 @@ process formatDIAMOND {
   """
 
 }
-//
-// process downloadInterPro {
-//
-//   label 'download'
-//
-//   output:
-//   file "interproscan-${params.iprscanVersion}/data/*" into interpro_data
-//
-//   """
-//   curl --retry 3 -o iprscan.tar.gz ${params.iprscanURL};
-//   tar zxf iprscan.tar.gz
-//
-//   """
-//
-//
-// }
-//
-// process formatInterPro {
-//
-//   publishDir params.dbipscanPath, mode: 'move'
-//
-//   label 'ipscan'
-//
-//
-// }
-//
-//
+
+process downloadInterPro {
+
+  publishDir params.dbipscanPath, mode: 'copy'
+  label 'ipscan'
+
+  output:
+  file "interproscan-${params.iprscanVersion}/data/*" into interpro_data
+
+  """
+  curl --retry 3 -o iprscan.tar.gz ${params.iprscanURL};
+  tar zxf iprscan.tar.gz
+  rm iprscan.tar.gz
+  cd interproscan-${params.iprscanVersion}
+  python3 initial_setup.py
+  """
+
+}
+
 process downloadKO {
 
   publishDir params.dbKOPath, mode: 'copy'
