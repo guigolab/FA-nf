@@ -39,10 +39,13 @@ params.koURLlist = "ftp://ftp.genome.jp/pub/db/kofam/archives/${params.koVersion
 params.koURLprofiles = "ftp://ftp.genome.jp/pub/db/kofam/archives/${params.koVersion}/profiles.tar.gz"
 
 // NCBI DB list
-params.blastDBList = "swissprot,refseq_protein"
+params.blastDBList = "swissprot,pdbaa"
+params.blastTimeout = 600
 
 // Specific DB Paths
-params.dbNCBIPath = "${params.dbPath}/202105/blastdb/db"
+Date date = new Date()
+String datePart = date.format("yyyyMM")
+params.blastDbPath = "${params.dbPath}/ncbi/${datePart}/blastdb/db"
 params.dbipscanPath = "${params.dbPath}/iprscan/${params.iprscanVersion}"
 params.dbKOPath = "${params.dbPath}/kegg/${params.koVersion}"
 
@@ -78,22 +81,22 @@ if ( params.blastDBList == null || params.blastDBList == "" ) {
 }
 
 blastDBChannel = Channel.fromList( params.blastDBList?.tokenize(',') )
-
-if ( params.oboFile == "" || params.oboFile == null ) {
-  oboFile = downloadURL( "http://www.geneontology.org/ontology/gene_ontology.obo", "gene_ontology.obo" )
-} else {
-  oboFile = params.oboFile
-}
-
-def downloadURL( address, filename ) {
-  downFile = new File( filename ) << new URL (address).getText()
-  return downFile.absolutePath
-}
+//
+// if ( params.oboFile == "" || params.oboFile == null ) {
+//   oboFile = downloadURL( "http://www.geneontology.org/ontology/gene_ontology.obo", "gene_ontology.obo" )
+// } else {
+//   oboFile = params.oboFile
+// }
+//
+// def downloadURL( address, filename ) {
+//   downFile = new File( filename ) << new URL (address).getText()
+//   return downFile.absolutePath
+// }
 
 
 process downloadNCBI {
 
-  publishDir params.dbNCBIPath, mode: 'copy'
+  publishDir params.blastDbPath, mode: 'copy'
 
   label 'blast'
 
@@ -104,7 +107,7 @@ process downloadNCBI {
   set val(db), file ("*") into blastdb
 
   """
-  update_blastdb.pl ${db}
+  update_blastdb.pl ${db} --timeout ${params.blastTimeout} --decompress
   blastdbcmd -dbtype prot -db ${db} -entry all -out ${db}.fa
   """
 
@@ -112,7 +115,7 @@ process downloadNCBI {
 
 process formatDIAMOND {
 
-  publishDir params.dbNCBIPath, mode: 'move'
+  publishDir params.blastDbPath, mode: 'copy'
 
   label 'diamond'
 
@@ -127,29 +130,29 @@ process formatDIAMOND {
   """
 
 }
-
-process downloadInterPro {
-
-  publishDir params.dbipscanPath, mode: 'move'
-
-  label 'download'
-
-
-}
-
-process formatInterPro {
-
-  publishDir params.dbipscanPath, mode: 'move'
-
-  label 'ipscan'
-
-
-}
-
-
+//
+// process downloadInterPro {
+//
+//   publishDir params.dbipscanPath, mode: 'move'
+//
+//   label 'download'
+//
+//
+// }
+//
+// process formatInterPro {
+//
+//   publishDir params.dbipscanPath, mode: 'move'
+//
+//   label 'ipscan'
+//
+//
+// }
+//
+//
 process downloadKO {
 
-  publishDir params.dbKOPath, mode: 'move'
+  publishDir params.dbKOPath, mode: 'copy'
 
   label 'download'
 
@@ -159,12 +162,12 @@ process downloadKO {
   file "ko_store" into ko_store
 
   """
-  wget -c -t0 ${params.koURLlist};
+  curl --retry 3 -o ko_list.gz ${params.koURLlist};
   gunzip ko_list.gz;
-  wget -c -t0 ${params.koURLprofiles};
-  tar zxf ${params.koURLprofiles};
+  curl --retry 3 -o profiles.tar.gz ${params.koURLprofiles};
+  tar zxf profiles.tar.gz; rm profiles.tar.gz;
   mkdir ko_store
-  bulkDownloadKEGG.pl ko_list ko_store
+  perl bulkDownloadKEGG.pl ko_list ko_store
   """
 
 }
