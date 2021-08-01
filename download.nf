@@ -38,6 +38,9 @@ params.iprscanURL = "https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/${params.
 params.koURLlist = "ftp://ftp.genome.jp/pub/db/kofam/archives/${params.koVersion}/ko_list.gz"
 params.koURLprofiles = "ftp://ftp.genome.jp/pub/db/kofam/archives/${params.koVersion}/profiles.tar.gz"
 
+// NCBI DB list
+params.blastDBList = "swissprot,refseq_protein"
+
 // Specific DB Paths
 params.dbNCBIPath = "${params.dbPath}/202105/blastdb/db"
 params.dbipscanPath = "${params.dbPath}/iprscan/${params.iprscanVersion}"
@@ -69,6 +72,13 @@ if ( params.dbPath == null || params.dbPath == "" ) {
   exit 1
 }
 
+if ( params.blastDBList == null || params.blastDBList == "" ) {
+  log.info "No BLAST DBs provided"
+  exit 1
+}
+
+blastDBChannel = Channel.fromList( params.blastDBList?.tokenize(',') )
+
 if ( params.oboFile == "" || params.oboFile == null ) {
   oboFile = downloadURL( "http://www.geneontology.org/ontology/gene_ontology.obo", "gene_ontology.obo" )
 } else {
@@ -88,31 +98,14 @@ process downloadNCBI {
   label 'blast'
 
   input:
-  file params.dbNCBIList
+  val db from blastDBChannel
 
   output:
-  file "*" into blastdb
-
-
-  """
-  update_blastdb.pl ${params.dbNCBIList}
-  """
-
-}
-
-process uncompressNCBI {
-
-  label 'blast'
-
-  input:
-  file params.dbNCBIList
-
-  output:
-  file "*" into blastdb
-
+  set val(db), file ("*") into blastdb
 
   """
-  blastdbcmd -dbtype prot -db $line -entry all -out $line.fa
+  update_blastdb.pl ${db}
+  blastdbcmd -dbtype prot -db ${db} -entry all -out ${db}.fa
   """
 
 }
@@ -124,14 +117,13 @@ process formatDIAMOND {
   label 'diamond'
 
   input:
-  file params.dbNCBIList
-  file blastdb
+  set db, file(fasta) from blastdb
 
   output:
   file "*" into formatted_blastdb
 
   """
-  diamond makedb --in ${line}.fa --db ${line}
+  diamond makedb --in ${db}.fa --db ${db}
   """
 
 }
