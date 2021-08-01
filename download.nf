@@ -45,7 +45,7 @@ params.blastTimeout = 600
 // Specific DB Paths
 Date date = new Date()
 String datePart = date.format("yyyyMM")
-params.blastDbPath = "${params.dbPath}/ncbi/${datePart}/blastdb/db"
+params.blastDbFolder = "${params.dbPath}/ncbi/${datePart}/blastdb/db"
 params.dbipscanPath = "${params.dbPath}/iprscan/${params.iprscanVersion}"
 params.dbKOPath = "${params.dbPath}/kegg/${params.koVersion}"
 
@@ -96,7 +96,7 @@ blastDBChannel = Channel.fromList( params.blastDBList?.tokenize(',') )
 
 process downloadNCBI {
 
-  publishDir params.blastDbPath, mode: 'copy'
+  publishDir params.blastDbFolder, mode: 'copy'
 
   label 'blast'
 
@@ -115,7 +115,7 @@ process downloadNCBI {
 
 process formatDIAMOND {
 
-  publishDir params.blastDbPath, mode: 'copy'
+  publishDir params.blastDbFolder, mode: 'copy'
 
   label 'diamond'
 
