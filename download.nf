@@ -37,6 +37,7 @@ params.koVersion = "2021-05-02"
 params.iprscanURL = "https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/${params.iprscanVersion}/interproscan-${params.iprscanVersion}-64-bit.tar.gz "
 params.koURLlist = "ftp://ftp.genome.jp/pub/db/kofam/archives/${params.koVersion}/ko_list.gz"
 params.koURLprofiles = "ftp://ftp.genome.jp/pub/db/kofam/archives/${params.koVersion}/profiles.tar.gz"
+params.goOboURL = "http://www.geneontology.org/ontology/gene_ontology.obo"
 
 // NCBI DB list
 params.blastDBList = "swissprot,pdbaa"
@@ -48,9 +49,7 @@ String datePart = date.format("yyyyMM")
 params.blastDbFolder = "${params.dbPath}/ncbi/${datePart}/blastdb/db"
 params.dbipscanPath = "${params.dbPath}/iprscan/${params.iprscanVersion}"
 params.dbKOPath = "${params.dbPath}/kegg/${params.koVersion}"
-
-// File with GO information, otherwise is downloaded
-params.oboFile = null
+params.oboFolder = "${params.dbPath}/geneontology/${datePart}"
 
 // Mail for sending reports
 params.email = ""
@@ -81,17 +80,21 @@ if ( params.blastDBList == null || params.blastDBList == "" ) {
 }
 
 blastDBChannel = Channel.fromList( params.blastDBList?.tokenize(',') )
-//
-// if ( params.oboFile == "" || params.oboFile == null ) {
-//   oboFile = downloadURL( "http://www.geneontology.org/ontology/gene_ontology.obo", "gene_ontology.obo" )
-// } else {
-//   oboFile = params.oboFile
-// }
-//
-// def downloadURL( address, filename ) {
-//   downFile = new File( filename ) << new URL (address).getText()
-//   return downFile.absolutePath
-// }
+
+
+process oboFile {
+
+  publishDir params.oboFolder, mode: 'copy'
+  label 'download'
+
+  output:
+  file "gene_ontology.obo" into oboFile
+
+  """
+  curl --retry 3 -o gene_ontology.obo ${params.goOboURL};
+  """
+
+}
 
 
 process downloadNCBI {
