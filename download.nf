@@ -137,7 +137,7 @@ process downloadInterPro {
   label 'ipscan'
 
   output:
-  file "interproscan-${params.iprscanVersion}/data/*" into interpro_data
+  file "*" into interpro_data
 
   """
   curl --retry 3 -o iprscan.tar.gz ${params.iprscanURL};
@@ -145,6 +145,9 @@ process downloadInterPro {
   rm iprscan.tar.gz
   cd interproscan-${params.iprscanVersion}
   python3 initial_setup.py
+  mv interproscan-${params.iprscanVersion}/data .
+  rm -rf interproscan-${params.iprscanVersion}
+  mv data/* .; rmdir interproscan-${params.iprscanVersion}
   """
 
 }
