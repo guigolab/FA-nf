@@ -151,7 +151,7 @@ process downloadInterPro {
   cd ..
   mv interproscan-${params.iprscanVersion}/data .
   rm -rf interproscan-${params.iprscanVersion}
-  mv data/* .; rmdir interproscan-${params.iprscanVersion}
+  mv data/* .
   """
 
 }
