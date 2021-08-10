@@ -332,7 +332,14 @@ if ( gffavail ) {
       # get annot file
       export escaped=\$(echo '$baseDir')
       export basedirvar=\$(echo '\\\$\\{baseDir\\}')
-      agat_sp_gxf_to_gff3.pl --gff `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` -o annot.gff > annot.gff.clean.txt
+      export basedirvar=\$(echo '\\\$\\{baseDir\\}')
+      input_file=`perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file`
+
+      if [ "\${input_file: -3}" == ".gz" ]; then
+        gunzip -c \$input_file > input_gff
+        input_file=input_gff
+      fi
+      agat_sp_gxf_to_gff3.pl --gff \$input_file -o annot.gff > annot.gff.clean.txt
      """
 
    }
@@ -354,7 +361,14 @@ if ( gffavail ) {
       # get annot file
       export escaped=\$(echo '$baseDir')
       export basedirvar=\$(echo '\\\$\\{baseDir\\}')
-      cp `perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file` annot.gff
+      input_file=`perl -lae 'if (\$_=~/gffFile\\s*\\=\\s*[\\x27|\\"](\\S+)[\\x27|\\"]/) { \$base = \$1; \$base=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print \$base }' $config_file`
+
+      if [ "\${input_file: -3}" == ".gz" ]; then
+        gunzip -c \$input_file > input_gff
+        input_file=input_gff
+      fi
+
+      cp \$input_file annot.gff
      """
 
    }
