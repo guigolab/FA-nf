@@ -13,10 +13,10 @@ The software used in this pipeline is mostly free software for academic users. F
 If you want to use the ```latest``` version you can clone the last commit of the repository:
 
 ```
-git clone --–depth 1 https://github.com/guigolab/FA-nf
+git clone --depth 1 https://github.com/guigolab/FA-nf .
 ```
 
-Alternately, and actually recommended, you can clone the whole repository and choose the tag you want with ```git checkout``` command, or download a specific release from: https://github.com/guigolab/FA-nf/releases 
+Alternately, and actually recommended, you can clone the whole repository and choose the tag you want with ```git checkout``` command, or download a specific release from: https://github.com/guigolab/FA-nf/releases
 
 Since the pipeline is built on Nextflow as a woking engine, it needs to be installed as well:
 
