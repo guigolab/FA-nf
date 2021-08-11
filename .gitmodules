@@ -1,0 +1,6 @@
+[submodule "containers/interproscan"]
+	path = containers/interproscan
+	url = https://github.com/biocorecrg/interproscan_docker
+[submodule "containers/sigtarp"]
+	path = containers/sigtarp
+	url = https://github.com/biocorecrg/sigtarp_docker
