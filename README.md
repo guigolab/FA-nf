@@ -35,20 +35,48 @@ The software used all along this pipeline is encapsulated in several containers:
 
 As written down in ```nextflow.config``` file, whenever possible, we try to provide necessary images in a public repository (e.g. [Docker hub](https://hub.docker.com/) or quay.io from [Biocontainers](https://biocontainers.pro/)). However, for some software that includes privative components, we suggest to build the container image by yourself.
 
+Custom containers are available as Git submodules in ```containers``` directory. **Only Interproscan one is strictly speaking mandatory.**
+
 * [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build container image first. Please check **sigtarp** process in ```nextflow.config```)
 * [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build container image fisrt. Please check **ipscan** process in ```nextflow.config```. Two versions are available: one with privative software and one without)
 
 #### How to build base container
 
-The base container is [available in Docker Hub](https://hub.docker.com/r/guigolab/fa-nf) and Nextflow takes care automatically to retrieve it form there, but you can always decide to generate it yourself.
+The base container is already [available in Docker Hub](https://hub.docker.com/r/guigolab/fa-nf) and Nextflow takes care automatically to retrieve it form there, but you can always decide to generate it yourself.
 
 ```
-    # Generate Docker image
+    # Generate Docker image from latest version
     docker build -t fa-nf .
 
     # Generate Singularity image if preferred
     sudo singularity build fa-nf.sif docker-daemon://fa-nf:latest
 ```
+
+### Dataset resources
+
+For downloading and formatting diferent datasets used by the programs part of this pipeline, [some scripts are provided here](https://github.com/toniher/biomirror/) for convenience.
+
+Alternately, a separate Nextflow pipeline is also provided for downloading all the minimally necessary datasets from Internet sources.
+
+```
+./nextflow run -bg download.nf --config params.download.config &> download.logfile
+```
+
+Below you can see the minimal amount of parameters needed to run the script. They can be reused for running the actual pipeline.
+
+```
+  // Root path for Database
+  params.dbPath = "/nfs/db"
+  // Interproscan version used
+  params.iprscanVersion = "5.48-83.0"
+  // Kofam version used
+  params.koVersion = "2021-05-02"
+  // NCBI DB list - Comma separated
+  params.blastDBList = "swissprot,pdbaa"
+```
+
+**It's important to have container images ready before running download pipeline. Specially for Interproscan one, it must be taken into account that ```IPSCAN_DATA``` container argument must be the same ```{params.dbPath}/iprscan/${params.iprscanVersion}```**
+
 
 ## Running the pipeline
 
@@ -196,10 +224,6 @@ For skipping these applications, the following lines can be added in the configu
 ```
 
 In the provided example ```params.config``` file we keep these two lines uncommented.
-
-### Dataset resources
-
-For downloading and formatting diferent datasets used by the programs part of this pipeline, [some scripts are provided here](https://github.com/toniher/biomirror/) for convenience.
 
 
 ## Result files
