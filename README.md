@@ -62,7 +62,7 @@ Alternately, a separate Nextflow pipeline is also provided for downloading all t
 ./nextflow run -bg download.nf --config params.download.config &> download.logfile
 ```
 
-Below you can see the minimal amount of parameters needed to run the script. They can be reused for running the actual pipeline.
+Below you can see the minimal amount of parameters in ```params.download.config``` file needed to run the script. These can be reused for running the actual pipeline.
 
 ```
   // Root path for Database
