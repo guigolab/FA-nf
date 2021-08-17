@@ -57,6 +57,7 @@ params.debugSize = 2
 params.blastFile = null
 params.evalue = 0.00001
 params.diamond = null
+params.blastDbPath = null
 
 // GO retrieval params
 params.gogourl = ""
@@ -64,9 +65,9 @@ params.gogohits = 30
 params.blastAnnotMode = "common" // common, most, all available so far
 
 // KEGG
-params.kolist = ""
-params.koprofiles = ""
-params.koentries = ""
+params.kolist = null
+params.koprofiles = null
+params.koentries = null
 params.kegg_release = null
 params.kegg_species = "hsa, dme, cel, ath"
 
@@ -91,6 +92,61 @@ params.skip_sigtarp = false
 
 // Mail for sending reports
 params.email = ""
+
+// Download paths
+params.dbPath = null
+params.blastDbFolder = null
+params.dbipscanPath = null
+params.dbKOPath = null
+
+// Handling defaults from download part
+Date date = new Date()
+String datePart = date.format("yyyyMM")
+
+// Handle BlastDB paths
+if ( ! params.blastDbPath ) {
+
+  if ( ! params.blastDbFolder ) {
+
+    if ( ! params.dbPath ) {
+
+      log.info "At least dbPath needs to be defined!"
+      exit 1
+
+    } else {
+      params.blastDbFolder = "${params.dbPath}/ncbi/${datePart}/blastdb/db"
+      // Let's assume Swissprot
+      params.blastDbPath = "${params.blastDbFolder}/swissprot"
+    }
+
+  } else {
+    // Let's assume Swissprot
+    params.blastDbPath = "${params.blastDbFolder}/swissprot"
+  }
+
+}
+
+// KEGG paths
+if ( ! params.kolist && ! params.keggFile ) {
+  if ( params.koVersion && params.dbPath ) {
+    params.dbKOPath = "${params.dbPath}/kegg/${params.koVersion}"
+    params.kolist = "${params.dbKOPath}/ko_list"
+  }
+}
+
+if ( ! params.koprofiles && ! params.keggFile ) {
+  if ( params.koVersion && params.dbPath ) {
+    params.dbKOPath = "${params.dbPath}/kegg/${params.koVersion}"
+    params.koprofiles = "${params.dbKOPath}/profiles"
+  }
+}
+
+if ( ! params.koentries ) {
+  if ( params.koVersion && params.dbPath ) {
+    params.dbKOPath = "${params.dbPath}/kegg/${params.koVersion}"
+    params.koentries = "${params.dbKOPath}/ko_store"
+  }
+}
 
 //print usage
 if ( params.help ) {
@@ -671,10 +727,11 @@ if ( params.kolist != "" ||  params.kolist != null ){
  if (params.keggFile == "" ||  params.keggFile == null ) {
 
   println "Please run KEGG KO group annotation on the web server http://www.genome.jp/tools/kaas/"
+  exit 1
+ } else {
 
+   keggfile = file(params.keggFile)
  }
-
- keggfile = file(params.keggFile)
 
 }
 
@@ -993,7 +1050,7 @@ process 'CDsearch_feat_upload'{
   command
 }
 
-if ( params.koentries == "" ) {
+if ( ! params.koentries ) {
 
   process 'kegg_download'{
 
@@ -1056,7 +1113,7 @@ process 'kegg_upload' {
   command = checkMySQL( mysql, params.mysqllog )
 
 
-  if ( params.koentries == "" ) {
+  if ( ! params.koentries ) {
     command += " \
      load_kegg_KAAS.pl -input $keggfile -dir down_kegg -rel $params.kegg_release -conf \$config > upload_kegg 2>err; \
     "
