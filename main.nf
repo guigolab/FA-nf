@@ -104,6 +104,8 @@ Date date = new Date()
 String datePart = date.format("yyyyMM")
 
 // Handle BlastDB paths
+blastDbPath = null;
+
 if ( ! params.blastDbPath ) {
 
   if ( ! params.blastDbFolder ) {
@@ -114,37 +116,52 @@ if ( ! params.blastDbPath ) {
       exit 1
 
     } else {
-      params.blastDbFolder = "${params.dbPath}/ncbi/${datePart}/blastdb/db"
+      blastDbFolder = "${params.dbPath}/ncbi/${datePart}/blastdb/db"
       // Let's assume Swissprot
-      params.blastDbPath = "${params.blastDbFolder}/swissprot"
+      blastDbPath = "${blastDbFolder}/swissprot"
     }
 
   } else {
     // Let's assume Swissprot
-    params.blastDbPath = "${params.blastDbFolder}/swissprot"
+    blastDbPath = "${params.blastDbFolder}/swissprot"
   }
 
+} else {
+  blastDbPath = params.blastDbPath
 }
 
 // KEGG paths
+kolist = null
+koprofiles = null
+koentries = null
+
+if ( params.kolist ) {
+  kolist = params.kolist
+}
+
+if ( params.koprofiles ) {
+  koprofiles = params.koprofiles
+}
+
+if ( params.koentries ) {
+  koentries = params.koentries
+}
+
 if ( ! params.kolist && ! params.keggFile ) {
   if ( params.koVersion && params.dbPath ) {
-    params.dbKOPath = "${params.dbPath}/kegg/${params.koVersion}"
-    params.kolist = "${params.dbKOPath}/ko_list"
+    kolist = "${params.dbPath}/kegg/${params.koVersion}/ko_list"
   }
 }
 
 if ( ! params.koprofiles && ! params.keggFile ) {
   if ( params.koVersion && params.dbPath ) {
-    params.dbKOPath = "${params.dbPath}/kegg/${params.koVersion}"
-    params.koprofiles = "${params.dbKOPath}/profiles"
+    koprofiles = "${params.dbPath}/kegg/${params.koVersion}/profiles"
   }
 }
 
 if ( ! params.koentries ) {
   if ( params.koVersion && params.dbPath ) {
-    params.dbKOPath = "${params.dbPath}/kegg/${params.koVersion}"
-    params.koentries = "${params.dbKOPath}/ko_store"
+    koentries = "${params.dbPath}/kegg/${params.koVersion}/ko_store"
   }
 }
 
@@ -545,15 +562,15 @@ if( params.blastAnnotMode != "" && params.blastAnnotMode != null ) {
 if ( params.blastFile == "" ||  params.blastFile == null ){
 
  // program-specific parameters
- db_name = file(params.blastDbPath).name
- db_path = file(params.blastDbPath).parent
+ db_name = file(blastDbPath).name
+ db_path = file(blastDbPath).parent
 
  // Handling Database formatting
  formatdbDetect = "false"
 
  if ( diamond ) {
 
-  formatDbFileName = params.blastDbPath + ".dmnd"
+  formatDbFileName = blastDbPath + ".dmnd"
   formatDbFile = file(formatDbFileName)
   if ( formatDbFile.exists() && formatDbFile.size() > 0 ) {
    formatdbDetect = "true"
@@ -574,7 +591,7 @@ if ( params.blastFile == "" ||  params.blastFile == null ){
    }
 
   } else {
-   formatdb = params.blastDbPath
+   formatdb = blastDbPath
   }
 
  } else {
@@ -607,7 +624,7 @@ if ( params.blastFile == "" ||  params.blastFile == null ){
    }
 
   } else {
-   formatdb = params.blastDbPath
+   formatdb = blastDbPath
   }
  }
 
@@ -683,7 +700,7 @@ if ( params.blastFile == "" ||  params.blastFile == null ){
  }
 }
 
-if ( params.kolist != "" ||  params.kolist != null ){
+if ( kolist != "" ||  kolist != null ){
 
   process kofamscan{
 
@@ -696,7 +713,7 @@ if ( params.kolist != "" ||  params.kolist != null ){
    file "koala_${seq}" into koalaResults
 
    """
-    exec_annotation --cpu ${task.cpus} -p ${params.koprofiles} -k ${params.kolist} -o koala_${seq} $seq
+    exec_annotation --cpu ${task.cpus} -p ${koprofiles} -k ${kolist} -o koala_${seq} $seq
    """
 
   }
@@ -1050,7 +1067,7 @@ process 'CDsearch_feat_upload'{
   command
 }
 
-if ( ! params.koentries ) {
+if ( ! koentries ) {
 
   process 'kegg_download'{
 
@@ -1113,13 +1130,13 @@ process 'kegg_upload' {
   command = checkMySQL( mysql, params.mysqllog )
 
 
-  if ( ! params.koentries ) {
+  if ( ! koentries ) {
     command += " \
      load_kegg_KAAS.pl -input $keggfile -dir down_kegg -rel $params.kegg_release -conf \$config > upload_kegg 2>err; \
     "
   } else {
     command += " \
-     load_kegg_KAAS.pl -input $keggfile -entries $params.koentries -rel $params.kegg_release -conf \$config > upload_kegg 2>err; \
+     load_kegg_KAAS.pl -input $keggfile -entries $koentries -rel $params.kegg_release -conf \$config > upload_kegg 2>err; \
     "
   }
 
