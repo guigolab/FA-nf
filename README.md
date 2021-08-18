@@ -75,7 +75,7 @@ Below you can see the minimal amount of parameters in ```params.download.config`
   params.blastDBList = "swissprot,pdbaa"
 ```
 
-**It's important to have container images ready before running download pipeline. Specially for Interproscan one, it must be taken into account that ```IPSCAN_DATA``` container argument must be the same ```{params.dbPath}/iprscan/${params.iprscanVersion}```**
+**It's VERY IMPORTANT to have container images ready before running the download pipeline. Specially for Interproscan, it must be taken into account that ```IPSCAN_DATA``` container build argument must be the same as ```{params.dbPath}/iprscan/${params.iprscanVersion}```**
 
 
 ## Running the pipeline
@@ -173,6 +173,8 @@ We suggest to check **annot.gff**, **annot.gff.clean.txt** and **annot.gff.stats
 
 ### BLAST databases
 
+The parameter ```blastDbPath``` hosts the path of the BLAST/DIAMOND database to be used. If not set or commented, a path compatible with the defaults from ```download.nf``` pipeline and the set ```dbPath``` parameter.
+
 * For NCBI BLAST+: ```blastDbPath = "/path/to/db"``` and ```diamond = "false"```. It looks for formatted database files (normally named ``db.p*`` for protein type based ones), otherwise it will try to format FASTA file with that name
 * For DIAMOND: ```blastDbPath = "/path/to/db"``` and ```diamond = "true"```. It looks for a single formatted database file (normally named ``db.dmnd``), otherwise it will try to format the FASTA file with that name (gzip compressed files accepted)
 
@@ -202,12 +204,15 @@ Predictions of the KEGG orthology groups (KO) can be obtained outside of the pip
 For KofamKOLA, adjust the parameters below to match the location in your system (ftp://ftp.genome.jp/pub/db/kofam/)
 
 ```
-  kolist = "/nfs/db/kegg/ko_list"
-  koprofiles = "/nfs/db/kegg/profiles"
-  koentries = "/nfs/db/kegg/ko_store"
+  koVersion = "2021-05-02"
+  kolist = "/nfs/db/kegg/2021-05-02/ko_list"
+  koprofiles = "/nfs/db/kegg/2021-05-02/profiles"
+  koentries = "/nfs/db/kegg/2021-05-02/ko_store"
 ```
 
-In the parameters above, ```koentries``` refers to a directory containing KO entries text files that can be downloaded in advance (check *Dataset resources* section below).
+If ```kolist```, ```koprofiles``` are either not set or commented, ```koVersion``` will be used for completing their paths if ```dbPath``` (used in ```download.nf``` pipeline) is set.
+
+In the parameters above, ```koentries``` refers to a directory containing KO entries text files that can be downloaded in advance (check ***Dataset resources*** section above). Otherwise a process will take care of retrieving them.
 
 **Note**: when using KAAS, for the downstream processing of the KO file it is very important to store information about species used for predictions. Species are encoded in three letters abbreviations, and the list can be copied from the 'Selected organisms' field in the kaas_main form.
 

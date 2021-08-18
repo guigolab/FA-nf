@@ -70,6 +70,7 @@ params.koprofiles = null
 params.koentries = null
 params.kegg_release = null
 params.kegg_species = "hsa, dme, cel, ath"
+params.keggFile = null
 
 // Params for InterProScan
 //  Temporary location for InterproScan intermediary files. This can be huge
@@ -521,15 +522,15 @@ process initDB {
    }
  } else {
 
-   if (!exists) {
-     command += "fa_main.v1.pl init -conf config"
+    if (exists) {
+     log.info "SQLite database ${dbFileName} exists. We proceed anyway..."
+    }
 
+    command += "fa_main.v1.pl init -conf config"
+    
     if ( gffavail && gffclean ) {
      command += " -gff ${gff_file}"
     }
-   } else {
-     log.info "SQLite database ${dbFileName} exists. We proceed anyway..."
-   }
  }
 
  if ( params.debug=="TRUE"||params.debug=="true" ) {
