@@ -522,15 +522,15 @@ process initDB {
    }
  } else {
 
-   if (!exists) {
-     command += "fa_main.v1.pl init -conf config"
+    if (exists) {
+     log.info "SQLite database ${dbFileName} exists. We proceed anyway..."
+    }
 
+    command += "fa_main.v1.pl init -conf config"
+    
     if ( gffavail && gffclean ) {
      command += " -gff ${gff_file}"
     }
-   } else {
-     log.info "SQLite database ${dbFileName} exists. We proceed anyway..."
-   }
  }
 
  if ( params.debug=="TRUE"||params.debug=="true" ) {
