@@ -70,6 +70,7 @@ params.koprofiles = null
 params.koentries = null
 params.kegg_release = null
 params.kegg_species = "hsa, dme, cel, ath"
+params.keggFile = null
 
 // Params for InterProScan
 //  Temporary location for InterproScan intermediary files. This can be huge
