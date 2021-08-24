@@ -77,6 +77,7 @@ Below you can see the minimal amount of parameters in ```params.download.config`
 
 **It's VERY IMPORTANT to have container images ready before running the download pipeline. Specially for Interproscan, it must be taken into account that ```IPSCAN_DATA``` container build argument must be the same as ```{params.dbPath}/iprscan/${params.iprscanVersion}```**
 
+For convenience and test purposes, some sample already downloaded datasets [can be found here](https://biocore.crg.eu/papers/FA-nf-2021/datasets/). You can simply extract their contents in your final ```dbPath```  location.
 
 ## Running the pipeline
 
