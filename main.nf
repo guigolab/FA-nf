@@ -78,6 +78,19 @@ params.ipscantmp = "${baseDir}/tmp/"
 //  Location of InterproScan properties. Do not modify unless it matches your container
 params.ipscanproperties = "/usr/local/interproscan/interproscan.properties"
 
+ipscandata = "/usr/local/interproscan/data"
+if ( params.ipscandata ) {
+  ipscandata = params.ipscandata
+} else {
+  if ( params.iprscanVersion ) {
+    if ( params.dbPath ) {
+      if ( new File( params.dbPath + "/iprscan/" + params.iprscanVersion ).exists() ) {
+        ipscandata = "${params.dbPath}/iprscan/${params.iprscanVersion}"
+      }
+    }
+  }
+}
+
 // Params for dealing with GFF
 params.gffclean = true
 params.gffstats = true
@@ -527,7 +540,7 @@ process initDB {
     }
 
     command += "fa_main.v1.pl init -conf config"
-    
+
     if ( gffavail && gffclean ) {
      command += " -gff ${gff_file}"
     }
@@ -818,6 +831,12 @@ process 'definition_upload'{
 process ipscn {
 
     label 'ipscan'
+
+    if ( singularity.enabled ) {
+      containerOptions "--bind ${ipscandata}:/usr/local/interproscan/data"
+    } else {
+      containerOptions "--volume ${ipscandata}:/usr/local/interproscan/data"
+    }
 
     input:
     file seq from seq_file_ipscan
