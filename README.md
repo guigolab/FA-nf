@@ -13,7 +13,15 @@ The software used in this pipeline is mostly free software for academic users. F
 If you want to use the ```latest``` version you can clone the last commit of the repository:
 
 ```
-git clone --depth 1 https://github.com/guigolab/FA-nf .
+git clone --recursive https://github.com/guigolab/FA-nf
+```
+
+This will download FA-nf repository and also some repository submodules (in containers directory) that are needed if we want to generate custom container images.
+
+This will generate a FA-nf directory with the pipeline. You can go there inside:
+
+```
+cd FA-nf
 ```
 
 Alternately, and actually recommended, you can clone the whole repository and choose the tag you want with ```git checkout``` command, or download a specific release from: https://github.com/guigolab/FA-nf/releases
@@ -29,16 +37,16 @@ You can place the Nextflow binary somewhere in your ```PATH``` or in the same lo
 
 ### Associated containers
 
-We recommend installing either [Docker](https://www.docker.com/) or [Singularity](https://singularity.hpcng.org/) (the latter preferred).
+We recommend installing either [Docker](https://www.docker.com/) or [Singularity](https://singularity.hpcng.org/) (the later is preferred).
 
 The software used all along this pipeline is encapsulated in several containers:
 
 As written down in ```nextflow.config``` file, whenever possible, we try to provide necessary images in a public repository (e.g. [Docker hub](https://hub.docker.com/) or quay.io from [Biocontainers](https://biocontainers.pro/)). However, for some software that includes privative components, we suggest to build the container image by yourself.
 
-Custom containers are available as Git submodules in ```containers``` directory. **Only Interproscan one is strictly speaking mandatory.**
+Custom containers are available as Git submodules in ```containers``` directory. **They need to be generated first if privative software is used.**
 
-* [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (user needs to build container image first. Please check **sigtarp** process in ```nextflow.config```)
-* [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (user needs to build container image fisrt. Please check **ipscan** process in ```nextflow.config```. Two versions are available: one with privative software and one without)
+* [SignalP and TargetP](https://github.com/biocorecrg/sigtarp_docker) (Please check **sigtarp** process in ```nextflow.config```)
+* [Interproscan and 3rd party tools](https://github.com/biocorecrg/interproscan_docker) (Please check **ipscan** process in ```nextflow.config```. Two recipes are available: one with privative software and one without. The later is already available in Docker Hub)
 
 #### How to build base container
 
@@ -75,9 +83,7 @@ Below you can see the minimal amount of parameters in ```params.download.config`
   params.blastDBList = "swissprot,pdbaa"
 ```
 
-**It's VERY IMPORTANT to have container images ready before running the download pipeline. Specially for Interproscan, it must be taken into account that ```IPSCAN_DATA``` container build argument must be the same as ```{params.dbPath}/iprscan/${params.iprscanVersion}```**
-
-For convenience and test purposes, some sample already downloaded datasets [can be found here](https://biocore.crg.eu/papers/FA-nf-2021/datasets/). You can simply extract their contents in your final ```dbPath```  location.
+For convenience and test purposes, some sample pre-downloaded minimal datasets [can be found here](https://biocore.crg.eu/papers/FA-nf-2021/datasets/). You can simply extract their contents in your final ```dbPath```  location.
 
 ## Running the pipeline
 
@@ -114,6 +120,8 @@ Most parameters are self-explanatory. We highlight some below and in upcoming se
   // GFF input
   gffFile = "${baseDir}/dataset/P.vulgaris.gff3"
 ```
+These two files can be gzipped and the pipeline will take care to uncompress them in advance.
+
 
 When approaching a new dataset, we suggest to run first the pipeline in **debug** mode (provided as such in example params config). This will analyze a limited number of protein entries. This way you may save time and troubleshoot some potential problems in your input files.
 
@@ -183,7 +191,7 @@ The parameter ```blastDbPath``` hosts the path of the BLAST/DIAMOND database to 
 
 Retrieval of GO terms from BLAST results can be performed either from [BLAST2GO](https://www.blast2go.com/) results or from other methods as far as a BLAST2GO-compatible output format is provided.
 
-Moreover, we are also providing a web API for retrieving protein-GO mapping from [UniProt GOA](https://www.ebi.ac.uk/GOA) and other resources. More details for [for setting an own instance here](https://github.com/toniher/gogoAPI).
+In any case, we are also providing a web API for retrieving protein-GO mapping from [UniProt GOA](https://www.ebi.ac.uk/GOA) and other resources. More details for [for setting an own instance here](https://github.com/toniher/gogoAPI).
 
 When using the second option, you can tune it with the parameters below:
 
@@ -198,6 +206,9 @@ When using the second option, you can tune it with the parameters below:
   //  * All: All GO entries appearing in all matches
   blastAnnotMode = "common"
 ```
+
+**IMPORTANT: This step requires so far network connection to the defined instance.**
+
 
 ### KEGG orthology groups
 Predictions of the KEGG orthology groups (KO) can be obtained outside of the pipeline, i.e. via [KAAS server](http://www.genome.jp/tools/kaas/) or using a previously set-up version of [KofamKOALA](https://www.genome.jp/tools/kofamkoala/).
