@@ -4,3 +4,6 @@
 [submodule "containers/sigtarp"]
 	path = containers/sigtarp
 	url = https://github.com/biocorecrg/sigtarp_docker
+[submodule "gogoapi"]
+	path = gogoapi
+	url = https://github.com/toniher/gogoapi
