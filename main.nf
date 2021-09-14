@@ -34,6 +34,7 @@
 params.help = false
 params.debug = false
 params.dbEngine = "SQLite" // MySQL otherwise
+params.mysqllog = "${baseDir}/tmp"
 
 // Main input files
 params.proteinFile = null;
