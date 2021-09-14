@@ -78,8 +78,9 @@ params.ipscantmp = "${baseDir}/tmp/"
 //  Location of InterproScan properties. Do not modify unless it matches your container
 params.ipscanproperties = "/usr/local/interproscan/interproscan.properties"
 
+params.ipscandata = ""
 ipscandata = "/usr/local/interproscan/data"
-if ( params.ipscandata ) {
+if ( params.ipscandata != "" ) {
   ipscandata = params.ipscandata
 } else {
   if ( params.iprscanVersion ) {
@@ -832,7 +833,7 @@ process ipscn {
 
     label 'ipscan'
 
-    if ( singularity.enabled ) {
+    if ( workflow.engine == "singularity" ) {
       containerOptions "--bind ${ipscandata}:/usr/local/interproscan/data"
     } else {
       containerOptions "--volume ${ipscandata}:/usr/local/interproscan/data"
