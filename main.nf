@@ -833,7 +833,7 @@ process ipscn {
 
     label 'ipscan'
 
-    if ( workflow.engine == "singularity" ) {
+    if ( workflow.containerEngine == "singularity" ) {
       containerOptions "--bind ${ipscandata}:/usr/local/interproscan/data"
     } else {
       containerOptions "--volume ${ipscandata}:/usr/local/interproscan/data"
