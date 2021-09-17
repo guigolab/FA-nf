@@ -209,6 +209,21 @@ When using the second option, you can tune it with the parameters below:
 
 **IMPORTANT: This step requires so far network connection to the defined instance.**
 
+### Interproscan
+
+Interproscan step launches several computing-intensive application within the same process, so care must be taken to assign enough resources in ```nextflow.config``` **ipscan** section.
+
+It is **very important** to ensure that used Interproscan data directory matches the version of the used software. More details can be found at ```containers/interproscan``` directory.
+
+Below the Interproscan parameters that can be tuned:
+```
+// Interproscan Version
+iprscanVersion = "5.48-83.0"
+// Defined Interproscan Data directory. It will override version parameter above.
+// ipscandata = "/nfs/db/iprscan/5.48-83.0"
+// Directory where to store intermediary Interproscan files (ensure there is enough space)
+ipscantmp = "${baseDir}/tmp/"
+```
 
 ### KEGG orthology groups
 Predictions of the KEGG orthology groups (KO) can be obtained outside of the pipeline, i.e. via [KAAS server](http://www.genome.jp/tools/kaas/) or using a previously set-up version of [KofamKOALA](https://www.genome.jp/tools/kofamkoala/).
