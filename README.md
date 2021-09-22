@@ -85,15 +85,22 @@ Below you can see the minimal amount of parameters in ```params.download.config`
 
 For convenience and test purposes, some sample pre-downloaded minimal datasets [can be found here](https://biocore.crg.eu/papers/FA-nf-2021/datasets/). You can simply extract their contents in your final ```dbPath```  location.
 
+## Preparation of the pipeline
+
+Before running the pipeline users need to adapt configuration files ```nextflow.config``` and ```params.config``` to fit their system and the location of the necessary datasets. File ```nextflow.config``` contains execution instructions for Nextflow engine, such as executor (slurm/local/other), number of cpus for parallel execution, and paths to container images. Detailed description of the parameters can be found in the [Nextflow documentation](https://www.nextflow.io/docs/latest/getstarted.html). User need to prepare this file once when setting up the pipeline. The second configuration file, ```params.config```, contains parameters for concrete annotation run, such as path to protein sequences in fasta format, size for chunks to split files, and location of additional datasets. Therefore this configuration file need to be adapted every time user runs a new dataset. We recommend to create a new cofiguration file per each annotation and keep it together with the result files.
+
+Users also may need to download and index when necessary BLAST, Interproscan and KEGG datasets, as described in the **Dataset resources** section, and point where they are located in ```params.config``` file.  Parameters for concrete datasets are explained in the sections below.
+
+
 ## Running the pipeline
 
 The annotation process consists of different programs which, once they are executed and finished, store their results in an internal database.
 
 Result files, including a main annotation file in GFF format and diferent annotation reports, are generated at the last steps of the pipeline.
 
-First of all, users need to adapt ```nextflow.config``` and ```params.config``` to fit their HPC system and the location of the necessary datasets. Users need to download (and index when necessary) BLAST, Interproscan and KEGG datasets and point where they are located in ```params.config``` file.  This explained in the sections below.
+First of all, users need to adapt configuration files as specified in the previous section.
 
-Once the datasets are prepared, the whole annotation process can be launched by using the following command:
+Once the datasets and containers/software are prepared, the whole annotation process can be launched by using the following command:
 
 ```
 ./nextflow run -bg main.nf --config params.config &> logfile
