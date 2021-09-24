@@ -211,7 +211,7 @@ When using the second option, you can tune it with the parameters below:
 
 ### Interproscan
 
-Interproscan step launches several computing-intensive application within the same process, so care must be taken to assign enough resources in ```nextflow.config``` **ipscan** section.
+[Interproscan](https://www.ebi.ac.uk/interpro/search/sequence/) step launches several computing-intensive application within the same process, so care must be taken to assign enough resources in ```nextflow.config``` **ipscan** section.
 
 It is **very important** to ensure that used Interproscan data directory matches the version of the used software. More details can be found at ```containers/interproscan``` directory.
 
