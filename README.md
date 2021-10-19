@@ -340,6 +340,26 @@ for further options or details, run:
     perl run_pipeline_mysql.pl -h
 
 
+## Citation
+
+Vlasova, A.; Hermoso Pulido, T.; Camara, F.; Ponomarenko, J.; Guigó, R. FA-nf: A Functional Annotation Pipeline for Proteins from Non-Model Organisms Implemented in Nextflow. *Genes* **2021**, 12, 1645. https://doi.org/10.3390/genes12101645
+
+```
+@Article{genes12101645,
+AUTHOR = {Vlasova, Anna and Hermoso Pulido, Toni and Camara, Francisco and Ponomarenko, Julia and Guigó, Roderic},
+TITLE = {FA-nf: A Functional Annotation Pipeline for Proteins from Non-Model Organisms Implemented in Nextflow},
+JOURNAL = {Genes},
+VOLUME = {12},
+YEAR = {2021},
+NUMBER = {10},
+ARTICLE-NUMBER = {1645},
+URL = {https://www.mdpi.com/2073-4425/12/10/1645},
+ISSN = {2073-4425},
+ABSTRACT = {Functional annotation allows adding biologically relevant information to predicted features in genomic sequences, and it is, therefore, an important procedure of any de novo genome sequencing project. It is also useful for proofreading and improving gene structural annotation. Here, we introduce FA-nf, a pipeline implemented in Nextflow, a versatile computational workflow management engine. The pipeline integrates different annotation approaches, such as NCBI BLAST+, DIAMOND, InterProScan, and KEGG. It starts from a protein sequence FASTA file and, optionally, a structural annotation file in GFF format, and produces several files, such as GO assignments, output summaries of the abovementioned programs and final annotation reports. The pipeline can be broken easily into smaller processes for the purpose of parallelization and easily deployed in a Linux computational environment, thanks to software containerization, thus helping to ensure full reproducibility.},
+DOI = {10.3390/genes12101645}
+}
+```
+
 ## Troubleshooting
 
 **At the beginning of the pipeline execution, I get an error message such as ```FATAL:   While making image from oci registry: while building SIF from layers: conveyor failed to get: no descriptor found for reference``` or any other mentioning OCI, SIF or Singularity.**
