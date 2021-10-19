@@ -50,8 +50,10 @@ preferred-citation:
       orcid: "https://orcid.org/0000-0002-5738-4477"
   doi: "10.3390/genes12101645"
   journal: "Genes"
-  month: 9
   title: "FA-nf: A Functional Annotation Pipeline for Proteins from Non-Model Organisms Implemented in Nextflow"
   abstract: "Functional annotation allows adding biologically relevant information to predicted features in genomic sequences, and it is, therefore, an important procedure of any de novo genome sequencing project. It is also useful for proofreading and improving gene structural annotation. Here, we introduce FA-nf, a pipeline implemented in Nextflow, a versatile computational workflow management engine. The pipeline integrates different annotation approaches, such as NCBI BLAST+, DIAMOND, InterProScan, and KEGG. It starts from a protein sequence FASTA file and, optionally, a structural annotation file in GFF format, and produces several files, such as GO assignments, output summaries of the abovementioned programs and final annotation reports. The pipeline can be broken easily into smaller processes for the purpose of parallelization and easily deployed in a Linux computational environment, thanks to software containerization, thus helping to ensure full reproducibility."
   year: 2021
+  volume: 12
+  number: 10
+  issn: 2073-4425
 ...
