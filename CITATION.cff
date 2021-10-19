@@ -1,6 +1,5 @@
 # YAML 1.2
 ---
-abstract: "Functional annotation allows adding biologically relevant information to predicted features in genomic sequences, and it is, therefore, an important procedure of any de novo genome sequencing project. It is also useful for proofreading and improving gene structural annotation. Here, we introduce FA-nf, a pipeline implemented in Nextflow, a versatile computational workflow management engine. The pipeline integrates different annotation approaches, such as NCBI BLAST+, DIAMOND, InterProScan, and KEGG. It starts from a protein sequence FASTA file and, optionally, a structural annotation file in GFF format, and produces several files, such as GO assignments, output summaries of the abovementioned programs and final annotation reports. The pipeline can be broken easily into smaller processes for the purpose of parallelization and easily deployed in a Linux computational environment, thanks to software containerization, thus helping to ensure full reproducibility."
 authors:
   -
     family-names: Vlasova
@@ -21,15 +20,38 @@ authors:
     family-names: "Guigó"
     given-names: Roderic
     orcid: "https://orcid.org/0000-0002-5738-4477"
-cff-version: "1.1.0"
-doi: "10.3390/genes12101645 "
+cff-version: "1.2.0"
+doi: "10.5281/zenodo.5526102"
 keywords:
   - "functional annotation"
   - containerization
   - pipeline
   - reproducibility
-license: GPLv3
+license: GPL-3.0+
 message: "If you use this software, please cite it using these metadata."
 repository-code: "https://github.com/guigolab/FA-nf"
 title: "FA-nf: A Functional Annotation Pipeline for Proteins from Non-Model Organisms Implemented in Nextflow"
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Vlasova
+      given-names: Anna
+    - family-names: "Hermoso Pulido"
+      given-names: Toni
+      orcid: "https://orcid.org/0000-0003-2016-6465"
+    - family-names: Camara
+      given-names: Francisco
+      orcid: "https://orcid.org/0000-0002-1971-5466 "
+    - family-names: Ponomarenko
+      given-names: Julia
+      orcid: "https://orcid.org/0000-0002-1477-9444"
+    - family-names: "Guigó"
+      given-names: Roderic
+      orcid: "https://orcid.org/0000-0002-5738-4477"
+  doi: "10.3390/genes12101645"
+  journal: "Genes"
+  month: 9
+  title: "FA-nf: A Functional Annotation Pipeline for Proteins from Non-Model Organisms Implemented in Nextflow"
+  abstract: "Functional annotation allows adding biologically relevant information to predicted features in genomic sequences, and it is, therefore, an important procedure of any de novo genome sequencing project. It is also useful for proofreading and improving gene structural annotation. Here, we introduce FA-nf, a pipeline implemented in Nextflow, a versatile computational workflow management engine. The pipeline integrates different annotation approaches, such as NCBI BLAST+, DIAMOND, InterProScan, and KEGG. It starts from a protein sequence FASTA file and, optionally, a structural annotation file in GFF format, and produces several files, such as GO assignments, output summaries of the abovementioned programs and final annotation reports. The pipeline can be broken easily into smaller processes for the purpose of parallelization and easily deployed in a Linux computational environment, thanks to software containerization, thus helping to ensure full reproducibility."
+  year: 2021
 ...
