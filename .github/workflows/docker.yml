@@ -34,9 +34,9 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ${{ secrets.DOCKER_ACCOUNT }}/fa-nf:${{ ref }}
+          tags: ${{ secrets.DOCKER_ACCOUNT }}/fa-nf:${{ env.ref }}
       - name: Build container image
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: docker.pkg.github.com/${{ secrets.DOCKER_ACCOUNT }}/fa-nf/fa-nf:${{ ref }}
+          tags: docker.pkg.github.com/${{ secrets.DOCKER_ACCOUNT }}/fa-nf/fa-nf:${{ env.ref }}
