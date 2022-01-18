@@ -428,7 +428,7 @@ if ( gffavail ) {
         gunzip -c \$input_file > input_gff
         input_file=input_gff
       fi
-      agat_sp_gxf_to_gff3.pl --gff \$input_file -o annot.gff > annot.gff.clean.txt
+      agat_convert_sp_gxf2gxf.pl --gff \$input_file -o annot.gff > annot.gff.clean.txt
      """
 
    }
