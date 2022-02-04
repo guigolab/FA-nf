@@ -30,7 +30,7 @@ params.help = false
 params.dbPath = "/nfs/db"
 
 // Version
-params.iprscanVersion = "5.48-83.0"
+params.iprscanVersion = "5.52-86.0"
 params.koVersion = "2021-05-02"
 
 // URLs

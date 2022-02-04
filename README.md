@@ -76,7 +76,7 @@ Below you can see the minimal amount of parameters in ```params.download.config`
   // Root path for Database
   params.dbPath = "/nfs/db"
   // Interproscan version used
-  params.iprscanVersion = "5.48-83.0"
+  params.iprscanVersion = "5.52-86.0"
   // Kofam version used
   params.koVersion = "2021-05-02"
   // NCBI DB list - Comma separated
@@ -225,9 +225,9 @@ It is **very important** to ensure that used Interproscan data directory matches
 Below the Interproscan parameters that can be tuned:
 ```
 // Interproscan Version
-iprscanVersion = "5.48-83.0"
+iprscanVersion = "5.52-86.0"
 // Defined Interproscan Data directory. It will override version parameter above.
-// ipscandata = "/nfs/db/iprscan/5.48-83.0"
+// ipscandata = "/nfs/db/iprscan/5.52-86.0"
 // Directory where to store intermediary Interproscan files (ensure there is enough space)
 ipscantmp = "${baseDir}/tmp/"
 ```
