@@ -740,7 +740,7 @@ if ( kolist != "" ||  kolist != null ){
    file "koala_*" from koalaResults.collect()
 
    output:
-   file allKoala into koala_parsed
+   file allKoala into ( koala_parsed, koala_parsed2 )
 
   """
 
@@ -1313,3 +1313,10 @@ if ( ! skip_sigtarp ) {
 ipscn_result2
   .collectFile(name: file(params.resultPath + "interProScan.res.tsv"))
   .println { "Result saved to file: $it" }
+
+if ( kolist != "" ||  kolist != null ){
+
+  koala_parsed2
+    .collectFile(name: file(params.resultPath + "koala.res.tsv"))
+    .println { "Result saved to file: $it" }
+}
