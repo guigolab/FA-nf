@@ -1,13 +1,13 @@
 #!/usr/bin/env nextflow
 
 /*
- * Copyright (c) 2017-2021, Centre for Genomic Regulation (CRG)
+ * Copyright (c) 2017-2022, Centre for Genomic Regulation (CRG)
  *
  * Copyright (c) 2017, Anna Vlasova
  *
  * Copyright (c) 2017, Emilio Palumbo
  *
- * Copyright (c) 2018-2021, Toni Hermoso Pulido
+ * Copyright (c) 2018-2022, Toni Hermoso Pulido
  *
  * Functional Annotation Pipeline for protein annotation from non-model organisms
  * from Genome Annotation Team in Catalonia (GATC) implemented in Nextflow
@@ -945,7 +945,7 @@ if ( skip_sigtarp ) {
       file("out_signalp_${seq}") into (signalP_result1, signalP_result2)
 
       """
-      signalp  $seq > out_signalp_${seq}
+      signalp -fasta $seq -stdout > out_signalp_${seq}
       """
   }
 
@@ -960,7 +960,7 @@ if ( skip_sigtarp ) {
       file("out_targetp_${seq}") into (targetP_result1, targetP_result2)
 
       """
-      targetp -P -c  $seq > out_targetp_${seq}
+      targetp -fasta $seq -stdout > out_targetp_${seq}
       """
   }
 
