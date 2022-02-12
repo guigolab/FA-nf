@@ -170,14 +170,7 @@ One of the strenghts of Nextflow is allowing the parallelization and merging of 
 * **cdSearchHit**: it performs a NCBI CDSearch Hit query
 * **cdSearchFeat**: it performs a NCBI CDSearch Feature query
 * **initDB**: it initialitzes the database used for gathering data from different analyses and later generating the reports. Starting inputs are FASTA and GFF files
-* **definition_upload**: it uploads definitions derived from BLAST into the DB
-* **signalP_upload**: it uploads signalP analyses into the DB
-* **targetP_upload**: it uploads targetP analyses into the DB
-* **CDSearch_hit_upload**: : it uploads NCBI CDSearch Hit analyses into the DB
-* **CDSearch_feat_upload**: it uploads NCBI CDSearch Feature analyses into the DB
-* **blast_annotator_upload**: it uploads GO terms from BLAST hits into the DB
-* **kegg_download**: it downloads KO (Kegg Ortholog) from KEGG
-* **kegg_upload**: it retrieves and uploads KEGG data (either from a KAAS file or KofamKOALA) into the DB
+* **data_upload**: it uploads all the data from the different analyses into the DB
 * **generateResultFiles**: it generates report files. If GFF provided as input, it provides a modified GFF with additional information from the previous annotation steps
 
 ### GFF preparation

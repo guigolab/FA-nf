@@ -517,7 +517,7 @@ process initDB {
   file seq from seq_test
 
  output:
-  file 'config' into (config4perl1, config4perl2, config4perl3, config4perl4, config4perl5, config4perl6, config4perl7, config4perl8, config4perl9, config4perl10)
+  file 'config' into (config4perl7, config4perl8, config4perl10)
 
  script:
  command = "mkdir -p $params.resultPath\n"
@@ -806,30 +806,6 @@ process blastDef {
  """
 }
 
-process 'definition_upload'{
-
- maxForks 1
-
- // publishDir "results", mode: 'copy'
- input:
- file "def*" from blastDef_results.collect()
- file config from config4perl1
-
- output:
- file 'def_done' into definition_passed
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat def* > allDef; \
-   upload_go_definitions.pl -i allDef -conf \$config -mode def -param 'blast_def' > def_done \
-  "
-
-  command
-}
-
 process ipscn {
 
     label 'ipscan'
@@ -966,128 +942,6 @@ if ( skip_sigtarp ) {
 
 }
 
-process 'signalP_upload'{
-
- maxForks 1
-
- input:
- file "out_signalp*" from signalP_result1.collect()
- file config from config4perl2
-
- output:
- file("upload_signalp") into upload_signalp
-
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat out_signalp* > allSignal ; \
-   load_CBSpredictions.signalP.pl -i allSignal -conf \$config -type s > upload_signalp ; \
-  "
-
-  command
-}
-
-
-process 'targetP_upload'{
-
- maxForks 1
-
- input:
- file "out_targetp*" from targetP_result1.collect()
- file config from config4perl3
- file upload_signalp from upload_signalp
-
- output:
- file("upload_targetp") into upload_targetp
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat out_targetp* > allTarget ; \
-   load_CBSpredictions.signalP.pl -i allTarget -conf \$config -type t > upload_targetp ; \
-  "
-
-  command
-}
-
-process 'interpro_upload'{
-
- maxForks 1
-
- input:
- file "out_interpro*" from ipscn_result1.collect()
- file config from config4perl4
- file upload_targetp from upload_targetp
-
- output:
- file("upload_interpro") into upload_interpro
-
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat out_interpro* > allInterpro ; \
-   run_interpro.pl -mode upload -i allInterpro -conf \$config > upload_interpro ; \
-  "
-
-  command
-}
-
-
-process 'CDsearch_hit_upload'{
-
- maxForks 1
-
- input:
- file "out_hit*" from cdSearch_hit_result.collect()
- file config from config4perl5
- file upload_interpro from upload_interpro
-
- output:
- file("upload_hit") into upload_hit
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat out_hit* > allCDsearchHit ; \
-   upload_CDsearch.pl -i allCDsearchHit -type h -conf \$config > upload_hit ; \
-  "
-
-  command
-}
-
-process 'CDsearch_feat_upload'{
-
- maxForks 1
-
- input:
- file "out_feat*" from cdSearch_feat_result.collect()
- file config from config4perl6
- file upload_hit from upload_hit
-
- output:
- file("upload_feat") into upload_feat
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat out_feat* > allCDsearchFeat ; \
-   upload_CDsearch.pl -i allCDsearchFeat -type f -conf \$config > upload_feat ; \
-  "
-
-  command
-}
 
 if ( ! koentries ) {
 
@@ -1131,26 +985,77 @@ if ( ! koentries ) {
   }
 }
 
-process 'kegg_upload' {
 
- label 'kegg_upload'
+
+process 'data_upload' {
 
  maxForks 1
 
+ label 'upload'
+
  input:
- file keggfile from keggfile
- file config from config4perl9
- file upload_feat from upload_feat
- file("down_kegg") from down_kegg
 
- output:
- file('upload_kegg') into (upload_kegg)
+  file "def*" from blastDef_results.collect()
 
+  file "out_signalp*" from signalP_result1.collect()
+  file "out_targetp*" from targetP_result1.collect()
+
+  file "out_interpro*" from ipscn_result1.collect()
+
+  file "out_hit*" from cdSearch_hit_result.collect()
+  file "out_feat*" from cdSearch_feat_result.collect()
+
+  file keggfile from keggfile
+
+  file("down_kegg") from down_kegg
+
+  file "blastAnnot*" from blast_annotator_results.collect()
+
+  file config from config4perl7
+
+  output:
+  file('done') into (last_step)
 
  script:
 
   command = checkMySQL( mysql, params.mysqllog )
 
+  command += " \
+   cat def* > allDef; \
+   upload_go_definitions.pl -i allDef -conf \$config -mode def -param 'blast_def' > def_done \
+  "
+
+  command += " \
+   cat out_signalp* > allSignal ; \
+   load_CBSpredictions.signalP.pl -i allSignal -conf \$config -type s > upload_signalp ; \
+  "
+
+  command += " \
+   cat out_targetp* > allTarget ; \
+   load_CBSpredictions.signalP.pl -i allTarget -conf \$config -type t > upload_targetp ; \
+  "
+
+  command += " \
+   cat out_interpro* > allInterpro ; \
+   run_interpro.pl -mode upload -i allInterpro -conf \$config > upload_interpro ; \
+  "
+
+  command += " \
+   cat out_hit* > allCDsearchHit ; \
+   upload_CDsearch.pl -i allCDsearchHit -type h -conf \$config > upload_hit ; \
+  "
+
+  command += " \
+   cat out_feat* > allCDsearchFeat ; \
+   upload_CDsearch.pl -i allCDsearchFeat -type f -conf \$config > upload_feat ; \
+  "
+
+  command += " \
+   # Blast Annotator
+   cat blastAnnot* > allBlast ; \
+   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file_blast ; \
+   upload_go_definitions.pl -i two_column_file_blast -conf \$config -mode go -param 'blast_annotator' > done ; \
+  "
 
   if ( ! koentries ) {
     command += " \
@@ -1161,31 +1066,6 @@ process 'kegg_upload' {
      load_kegg_KAAS.pl -input $keggfile -entries $koentries -rel $params.kegg_release -conf \$config > upload_kegg 2>err; \
     "
   }
-
-  command
-}
-
-process 'blast_annotator_upload' {
-
- maxForks 1
-
- input:
-  file "blastAnnot*" from blast_annotator_results.collect()
-  file config from config4perl7
-  file upload_kegg from upload_kegg
-
-  output:
-  file('done') into (last_step)
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat blastAnnot* > allBlast ; \
-   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file ; \
-   upload_go_definitions.pl -i two_column_file -conf \$config -mode go -param 'blast_annotator' > done ; \
-  "
 
   command
 }
