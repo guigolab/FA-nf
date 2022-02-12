@@ -517,7 +517,7 @@ process initDB {
   file seq from seq_test
 
  output:
-  file 'config' into (config4perl1, config4perl2, config4perl3, config4perl4, config4perl5, config4perl6, config4perl7, config4perl8, config4perl9, config4perl10, config4perl11)
+  file 'config' into (config4perl1, config4perl2, config4perl3, config4perl4, config4perl5, config4perl6, config4perl7, config4perl8, config4perl9, config4perl10)
 
  script:
  command = "mkdir -p $params.resultPath\n"
@@ -1175,7 +1175,7 @@ process 'blast_annotator_upload' {
   file upload_kegg from upload_kegg
 
   output:
-  file('done') into (last_step1, last_step2)
+  file('done') into (last_step)
 
  script:
 
@@ -1193,39 +1193,23 @@ process 'blast_annotator_upload' {
 process 'generateResultFiles'{
  input:
   file config from config4perl10
-  file all_done from last_step1
+  file all_done from last_step
 
  script:
 
   command = checkMySQL( mysql, params.mysqllog )
+
+  if ( annotation != null && annotation != "" ){
+    command += " \
+     get_gff3.pl -conf \$config ; \
+    "
+  }
 
   command += " \
    get_results.pl -conf \$config -obo ${oboFile} ; \
   "
 
   command
-}
-
-if ( annotation != null && annotation != "" ){
-
-process 'generateGFF3File'{
- input:
-  file config from config4perl11
-  file all_done from last_step2
-
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  // TODO: add case for debug using -list
-  command += " \
-   get_gff3.pl -conf \$config ; \
-  "
-
-  command
-}
-
 }
 
 // Check MySQL IP

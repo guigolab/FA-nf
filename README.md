@@ -178,8 +178,7 @@ One of the strenghts of Nextflow is allowing the parallelization and merging of 
 * **blast_annotator_upload**: it uploads GO terms from BLAST hits into the DB
 * **kegg_download**: it downloads KO (Kegg Ortholog) from KEGG
 * **kegg_upload**: it retrieves and uploads KEGG data (either from a KAAS file or KofamKOALA) into the DB
-* **generateResultFiles**: it generates report files
-* **generateGFF3File**: if GFF provided as input, it provides a modified GFF with additional information from the previous annotation steps
+* **generateResultFiles**: it generates report files. If GFF provided as input, it provides a modified GFF with additional information from the previous annotation steps
 
 ### GFF preparation
 
