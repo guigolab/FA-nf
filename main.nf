@@ -889,49 +889,6 @@ if ( skip_sigtarp ) {
 
 }
 
-
-if ( ! koentries ) {
-
-  process 'kegg_download'{
-
-   maxForks 1
-
-   input:
-   file keggfile from keggfile
-   file config from config4perl8
-
-   output:
-   file("down_kegg") into (down_kegg)
-
-
-   script:
-
-    command = "download_kegg_KAAS.pl -input $keggfile -conf $config > done 2>err"
-
-    command
-  }
-
-} else {
-
-  process 'kegg_download_dummy' {
-
-   input:
-   file keggfile from keggfile
-   file config from config4perl8
-
-   output:
-   file("down_kegg") into (down_kegg)
-
-
-   script:
-
-    command = "touch down_kegg"
-
-    command
-
-  }
-}
-
 // Database setup below
 process initDB {
 
@@ -983,6 +940,49 @@ process initDB {
  }
 
  command
+}
+
+
+if ( ! koentries ) {
+
+  process 'kegg_download'{
+
+   maxForks 1
+
+   input:
+   file keggfile from keggfile
+   file config from config4perl8
+
+   output:
+   file("down_kegg") into (down_kegg)
+
+
+   script:
+
+    command = "download_kegg_KAAS.pl -input $keggfile -conf $config > done 2>err"
+
+    command
+  }
+
+} else {
+
+  process 'kegg_download_dummy' {
+
+   input:
+   file keggfile from keggfile
+   file config from config4perl8
+
+   output:
+   file("down_kegg") into (down_kegg)
+
+
+   script:
+
+    command = "touch down_kegg"
+
+    command
+
+  }
 }
 
 // Data upload process
