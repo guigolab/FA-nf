@@ -985,8 +985,6 @@ if ( ! koentries ) {
   }
 }
 
-
-
 process 'data_upload' {
 
  maxForks 1
@@ -1051,7 +1049,6 @@ process 'data_upload' {
   "
 
   command += " \
-   # Blast Annotator
    cat blastAnnot* > allBlast ; \
    awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file_blast ; \
    upload_go_definitions.pl -i two_column_file_blast -conf \$config -mode go -param 'blast_annotator' > done ; \
