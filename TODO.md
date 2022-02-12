@@ -4,6 +4,7 @@
 * Add option to detect if possible contamination from BLAST (inspiration from MEGAN)
 * Include no DB mode for scripts - for debugging
 * Move all database process as a last step in the end
+* Merge two generation results
 * Include some testing and CI
 * Visualization of results
     * Venn Diagrams
