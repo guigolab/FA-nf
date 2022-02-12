@@ -6,7 +6,7 @@ on:
        - main
        - master
 jobs:
-  push_to_registries:
+  docker_test:
     name: Push Docker image to multiple registries
     runs-on: ubuntu-latest
     permissions:
