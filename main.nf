@@ -1,13 +1,13 @@
 #!/usr/bin/env nextflow
 
 /*
- * Copyright (c) 2017-2021, Centre for Genomic Regulation (CRG)
+ * Copyright (c) 2017-2022, Centre for Genomic Regulation (CRG)
  *
  * Copyright (c) 2017, Anna Vlasova
  *
  * Copyright (c) 2017, Emilio Palumbo
  *
- * Copyright (c) 2018-2021, Toni Hermoso Pulido
+ * Copyright (c) 2018-2022, Toni Hermoso Pulido
  *
  * Functional Annotation Pipeline for protein annotation from non-model organisms
  * from Genome Annotation Team in Catalonia (GATC) implemented in Nextflow
@@ -508,59 +508,6 @@ if ( gffavail ) {
   }
 }
 
-// Database setup below
-process initDB {
-
- input:
-  file config_file
-  file gff_file
-  file seq from seq_test
-
- output:
-  file 'config' into (config4perl1, config4perl2, config4perl3, config4perl4, config4perl5, config4perl6, config4perl7, config4perl8, config4perl9, config4perl10, config4perl11)
-
- script:
- command = "mkdir -p $params.resultPath\n"
- command += "sed 's/^\\s*params\\s*{\\s*\$//gi' $config_file | sed 's/^\\s*}\\s*\$//gi' | sed '/^\\s*\$/d' | sed 's/\\s\\=\\s/:/gi' | sed '/^\\s*\\/\\//d' > configt\n"
- command += "export escaped=\$(echo '$baseDir')\n"
- command += "export basedirvar=\$(echo '\\\$\\{baseDir\\}')\n"
- command += "perl -lae '\$_=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print;' configt > config\n"
-
-
- if ( mysql ) {
-  // Add dbhost to config
-  command += "echo \"\$(cat config)\n dbhost:${dbhost}\" > configIn ;\n"
-  command += "fa_main.v1.pl init -conf configIn"
-
-   if ( gffavail && gffclean ) {
-    command += " -gff ${gff_file}"
-   }
- } else {
-
-    if (exists) {
-     log.info "SQLite database ${dbFileName} exists. We proceed anyway..."
-    }
-
-    command += "fa_main.v1.pl init -conf config"
-
-    if ( gffavail && gffclean ) {
-     command += " -gff ${gff_file}"
-    }
- }
-
- if ( params.debug=="TRUE"||params.debug=="true" ) {
-   // If in debug mode, we restrict de seq entries we process
-   command += " -fasta ${seq}"
- }
-
- if ( params.rmversion=="TRUE"||params.rmversion=="true" ) {
-   // If remove versioning in protein sequences (for cases like ENSEMBL)
-   command += " -rmversion"
- }
-
- command
-}
-
 // Blast like processes
 // TODO: To change for different aligners
 diamond = false
@@ -740,7 +687,7 @@ if ( kolist != "" ||  kolist != null ){
    file "koala_*" from koalaResults.collect()
 
    output:
-   file allKoala into koala_parsed
+   file allKoala into ( koala_parsed, koala_parsed2 )
 
   """
 
@@ -804,30 +751,6 @@ process blastDef {
  """
   definitionFromBlast.pl  -in $blastXml -out blastDef_${blastXml}.txt -format xml -q
  """
-}
-
-process 'definition_upload'{
-
- maxForks 1
-
- // publishDir "results", mode: 'copy'
- input:
- file "def*" from blastDef_results.collect()
- file config from config4perl1
-
- output:
- file 'def_done' into definition_passed
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat def* > allDef; \
-   upload_go_definitions.pl -i allDef -conf \$config -mode def -param 'blast_def' > def_done \
-  "
-
-  command
 }
 
 process ipscn {
@@ -945,7 +868,7 @@ if ( skip_sigtarp ) {
       file("out_signalp_${seq}") into (signalP_result1, signalP_result2)
 
       """
-      signalp  $seq > out_signalp_${seq}
+      signalp -fasta $seq -stdout > out_signalp_${seq}
       """
   }
 
@@ -960,134 +883,12 @@ if ( skip_sigtarp ) {
       file("out_targetp_${seq}") into (targetP_result1, targetP_result2)
 
       """
-      targetp -P -c  $seq > out_targetp_${seq}
+      targetp -fasta $seq -stdout > out_targetp_${seq}
       """
   }
 
 }
 
-process 'signalP_upload'{
-
- maxForks 1
-
- input:
- file "out_signalp*" from signalP_result1.collect()
- file config from config4perl2
-
- output:
- file("upload_signalp") into upload_signalp
-
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat out_signalp* > allSignal ; \
-   load_CBSpredictions.signalP.pl -i allSignal -conf \$config -type s > upload_signalp ; \
-  "
-
-  command
-}
-
-
-process 'targetP_upload'{
-
- maxForks 1
-
- input:
- file "out_targetp*" from targetP_result1.collect()
- file config from config4perl3
- file upload_signalp from upload_signalp
-
- output:
- file("upload_targetp") into upload_targetp
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat out_targetp* > allTarget ; \
-   load_CBSpredictions.signalP.pl -i allTarget -conf \$config -type t > upload_targetp ; \
-  "
-
-  command
-}
-
-process 'interpro_upload'{
-
- maxForks 1
-
- input:
- file "out_interpro*" from ipscn_result1.collect()
- file config from config4perl4
- file upload_targetp from upload_targetp
-
- output:
- file("upload_interpro") into upload_interpro
-
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat out_interpro* > allInterpro ; \
-   run_interpro.pl -mode upload -i allInterpro -conf \$config > upload_interpro ; \
-  "
-
-  command
-}
-
-
-process 'CDsearch_hit_upload'{
-
- maxForks 1
-
- input:
- file "out_hit*" from cdSearch_hit_result.collect()
- file config from config4perl5
- file upload_interpro from upload_interpro
-
- output:
- file("upload_hit") into upload_hit
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat out_hit* > allCDsearchHit ; \
-   upload_CDsearch.pl -i allCDsearchHit -type h -conf \$config > upload_hit ; \
-  "
-
-  command
-}
-
-process 'CDsearch_feat_upload'{
-
- maxForks 1
-
- input:
- file "out_feat*" from cdSearch_feat_result.collect()
- file config from config4perl6
- file upload_hit from upload_hit
-
- output:
- file("upload_feat") into upload_feat
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat out_feat* > allCDsearchFeat ; \
-   upload_CDsearch.pl -i allCDsearchFeat -type f -conf \$config > upload_feat ; \
-  "
-
-  command
-}
 
 if ( ! koentries ) {
 
@@ -1131,26 +932,128 @@ if ( ! koentries ) {
   }
 }
 
-process 'kegg_upload' {
+// Database setup below
+process initDB {
 
- label 'kegg_upload'
+ input:
+  file config_file
+  file gff_file
+  file seq from seq_test
+
+ output:
+  file 'config' into (config4perl7, config4perl8, config4perl10)
+
+ script:
+ command = "mkdir -p $params.resultPath\n"
+ command += "sed 's/^\\s*params\\s*{\\s*\$//gi' $config_file | sed 's/^\\s*}\\s*\$//gi' | sed '/^\\s*\$/d' | sed 's/\\s\\=\\s/:/gi' | sed '/^\\s*\\/\\//d' > configt\n"
+ command += "export escaped=\$(echo '$baseDir')\n"
+ command += "export basedirvar=\$(echo '\\\$\\{baseDir\\}')\n"
+ command += "perl -lae '\$_=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print;' configt > config\n"
+
+
+ if ( mysql ) {
+  // Add dbhost to config
+  command += "echo \"\$(cat config)\n dbhost:${dbhost}\" > configIn ;\n"
+  command += "fa_main.v1.pl init -conf configIn"
+
+   if ( gffavail && gffclean ) {
+    command += " -gff ${gff_file}"
+   }
+ } else {
+
+    if (exists) {
+     log.info "SQLite database ${dbFileName} exists. We proceed anyway..."
+    }
+
+    command += "fa_main.v1.pl init -conf config"
+
+    if ( gffavail && gffclean ) {
+     command += " -gff ${gff_file}"
+    }
+ }
+
+ if ( params.debug=="TRUE"||params.debug=="true" ) {
+   // If in debug mode, we restrict de seq entries we process
+   command += " -fasta ${seq}"
+ }
+
+ if ( params.rmversion=="TRUE"||params.rmversion=="true" ) {
+   // If remove versioning in protein sequences (for cases like ENSEMBL)
+   command += " -rmversion"
+ }
+
+ command
+}
+
+// Data upload process
+process 'data_upload' {
 
  maxForks 1
 
+ label 'upload'
+
  input:
- file keggfile from keggfile
- file config from config4perl9
- file upload_feat from upload_feat
- file("down_kegg") from down_kegg
 
- output:
- file('upload_kegg') into (upload_kegg)
+  file "def*" from blastDef_results.collect()
 
+  file "out_signalp*" from signalP_result1.collect()
+  file "out_targetp*" from targetP_result1.collect()
+
+  file "out_interpro*" from ipscn_result1.collect()
+
+  file "out_hit*" from cdSearch_hit_result.collect()
+  file "out_feat*" from cdSearch_feat_result.collect()
+
+  file keggfile from keggfile
+
+  file("down_kegg") from down_kegg
+
+  file "blastAnnot*" from blast_annotator_results.collect()
+
+  file config from config4perl7
+
+  output:
+  file('done') into (last_step)
 
  script:
 
   command = checkMySQL( mysql, params.mysqllog )
 
+  command += " \
+   cat def* > allDef; \
+   upload_go_definitions.pl -i allDef -conf \$config -mode def -param 'blast_def' > def_done \
+  "
+
+  command += " \
+   cat out_signalp* > allSignal ; \
+   load_CBSpredictions.signalP.pl -i allSignal -conf \$config -type s > upload_signalp ; \
+  "
+
+  command += " \
+   cat out_targetp* > allTarget ; \
+   load_CBSpredictions.signalP.pl -i allTarget -conf \$config -type t > upload_targetp ; \
+  "
+
+  command += " \
+   cat out_interpro* > allInterpro ; \
+   run_interpro.pl -mode upload -i allInterpro -conf \$config > upload_interpro ; \
+  "
+
+  command += " \
+   cat out_hit* > allCDsearchHit ; \
+   upload_CDsearch.pl -i allCDsearchHit -type h -conf \$config > upload_hit ; \
+  "
+
+  command += " \
+   cat out_feat* > allCDsearchFeat ; \
+   upload_CDsearch.pl -i allCDsearchFeat -type f -conf \$config > upload_feat ; \
+  "
+
+  command += " \
+   cat blastAnnot* > allBlast ; \
+   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file_blast ; \
+   upload_go_definitions.pl -i two_column_file_blast -conf \$config -mode go -param 'blast_annotator' > done ; \
+  "
 
   if ( ! koentries ) {
     command += " \
@@ -1165,67 +1068,26 @@ process 'kegg_upload' {
   command
 }
 
-process 'blast_annotator_upload' {
-
- maxForks 1
-
- input:
-  file "blastAnnot*" from blast_annotator_results.collect()
-  file config from config4perl7
-  file upload_kegg from upload_kegg
-
-  output:
-  file('done') into (last_step1, last_step2)
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  command += " \
-   cat blastAnnot* > allBlast ; \
-   awk '\$2!=\"#\"{print \$1\"\t\"\$2}' allBlast > two_column_file ; \
-   upload_go_definitions.pl -i two_column_file -conf \$config -mode go -param 'blast_annotator' > done ; \
-  "
-
-  command
-}
-
 process 'generateResultFiles'{
  input:
   file config from config4perl10
-  file all_done from last_step1
+  file all_done from last_step
 
  script:
 
   command = checkMySQL( mysql, params.mysqllog )
+
+  if ( annotation != null && annotation != "" ){
+    command += " \
+     get_gff3.pl -conf \$config ; \
+    "
+  }
 
   command += " \
    get_results.pl -conf \$config -obo ${oboFile} ; \
   "
 
   command
-}
-
-if ( annotation != null && annotation != "" ){
-
-process 'generateGFF3File'{
- input:
-  file config from config4perl11
-  file all_done from last_step2
-
-
- script:
-
-  command = checkMySQL( mysql, params.mysqllog )
-
-  // TODO: add case for debug using -list
-  command += " \
-   get_gff3.pl -conf \$config ; \
-  "
-
-  command
-}
-
 }
 
 // Check MySQL IP
@@ -1313,3 +1175,10 @@ if ( ! skip_sigtarp ) {
 ipscn_result2
   .collectFile(name: file(params.resultPath + "interProScan.res.tsv"))
   .println { "Result saved to file: $it" }
+
+if ( kolist != "" ||  kolist != null ){
+
+  koala_parsed2
+    .collectFile(name: file(params.resultPath + "koala.res.tsv"))
+    .println { "Result saved to file: $it" }
+}

@@ -40,9 +40,9 @@ RUN apt-get clean
 RUN set -x; rm -rf /var/lib/apt/lists/*
 
 # Place /scripts
-RUN mkdir -p /scripts
+# RUN mkdir -p /scripts
 
-ENV PATH /scripts:$PATH
+# ENV PATH /scripts:$PATH
 
-COPY scripts/ /scripts/
-RUN chmod -R a+rx /scripts/*
+# COPY scripts/ /scripts/
+# RUN chmod -R a+rx /scripts/*

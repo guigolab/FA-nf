@@ -1128,7 +1128,7 @@ sub parseAnnotation
 
    if ( $annotTerm eq '#' ) {
 
-    ($proteinName, $annotTerm)=$line=~/^(\S+)\s+\#\s+(\S.*)\s*/;
+    ($proteinName, $annotTerm)=$line=~/^(\S+)\s+\#\s*(\S.*)\s*/;
 
    }
 
@@ -1142,8 +1142,8 @@ sub parseAnnotation
 
 #another patch - Wheat proteins from fasta file (that was used for kegg web search) have additional protein length in it., need to remove it/
 #  $proteinName=~s/^(TAES1a\S+)\_\d+$/$1/;
- if($proteinName =~/([^_]+)\_\d+/)
- {$proteinName=$1;}
+ #if($proteinName =~/([^_]+)\_\d+/)
+ #{$proteinName=$1;}
 
 # Let's ensure everything uploaded should be OK
   if ( $proteinName && $annotTerm ) {
