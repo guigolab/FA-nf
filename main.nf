@@ -508,59 +508,6 @@ if ( gffavail ) {
   }
 }
 
-// Database setup below
-process initDB {
-
- input:
-  file config_file
-  file gff_file
-  file seq from seq_test
-
- output:
-  file 'config' into (config4perl7, config4perl8, config4perl10)
-
- script:
- command = "mkdir -p $params.resultPath\n"
- command += "sed 's/^\\s*params\\s*{\\s*\$//gi' $config_file | sed 's/^\\s*}\\s*\$//gi' | sed '/^\\s*\$/d' | sed 's/\\s\\=\\s/:/gi' | sed '/^\\s*\\/\\//d' > configt\n"
- command += "export escaped=\$(echo '$baseDir')\n"
- command += "export basedirvar=\$(echo '\\\$\\{baseDir\\}')\n"
- command += "perl -lae '\$_=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print;' configt > config\n"
-
-
- if ( mysql ) {
-  // Add dbhost to config
-  command += "echo \"\$(cat config)\n dbhost:${dbhost}\" > configIn ;\n"
-  command += "fa_main.v1.pl init -conf configIn"
-
-   if ( gffavail && gffclean ) {
-    command += " -gff ${gff_file}"
-   }
- } else {
-
-    if (exists) {
-     log.info "SQLite database ${dbFileName} exists. We proceed anyway..."
-    }
-
-    command += "fa_main.v1.pl init -conf config"
-
-    if ( gffavail && gffclean ) {
-     command += " -gff ${gff_file}"
-    }
- }
-
- if ( params.debug=="TRUE"||params.debug=="true" ) {
-   // If in debug mode, we restrict de seq entries we process
-   command += " -fasta ${seq}"
- }
-
- if ( params.rmversion=="TRUE"||params.rmversion=="true" ) {
-   // If remove versioning in protein sequences (for cases like ENSEMBL)
-   command += " -rmversion"
- }
-
- command
-}
-
 // Blast like processes
 // TODO: To change for different aligners
 diamond = false
@@ -985,6 +932,60 @@ if ( ! koentries ) {
   }
 }
 
+// Database setup below
+process initDB {
+
+ input:
+  file config_file
+  file gff_file
+  file seq from seq_test
+
+ output:
+  file 'config' into (config4perl7, config4perl8, config4perl10)
+
+ script:
+ command = "mkdir -p $params.resultPath\n"
+ command += "sed 's/^\\s*params\\s*{\\s*\$//gi' $config_file | sed 's/^\\s*}\\s*\$//gi' | sed '/^\\s*\$/d' | sed 's/\\s\\=\\s/:/gi' | sed '/^\\s*\\/\\//d' > configt\n"
+ command += "export escaped=\$(echo '$baseDir')\n"
+ command += "export basedirvar=\$(echo '\\\$\\{baseDir\\}')\n"
+ command += "perl -lae '\$_=~s/\$ENV{'basedirvar'}/\$ENV{'escaped'}/g; print;' configt > config\n"
+
+
+ if ( mysql ) {
+  // Add dbhost to config
+  command += "echo \"\$(cat config)\n dbhost:${dbhost}\" > configIn ;\n"
+  command += "fa_main.v1.pl init -conf configIn"
+
+   if ( gffavail && gffclean ) {
+    command += " -gff ${gff_file}"
+   }
+ } else {
+
+    if (exists) {
+     log.info "SQLite database ${dbFileName} exists. We proceed anyway..."
+    }
+
+    command += "fa_main.v1.pl init -conf config"
+
+    if ( gffavail && gffclean ) {
+     command += " -gff ${gff_file}"
+    }
+ }
+
+ if ( params.debug=="TRUE"||params.debug=="true" ) {
+   // If in debug mode, we restrict de seq entries we process
+   command += " -fasta ${seq}"
+ }
+
+ if ( params.rmversion=="TRUE"||params.rmversion=="true" ) {
+   // If remove versioning in protein sequences (for cases like ENSEMBL)
+   command += " -rmversion"
+ }
+
+ command
+}
+
+// Data upload process
 process 'data_upload' {
 
  maxForks 1
