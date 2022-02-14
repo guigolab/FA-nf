@@ -161,11 +161,13 @@ CREATE TABLE IF NOT EXISTS `blast_hit` (
 CREATE TABLE IF NOT EXISTS `signalP` (
   `signalP_id` INTEGER PRIMARY KEY AUTO_INCREMENT ,
   `protein_id` INTEGER  NOT NULL ,
+  `class` VARCHAR(255) NOT NULL DEFAULT '' ,
   start INTEGER NOT NULL,
   end INTEGER NOT NULL,
   score REAL NOT NULL,
   description TEXT,
   KEY `protein_id_idx` (`protein_id`),
+  KEY `class_idx` ( `class` ),
   KEY `start_idx` ( `start` ),
   KEY `end_idx` ( `end` ),
   KEY `score_idx` (`score`)
@@ -174,13 +176,13 @@ CREATE TABLE IF NOT EXISTS `signalP` (
 CREATE TABLE IF NOT EXISTS `targetP` (
   `targetP_id` INTEGER PRIMARY KEY AUTO_INCREMENT ,
   `protein_id` INTEGER  NOT NULL ,
-  `targetP_type` VARCHAR(255) NOT NULL DEFAULT '' ,
+  `class` VARCHAR(255) NOT NULL DEFAULT '' ,
   start INTEGER NOT NULL,
   end INTEGER NOT NULL,
   score REAL NOT NULL,
   description TEXT,
   KEY `protein_id_idx` (`protein_id`),
-  KEY `type_idx` ( `targetP_type` ),
+  KEY `class_idx` ( `class` ),
   KEY `start_idx` ( `start` ),
   KEY `end_idx` ( `end` ),
   KEY `score_idx` (`score`)

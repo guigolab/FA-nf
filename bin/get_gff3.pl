@@ -418,25 +418,33 @@ sub createGFF3File {
           }
         }
 
-        #signalP, chloroP features
-        my @list=('signalP', 'targetP', 'chloroP');
+        #signalP, targetP features
+        my @list=('signalP', 'targetP');
         foreach my $lItem (@list) {
-          $selectString =  "SELECT start, end, score FROM $lItem where protein_id=$idItem";
+          $selectString =  "SELECT start, end, class, score FROM $lItem where protein_id=$idItem";
           #print STDERR "F:".$selectString."\n";
           $results =$dbh->select_from_table($selectString);
           foreach my $result (@{$results}) {
            my $end =$result->{'end'};
            my $score = $result->{'score'};
+           my $class = $result->{'class'};
            $end=~s/\"//gi;
            $start=~s/\"//gi;
 
            if ( $protName && $protName ne '' ) {
+
+             $classStr = "";
+
+             if ( $class ne '' ) {
+               $classStr = ";Note=".$class.";";
+             }
+
              # Toniher: Changed from SIGNAL to protein_match and also start despite it must be 1
              #print OUTFILE "$protName\t$lItem\tSIGNAL\t1\t$end\t$score\t.\t.\tID=".ucfirst($lItem)."_$protName;match=YES;\n";
-             print OUTFILE "$protName\t$lItem\tprotein_match\t$start\t$end\t$score\t.\t.\tID=".ucfirst($lItem)."_$protName;match=YES;\n";
+             print OUTFILE "$protName\t$lItem\tprotein_match\t$start\t$end\t$score\t.\t.\tID=".ucfirst($lItem)."_$protName;match=YES;$classStr\n";
            }
           }
-        } #signalP, targetP, chloroP
+        } #signalP, targetP
 
   } #foreach protein item
 

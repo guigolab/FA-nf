@@ -237,6 +237,7 @@ sub parseOldPrograms {
 		 $protName=$data[0];
 		 $retData->{$protName}{'start'} = 1;
 		 $retData->{$protName}{'end'} = $data[2];
+		 $retData->{$protName}{'class'} = "";
 		 $retData->{$protName}{'score'} = $data[8];
 	 }
 	}
@@ -246,6 +247,7 @@ sub parseOldPrograms {
 		 $protName=$data[0];
 		 $retData->{$protName}{'start'} = 1;
 		 $retData->{$protName}{'end'} = $data[5];
+		 $retData->{$protName}{'class'} = "";
 		 $retData->{$protName}{'score'} = $data[2];
 		}
 	}
@@ -255,7 +257,7 @@ sub parseOldPrograms {
 		 $protName=$data[0];
 		 $retData->{$protName}{'start'} = 1;
 		 $retData->{$protName}{'end'} = 1;
-		 $retData->{$protName}{'targetP_type'} = $data[6];
+		 $retData->{$protName}{'class'} = $data[6];
 		 $retData->{$protName}{'score'} = $data[7];
 		}
  }
@@ -279,6 +281,7 @@ sub parseSignalP {
 
 		my ( $pos ) = $data[-1] =~ /CS\s+pos:\s+(\d+)\-/;
 
+		$retData->{$protName}{'class'} = "";
 		$retData->{$protName}{'end'} = $pos;
 		$retData->{$protName}{'score'} = $data[2];
 	}
@@ -298,7 +301,7 @@ sub parseTargetP {
 
 	if ( $data[-1]=~/pos/ ) {
 
-		$retData->{$protName}{'targetP_type'} = $data[1];
+		$retData->{$protName}{'class'} = $data[1];
 
 		my $spos = 3;
 
