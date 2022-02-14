@@ -433,7 +433,7 @@ sub createGFF3File {
 
            if ( $protName && $protName ne '' ) {
 
-             $classStr = "";
+             my $classStr = "";
 
              if ( $class ne '' ) {
                $classStr = ";Note=".$class.";";
