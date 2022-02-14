@@ -212,7 +212,7 @@ sub detectVersion {
 		}
 	}
 
-	close(IN):
+	close(IN);
 
 	return $version;
 
