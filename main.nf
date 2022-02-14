@@ -728,7 +728,7 @@ if (params.gogourl != "") {
    file blastXml from blastXmlResults2.flatMap()
 
    output:
-   file "blastAnnot" into blast_annotator_results
+   file "blastAnnot" into ( blast_annotator_results1, blast_annotator_results2 )
 
   """
    blast-annotator.pl -in $blastXml -out blastAnnot --hits $params.gogohits --url $params.gogourl -t $blastAnnotMode -q --format blastxml
@@ -1008,7 +1008,7 @@ process 'data_upload' {
 
   file("down_kegg") from down_kegg
 
-  file "blastAnnot*" from blast_annotator_results.collect()
+  file "blastAnnot*" from blast_annotator_results1.collect()
 
   file config from config4perl7
 
@@ -1192,5 +1192,11 @@ if ( kolist != "" ||  kolist != null ){
 
   koala_parsed2
     .collectFile(name: file(params.resultPath + "koala.res.tsv"))
+    .println { "Result saved to file: $it" }
+}
+
+if (params.gogourl != "") {
+  blast_annotator_results2
+    .collectFile(name: file(params.resultPath + "blastAnnotator.res.tsv"))
     .println { "Result saved to file: $it" }
 }
