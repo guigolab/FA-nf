@@ -788,7 +788,7 @@ process 'cdSearchHit' {
     file seq from web_seq_file1
 
     output:
-    file("out_hit_${seq}") into cdSearch_hit_result
+    file("out_hit_${seq}") into ( cdSearch_hit_result1, cdSearch_hit_result2 )
 
     script:
     if ( skip_cdSearch ) {
@@ -813,7 +813,7 @@ process 'cdSearchFeat' {
     file seq from web_seq_file2
 
     output:
-    file("out_feat_${seq}") into cdSearch_feat_result
+    file("out_feat_${seq}") into ( cdSearch_feat_result1, cdSearch_feat_result2 )
 
     script:
     if ( skip_cdSearch ) {
@@ -1001,8 +1001,8 @@ process 'data_upload' {
 
   file "out_interpro*" from ipscn_result1.collect()
 
-  file "out_hit*" from cdSearch_hit_result.collect()
-  file "out_feat*" from cdSearch_feat_result.collect()
+  file "out_hit*" from cdSearch_hit_result1.collect()
+  file "out_feat*" from cdSearch_feat_result1.collect()
 
   file keggfile from keggfile
 
@@ -1170,6 +1170,18 @@ if ( ! skip_sigtarp ) {
   targetP_result2
    .collectFile(name: file(params.resultPath + "targetP.res.tsv"))
     .println { "Result saved to file: $it" }
+}
+
+if ( ! skip_cdSearch ) {
+
+  cdSearch_hit_result2
+   .collectFile(name: file(params.resultPath + "cdSearch_hit.res.tsv"))
+    .println { "Result saved to file: $it" }
+
+  cdSearch_feat_result2
+   .collectFile(name: file(params.resultPath + "cdSearch_feat.res.tsv"))
+    .println { "Result saved to file: $it" }
+
 }
 
 ipscn_result2
