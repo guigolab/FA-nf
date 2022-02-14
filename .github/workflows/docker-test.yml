@@ -5,6 +5,9 @@ on:
      # Default branches below
        - main
        - master
+     paths:
+      - 'bin/**'
+      - 'Dockerfile'
 jobs:
   docker_test:
     name: Push Docker image to multiple registries
