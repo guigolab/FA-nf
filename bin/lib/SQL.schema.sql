@@ -171,6 +171,21 @@ CREATE TABLE IF NOT EXISTS `signalP` (
   KEY `score_idx` (`score`)
 );
 
+CREATE TABLE IF NOT EXISTS `targetP` (
+  `targetP_id` INTEGER PRIMARY KEY AUTO_INCREMENT ,
+  `protein_id` INTEGER  NOT NULL ,
+  `targetP_type` VARCHAR(255) NOT NULL DEFAULT '' ,
+  start INTEGER NOT NULL,
+  end INTEGER NOT NULL,
+  score REAL NOT NULL,
+  description TEXT,
+  KEY `protein_id_idx` (`protein_id`),
+  KEY `type_idx` ( `targetP_type` ),
+  KEY `start_idx` ( `start` ),
+  KEY `end_idx` ( `end` ),
+  KEY `score_idx` (`score`)
+);
+
 CREATE TABLE IF NOT EXISTS `chloroP` (
   `chloroP_id` INTEGER PRIMARY KEY AUTO_INCREMENT ,
   `protein_id` INTEGER  NOT NULL ,
@@ -184,14 +199,6 @@ CREATE TABLE IF NOT EXISTS `chloroP` (
   KEY `score_idx` (`score`)
 );
 
-CREATE TABLE IF NOT EXISTS `targetP` (
-  `targetP_id` INTEGER PRIMARY KEY AUTO_INCREMENT ,
-  `protein_id` INTEGER  NOT NULL ,
-  location TEXT NOT NULL,
-  RC INTEGER NOT NULL,
-  KEY `protein_id_idx` (`protein_id`),
-  KEY `RC_idx` (`RC`)
-);
 
 
 CREATE TABLE IF NOT EXISTS `cd_search_features` (

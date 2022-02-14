@@ -101,8 +101,11 @@ else
 die "You must specify a file with the predictions\n Use -h for help"
 	if !$idfile;
 
-my %dataHash = &parseCBSpredictionsData($idfile,$type);
-&uploadCBSpredictionsFast($dbh, \%dataHash,$config{'dbEngine'}, $type);
+
+my $progVersion = detectVersion( $idfile );
+
+my %dataHash = &parseCBSpredictionsData( $idfile, $type, $progVersion );
+&uploadCBSpredictionsFast($dbh, \%dataHash,$config{'dbEngine'}, $type, $progVersion );
 
 # Commit needed for SQLite
 if(lc( $config{'dbEngine'} ) eq 'sqlite')
@@ -143,7 +146,7 @@ sub uploadCBSpredictionsFast
   elsif($type eq 't') {
 		$table = 'targetP';
     $tableId = 'targetP_id';
-    @keys=('location','RC');
+    @keys=('start', 'end', 'targetP_type', 'score');
 		if ( $engine eq 'mysql' ) {
 			$insertString = "INSERT INTO $table (protein_id,".join(",",@keys)." ) VALUES(?,?,?)";
 		} else {
@@ -250,8 +253,10 @@ sub parseOldPrograms {
 	elsif($type eq 't') {
 	 if($data[6] ne '_'){
 		 $protName=$data[0];
-		 $retData->{$protName}{'location'} = $data[6];
-		 $retData->{$protName}{'RC'} = $data[7];
+		 $retData->{$protName}{'start'} = 1;
+		 $retData->{$protName}{'end'} = 1;
+		 $retData->{$protName}{'targetP_type'} = $data[6];
+		 $retData->{$protName}{'score'} = $data[7];
 		}
  }
 
@@ -293,27 +298,32 @@ sub parseTargetP {
 
 	if ( $data[-1]=~/pos/ ) {
 
-		$retData->{$protName}{'location'} = $data[1];
+		$retData->{$protName}{'targetP_type'} = $data[1];
 
-		my $pos = 3;
+		my $spos = 3;
 
 		if ( $data[1] =~/SP/i ) {
-			$pos = 3;
+			$spos = 3;
 		}
 
 		if ( $data[1] =~/MT/i ) {
-			$pos = 4;
+			$spos = 4;
 		}
 
 		if ( $data[1] =~/CH/i ) {
-			$pos = 5;
+			$spos = 5;
 		}
 
 		if ( $data[1] =~/TH/i ) {
-			$pos = 6;
+			$spos = 6;
 		}
 
-		$retData->{$protName}{'RC'} = $data[$pos];
+
+		$retData->{$protName}{'start'} = 1;
+		my ( $pos ) = $data[-1] =~ /CS\s+pos:\s+(\d+)\-/;
+		$retData->{$protName}{'end'} = $pos;
+
+		$retData->{$protName}{'score'} = $data[$spos];
 	}
 
 	return $retData;
@@ -321,12 +331,10 @@ sub parseTargetP {
 }
 
 sub parseCBSpredictionsData {
- my ($fileName, $pType) = @_;
+ my ($fileName, $pType, $progVersion) = @_;
 
  my $retData = {};
  my @data=();
-
- my $progVersion = detectVersion($fileName);
 
  open(IN, $fileName) || die "Can't open $fileName for reading $!\n";
  while(my $line=<IN>) {
