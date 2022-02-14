@@ -206,8 +206,8 @@ sub detectVersion {
 	open(IN, $fileName) || die "Can't open $fileName for reading $!\n";
 
 	while(my $line=<IN>) {
-		if ( $_=~/^\#\s+(\S+)\s+/ ) {
-			($version)= $_=~/^\#\s+(\S+)/;
+		if ( $line=~/^\#\s+(\S+)\s+/ ) {
+			($version)= $line=~/^\#\s+(\S+)/;
 			last;
 		}
 	}
@@ -268,7 +268,7 @@ sub parseSignalP {
 
 	my $protName = $data[0];
 
-	if ( $data[-1]=~/\S+/ ) {
+	if ( $data[-1]=~/pos/ ) {
 
 		$retData->{$protName}{'start'} = 1;
 
@@ -291,7 +291,7 @@ sub parseTargetP {
 
 	my $protName = $data[0];
 
-	if ( $data[-1]=~/\S+/ ) {
+	if ( $data[-1]=~/pos/ ) {
 
 		$retData->{$protName}{'location'} = $data[1];
 
@@ -323,7 +323,7 @@ sub parseTargetP {
 sub parseCBSpredictionsData {
  my ($fileName, $pType) = @_;
 
- my $retData=();
+ my $retData = {};
  my @data=();
 
  my $progVersion = detectVersion($fileName);
@@ -337,12 +337,12 @@ sub parseCBSpredictionsData {
 
 			if ( $progVersion eq "SignalP-5.0" ) {
 
-				$retData = parseOldPrograms( $retData, $line );
+				$retData = parseSignalP( $retData, $line );
 			}
 
 			if ( $progVersion eq "TargetP-2.0" ) {
 
-				$retData = parseOldPrograms( $retData, $line );
+				$retData = parseTargetP( $retData, $line );
 			}
 
 			else {
@@ -354,5 +354,10 @@ sub parseCBSpredictionsData {
  }
  close(IN);
 
- return %{$retData};
+ if ( $retData ) {
+ 	return %{$retData};
+ } else {
+ 	return ();
+ }
+
 }
