@@ -73,6 +73,10 @@ my %config = $cfg->vars();
 #my %conf =  %::conf;
 my $debug = $config{'debug'};
 
+unless ( $type ~~ ['s', 'c', 't'] ) {
+	die "Unexpected program option!";
+}
+
 if(!defined $config{'dbEngine'}){$config{'dbEngine'} = 'mysql';}
 my $dbh;
 #connect to the DB
@@ -194,50 +198,161 @@ sub processType {
 
 }
 
+sub detectVersion {
+
+	my $fileName = shift;
+	my $version = "";
+
+	open(IN, $fileName) || die "Can't open $fileName for reading $!\n";
+
+	while(my $line=<IN>) {
+		if ( $_=~/^\#\s+(\S+)\s+/ ) {
+			($version)= $_=~/^\#\s+(\S+)/;
+			last;
+		}
+	}
+
+	close(IN):
+
+	return $version;
+
+}
+
+sub parseOldPrograms {
+
+	my $retData = shift;
+	my $line = shift;
+	my $type = shift;
+
+	my $protName;
+
+	my (@data)=split(/\s+/,$line);
+	if(scalar(@data) < 6) {next;}
+	#for signalP
+	if($type eq 's') {
+		if($data[9] eq 'Y'){
+		 $protName=$data[0];
+		 $retData->{$protName}{'start'} = 1;
+		 $retData->{$protName}{'end'} = $data[2];
+		 $retData->{$protName}{'score'} = $data[8];
+	 }
+	}
+	#for chloroP
+	elsif($type eq 'c') {
+		if($data[3] eq 'Y'){
+		 $protName=$data[0];
+		 $retData->{$protName}{'start'} = 1;
+		 $retData->{$protName}{'end'} = $data[5];
+		 $retData->{$protName}{'score'} = $data[2];
+		}
+	}
+	#for targetP
+	elsif($type eq 't') {
+	 if($data[6] ne '_'){
+		 $protName=$data[0];
+		 $retData->{$protName}{'location'} = $data[6];
+		 $retData->{$protName}{'RC'} = $data[7];
+		}
+ }
+
+	return $retData;
+
+}
+
+sub parseSignalP {
+
+	my $retData = shift;
+	my $line = shift;
+
+	my (@data)=split(/\t+/,$line);
+
+	my $protName = $data[0];
+
+	if ( $data[-1]=~/\S+/ ) {
+
+		$retData->{$protName}{'start'} = 1;
+
+		my ( $pos ) = $data[-1] =~ /CS\s+pos:\s+(\d+)\-/;
+
+		$retData->{$protName}{'end'} = $pos;
+		$retData->{$protName}{'score'} = $data[2];
+	}
+
+	return $retData;
+
+}
+
+sub parseTargetP {
+
+	my $retData = shift;
+	my $line = shift;
+
+	my (@data)=split(/\t+/,$line);
+
+	my $protName = $data[0];
+
+	if ( $data[-1]=~/\S+/ ) {
+
+		$retData->{$protName}{'location'} = $data[1];
+
+		my $pos = 3;
+
+		if ( $data[1] =~/SP/i ) {
+			$pos = 3;
+		}
+
+		if ( $data[1] =~/MT/i ) {
+			$pos = 4;
+		}
+
+		if ( $data[1] =~/CH/i ) {
+			$pos = 5;
+		}
+
+		if ( $data[1] =~/TH/i ) {
+			$pos = 6;
+		}
+
+		$retData->{$protName}{'RC'} = $data[$pos];
+	}
+
+	return $retData;
+
+}
 
 sub parseCBSpredictionsData {
  my ($fileName, $pType) = @_;
 
- my %retData=();
+ my $retData=();
  my @data=();
 
- my($protName);
+ my $progVersion = detectVersion($fileName);
+
  open(IN, $fileName) || die "Can't open $fileName for reading $!\n";
  while(my $line=<IN>) {
     chomp($line);
     if($line=~/^\#/) {next;}
-    @data=split(/\s+/,$line);
-    if(scalar(@data) < 6) {next;}
-    #for signalP
-    if($type eq 's') {
-      if($data[9] eq 'Y'){
-       $protName=$data[0];
-       $retData{$protName}{'start'} = 1;
-       $retData{$protName}{'end'} = $data[2];
-       $retData{$protName}{'score'} = $data[8];
-     }
-    }
-    #for chloroP
-    elsif($type eq 'c') {
-      if($data[3] eq 'Y'){
-       $protName=$data[0];
-       $retData{$protName}{'start'} = 1;
-       $retData{$protName}{'end'} = $data[5];
-       $retData{$protName}{'score'} = $data[2];
-     	}
-    }
-    #for targetP
-    elsif($type eq 't') {
-     if($data[6] ne '_'){
-       $protName=$data[0];
-       $retData{$protName}{'location'} = $data[6];
-       $retData{$protName}{'RC'} = $data[7];
-      }
-   }
-   else
-	  {die "Error: Unknown type of the input data, can not proceed!\n";}
+
+		else {
+
+			if ( $progVersion eq "SignalP-5.0" ) {
+
+				$retData = parseOldPrograms( $retData, $line );
+			}
+
+			if ( $progVersion eq "TargetP-2.0" ) {
+
+				$retData = parseOldPrograms( $retData, $line );
+			}
+
+			else {
+				$retData = parseOldPrograms( $retData, $line, $type );
+			}
+
+		}
+
  }
  close(IN);
 
- return %retData;
+ return %{$retData};
 }
