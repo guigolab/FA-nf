@@ -146,7 +146,7 @@ sub uploadCBSpredictionsFast
   elsif($type eq 't') {
 		$table = 'targetP';
     $tableId = 'targetP_id';
-    @keys=('start', 'end', 'targetP_type', 'score');
+    @keys=('start', 'end', 'class', 'score');
 		if ( $engine eq 'mysql' ) {
 			$insertString = "INSERT INTO $table (protein_id,".join(",",@keys)." ) VALUES(?,?,?)";
 		} else {
