@@ -1021,7 +1021,7 @@ process 'data_upload' {
 
   command += " \
    cat def* > allDef; \
-   upload_go_definitions.pl -i allDef -conf \$config -mode def -param 'blast_def' > def_done \
+   upload_go_definitions.pl -i allDef -conf \$config -mode def -param 'blast_def' > def_done ; \
   "
 
   command += " \
