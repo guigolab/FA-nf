@@ -148,9 +148,9 @@ sub uploadCBSpredictionsFast
     $tableId = 'targetP_id';
     @keys=('start', 'end', 'class', 'score');
 		if ( $engine eq 'mysql' ) {
-			$insertString = "INSERT INTO $table (protein_id,".join(",",@keys)." ) VALUES(?,?,?)";
+			$insertString = "INSERT INTO $table (protein_id,".join(",",@keys)." ) VALUES(?,?,?,?,?)";
 		} else {
-			$insertString = "INSERT INTO $table ($tableId, protein_id,".join(",",@keys)." ) VALUES(NULL,?,?,?)";
+			$insertString = "INSERT INTO $table ($tableId, protein_id,".join(",",@keys)." ) VALUES(NULL,?,?,?,?,?)";
 		}
   }
 
@@ -174,10 +174,11 @@ sub uploadCBSpredictionsFast
   push(@setData,$proteinId);
 # for SQLite engine only
 
-   foreach my $keyItem(@keys)
-      {
-        push(@setData, processType( $dataHash->{$protItem}{$keyItem} ) );
-      }
+   foreach my $keyItem(@keys){
+        # push(@setData, processType( $dataHash->{$protItem}{$keyItem} ) );
+				push( @setData, $dataHash->{$protItem}{$keyItem} );
+
+	 }
    my $setValuesString = join(',', @setData);
 #   print STDERR "$setValuesString\n";
    $sth->execute(@setData);
