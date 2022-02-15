@@ -421,7 +421,8 @@ sub createGFF3File {
         #signalP, targetP features
         my @list=('signalP', 'targetP');
         foreach my $lItem (@list) {
-          $selectString =  "SELECT start, end, class, score FROM $lItem where protein_id=$idItem";
+          my $idKey = $lItem."_id";
+          $selectString =  "SELECT distinct($idKey), start, end, class, score FROM $lItem where protein_id=$idItem";
           #print STDERR "F:".$selectString."\n";
           $results =$dbh->select_from_table($selectString);
           foreach my $result (@{$results}) {
@@ -436,7 +437,7 @@ sub createGFF3File {
              my $classStr = "";
 
              if ( $class ne '' ) {
-               $classStr = ";Note=".$class.";";
+               $classStr = "Note=".$class.";";
              }
 
              # Toniher: Changed from SIGNAL to protein_match and also start despite it must be 1
