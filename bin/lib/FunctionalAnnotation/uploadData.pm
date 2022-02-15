@@ -773,7 +773,7 @@ sub uploadBlastResults
  my $update =0;
 
  my %tmpHash=();
- my($selectString, $updateString, $insertString,$proteinId,$blastHitId,$shaData);
+ my($selectString, $updateString, $insertString, $proteinId,$ blastHitId, $shaData);
 
  foreach my $protItem(keys %{$blastData})
  {

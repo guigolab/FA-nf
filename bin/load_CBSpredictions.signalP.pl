@@ -105,7 +105,7 @@ die "You must specify a file with the predictions\n Use -h for help"
 my $progVersion = detectVersion( $idfile );
 
 my %dataHash = &parseCBSpredictionsData( $idfile, $type, $progVersion );
-&uploadCBSpredictionsFast($dbh, \%dataHash,$config{'dbEngine'}, $type, $progVersion );
+&uploadCBSpredictionsFast( $dbh, \%dataHash, $config{'dbEngine'}, $type, $progVersion );
 
 # Commit needed for SQLite
 if(lc( $config{'dbEngine'} ) eq 'sqlite')
@@ -116,11 +116,10 @@ if(lc( $config{'dbEngine'} ) eq 'sqlite')
 $dbh->disconnect();
 
 # TODO: To be fixed with update
-sub uploadCBSpredictionsFast
-{
+sub uploadCBSpredictionsFast {
  my ($dbh, $dataHash,$engine, $type)=@_;
 
- my($select, $result,$table,$tableId ,$selectString, $insertString, $updateString);
+ my( $select, $result, $table, $tableId, $selectString, $insertString, $updateString );
  my @keys=();
 
 	if($type eq 's') {
@@ -156,8 +155,7 @@ sub uploadCBSpredictionsFast
 
  my $sth = $dbh->prepare($insertString);
 
- foreach my $protItem (keys %{$dataHash})
- {
+ foreach my $protItem (keys %{$dataHash}) {
   $select = "select protein_id from protein where stable_id like '%$protItem%'";
   my $sth2 = $dbh->prepare($select);
   $sth2->execute();
