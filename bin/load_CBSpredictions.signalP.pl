@@ -153,7 +153,16 @@ sub uploadCBSpredictionsFast {
 		}
   }
 
- my $sth = $dbh->prepare($insertString);
+	my @whereArr = ();
+	foreach my $keyItem ( @keys ) {
+		push( @whereArr, " $key = ? ");
+	}
+
+	$selectString = "SELECT * from $table where protein_id = ? AND ".join( @whereArr, " AND ");
+
+
+ my $sth = $dbh->prepare( $insertString );
+ my $qth = $dbh->prepare( $selectString );
 
  foreach my $protItem (keys %{$dataHash}) {
   $select = "select protein_id from protein where stable_id like '%$protItem%'";
@@ -177,13 +186,21 @@ sub uploadCBSpredictionsFast {
 				push( @setData, $dataHash->{$protItem}{$keyItem} );
 
 	 }
-   my $setValuesString = join(',', @setData);
+   # my $setValuesString = join(',', @setData);
 #   print STDERR "$setValuesString\n";
-   $sth->execute(@setData);
+
+	 $qth->execute(@setData);
+
+	 if ( $qth->rows < 1 ) {
+
+   	$sth->execute(@setData);
+
+ 	 }
   # $sth->commit;
 #   $sth->finish();
 }
 
+ $qth->finish();
  $sth->finish();
 }
 
