@@ -1,4 +1,4 @@
-* Allow parsing new versions of SignalP and targetP
+* Allow parsing new versions of SignalP and add more options
 * Log directory check
 * Initial check for FASTA file
 * Add option to detect if possible contamination from BLAST (inspiration from MEGAN)

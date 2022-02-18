@@ -1026,12 +1026,12 @@ process 'data_upload' {
 
   command += " \
    cat out_signalp* > allSignal ; \
-   load_CBSpredictions.signalP.pl -i allSignal -conf \$config -type s > upload_signalp ; \
+   load_sigtarp.pl -i allSignal -conf \$config -type s > upload_signalp ; \
   "
 
   command += " \
    cat out_targetp* > allTarget ; \
-   load_CBSpredictions.signalP.pl -i allTarget -conf \$config -type t > upload_targetp ; \
+   load_sigtarp.pl -i allTarget -conf \$config -type t > upload_targetp ; \
   "
 
   command += " \
