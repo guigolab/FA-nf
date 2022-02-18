@@ -155,7 +155,7 @@ sub uploadCBSpredictionsFast {
 
 	my @whereArr = ();
 	foreach my $keyItem ( @keys ) {
-		push( @whereArr, " $key = ? ");
+		push( @whereArr, " $keyItem = ? ");
 	}
 
 	$selectString = "SELECT * from $table where protein_id = ? AND ".join( @whereArr, " AND ");
