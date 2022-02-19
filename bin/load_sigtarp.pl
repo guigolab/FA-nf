@@ -158,7 +158,7 @@ sub uploadCBSpredictionsFast {
 		push( @whereArr, " $keyItem = ? ");
 	}
 
-	$selectString = "SELECT * from $table where protein_id = ? AND ".join( @whereArr, " AND ");
+	$selectString = "SELECT * from $table where protein_id = ? AND ".join( " AND ", @whereArr );
 
 
  my $sth = $dbh->prepare( $insertString );
